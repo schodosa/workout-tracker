@@ -87,3 +87,52 @@ h1 {
 .muted {
   color: var(--text-muted);
 }
+
+/* Buttons. Use on <button> or on a <Link> for navigation that looks like a button. */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-size: 1.15rem;
+}
+
+.btn-danger {
+  background: transparent;
+  border-color: transparent;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+}
+
+.row > * {
+  flex: 1;
+}

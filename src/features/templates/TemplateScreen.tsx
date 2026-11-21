@@ -1,6 +1,8 @@
-import { useParams } from 'wouter'
+import { useLocation, useParams } from 'wouter'
 import { BackLink } from '../../components/BackLink.tsx'
+import { ResumeBanner } from '../../components/ResumeBanner.tsx'
 import { SetupCard } from '../../components/SetupCard.tsx'
+import { startSession, useInProgressSession } from '../../db/sessions.ts'
 import { builtinCatalog } from '../../domain/builtins.ts'
 import { formatRepRange, groupSupersets, resolveTemplateItem, type ResolvedItem } from '../../domain/catalog.ts'
 import { DEFAULT_TEMPLATE_SETTINGS } from '../../domain/types.ts'
@@ -8,6 +10,8 @@ import styles from './TemplateScreen.module.css'
 
 export function TemplateScreen() {
   const { id } = useParams<{ id: string }>()
+  const [, navigate] = useLocation()
+  const inProgress = useInProgressSession()
   const template = builtinCatalog.templates.get(id)
 
   if (!template) {
@@ -36,6 +40,21 @@ export function TemplateScreen() {
       <p className="muted">
         ~{template.estMinutes} min · {template.items.length} exercises · {equipmentNames.join(', ')}
       </p>
+
+      {/* Only one session runs at a time; if one is open, offer to resume it instead. */}
+      <div className={styles.start}>
+        {inProgress === undefined ? null : inProgress ? (
+          <ResumeBanner session={inProgress} />
+        ) : (
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={async () => navigate(`/session/${await startSession(template.id)}`)}
+          >
+            Start session
+          </button>
+        )}
+      </div>
 
       {blocks.map((block) => {
         // In a superset you rest after the whole pair, so only the last card shows rest.

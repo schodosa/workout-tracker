@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'wouter'
+import { ResumeBanner } from '../../components/ResumeBanner.tsx'
+import { useInProgressSession } from '../../db/sessions.ts'
 import { builtinCatalog } from '../../domain/builtins.ts'
 import styles from './TodayScreen.module.css'
 
@@ -10,11 +12,13 @@ export function TodayScreen() {
   )
   // Until the plan editor exists (M12), Today simply lists every built-in template.
   const templates = [...builtinCatalog.templates.values()]
+  const inProgress = useInProgressSession()
 
   return (
     <>
       <h1>Today</h1>
       <p className="muted">{today}</p>
+      {inProgress && <ResumeBanner session={inProgress} />}
 
       <h2 className={styles.section}>Templates</h2>
       {templates.map((t) => {

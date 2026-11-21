@@ -1,0 +1,40 @@
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.item:active {
+  background: var(--surface-2);
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.exercise {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+}
+
+.sets {
+  margin: 0;
+  padding-left: 1.6em;
+  font-size: 1.05rem;
+}
+
+.sets li {
+  padding: 2px 0;
+}
+
+.delete {
+  margin-top: 8px;
+}

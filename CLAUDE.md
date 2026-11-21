@@ -27,6 +27,10 @@ A local-first, installable PWA workout tracker for home gyms. The full product s
 - `src/domain/` holds types and pure logic: no React, no DB. This is where unit tests go.
 - `src/db/` holds the Dexie schema and data access. `src/features/<area>/` holds screens. `src/components/` holds shared UI.
 - Save each logged set immediately (write-through) so a locked phone or killed tab loses nothing.
+- Screens never touch `db` directly. They use the functions and `use*` hooks in `src/db/*.ts`.
+- Never edit a shipped `db.version(n)`. Schema changes go in a new `version(n+1)` with an `.upgrade()`.
+- Don't persist UI position (e.g. the current exercise). Derive it from the data so resuming after iOS kills the app just works.
+- Use `newId()` from `src/domain/ids.ts`, not `crypto.randomUUID()`. The latter is missing on plain-HTTP LAN testing.
 - Store calendar dates as local `YYYY-MM-DD` strings, not UTC timestamps.
 
 ## Target device: iPhone (iOS Safari / home-screen PWA)

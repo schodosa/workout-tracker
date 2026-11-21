@@ -1,6 +1,8 @@
 import { Redirect, Route, Switch } from 'wouter'
 import { TabBar } from './components/TabBar.tsx'
 import { HistoryScreen } from './features/history/HistoryScreen.tsx'
+import { SessionDetailScreen } from './features/history/SessionDetailScreen.tsx'
+import { SessionScreen } from './features/session/SessionScreen.tsx'
 import { SettingsScreen } from './features/settings/SettingsScreen.tsx'
 import { TemplateScreen } from './features/templates/TemplateScreen.tsx'
 import { TodayScreen } from './features/today/TodayScreen.tsx'
@@ -12,7 +14,9 @@ export default function App() {
         <Switch>
           <Route path="/" component={TodayScreen} />
           <Route path="/templates/:id" component={TemplateScreen} />
+          <Route path="/session/:id" component={SessionScreen} />
           <Route path="/history" component={HistoryScreen} />
+          <Route path="/history/:id" component={SessionDetailScreen} />
           <Route path="/settings" component={SettingsScreen} />
           {/* Any unknown URL goes back to Today. */}
           <Route>

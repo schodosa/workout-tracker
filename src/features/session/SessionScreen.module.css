@@ -1,0 +1,146 @@
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.finishLink {
+  min-height: var(--tap);
+  margin: calc(var(--gap) * -0.5) -8px 0 0;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.context {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Exercise progress: one tappable dot per exercise. The visible dot is small but the button is
+   a full tap target. */
+.dots {
+  display: flex;
+  gap: 2px;
+  margin: 4px -6px 8px;
+}
+
+.dot {
+  flex: 1;
+  height: 32px;
+  max-width: 48px;
+  border: 0;
+  background: none;
+  position: relative;
+}
+
+.dot::after {
+  content: '';
+  position: absolute;
+  inset: 13px 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+}
+
+.dotDone::after {
+  background: var(--accent);
+}
+
+.dotCurrent::after {
+  inset: 11px 6px;
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+}
+
+.header {
+  margin-bottom: 8px;
+}
+
+.name {
+  margin: 0;
+  font-size: 1.7rem;
+  line-height: 1.15;
+}
+
+.target {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+}
+
+.setupDetails {
+  margin-bottom: var(--gap);
+}
+
+.setupDetails summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+/* display:flex hides the browser's own disclosure triangle, so draw our own. */
+.setupDetails summary::-webkit-details-marker {
+  display: none;
+}
+
+.setupDetails summary::before {
+  content: '▸';
+  width: 1em;
+}
+
+.setupDetails[open] summary::before {
+  content: '▾';
+}
+
+.logged {
+  list-style: none;
+  margin: 0 0 var(--gap);
+  padding: 0;
+}
+
+.logged li {
+  display: grid;
+  grid-template-columns: 32px 1fr 48px;
+  align-items: center;
+  min-height: 48px;
+  border-bottom: 1px solid var(--border);
+}
+
+.setNo {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.setText {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.remove {
+  height: 48px;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+}
+
+.doneNote {
+  margin: 0 0 var(--gap);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.nav {
+  margin-top: var(--gap);
+}
+
+.discard {
+  margin-top: 24px;
+}
