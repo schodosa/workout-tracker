@@ -1,0 +1,22 @@
+# Dependencies and build output
+node_modules
+dist
+dev-dist
+*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel
+
+# Personal Claude Code settings (shared settings in .claude/settings.json are fine to commit)
+.claude/settings.local.json
