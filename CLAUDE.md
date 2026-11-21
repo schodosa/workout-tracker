@@ -18,7 +18,7 @@ A local-first, installable PWA workout tracker for home gyms. The full product s
 - **Vitest** for unit tests of `src/domain/` logic. Added in M2.
 - **Zod** only at the JSON import boundary (backup/preset import). Added in M5.
 - **oxlint** for linting.
-- **Vercel** deploys from GitHub `main`. `vercel.json` rewrites all paths to `index.html`.
+- **Vercel** deploys from GitHub `main` to https://workout-tracker-zeta-eosin.vercel.app/. `vercel.json` rewrites all paths to `index.html`. Settings shows the deployed commit SHA.
 - Package manager: **npm**.
 
 ## Architecture rules
