@@ -10,7 +10,38 @@ A local-first, installable PWA workout tracker for home gyms. The full product s
 - Never hard-code anything personal; personal setup belongs in a preset file.
 
 ## Stack
-_To be filled in once the stack is agreed._
+- **Vite + React + TypeScript.** No UI kit, no state library.
+- **wouter** for routing (tiny API).
+- **Dexie** (IndexedDB wrapper) for local data, with `useLiveQuery` as the app's state. Added in M3.
+- **vite-plugin-pwa** for the service worker and manifest.
+- **Plain CSS** with variables in `src/styles/theme.css`, plus CSS Modules (`*.module.css`) per component. No Tailwind.
+- **Vitest** for unit tests of `src/domain/` logic. Added in M2.
+- **Zod** only at the JSON import boundary (backup/preset import). Added in M5.
+- **oxlint** for linting.
+- **Vercel** deploys from GitHub `main`. `vercel.json` rewrites all paths to `index.html`.
+- Package manager: **npm**.
+
+## Architecture rules
+- `src/data/` holds built-in content as JSON only. It is bundled, never copied into IndexedDB. User data (custom items, logs) lives in IndexedDB and is merged with built-ins at read time.
+- Built-in IDs (exercises, templates, equipment) are stable slugs. Never rename one after it ships, because logged data references it.
+- `src/domain/` holds types and pure logic: no React, no DB. This is where unit tests go.
+- `src/db/` holds the Dexie schema and data access. `src/features/<area>/` holds screens. `src/components/` holds shared UI.
+- Save each logged set immediately (write-through) so a locked phone or killed tab loses nothing.
+- Store calendar dates as local `YYYY-MM-DD` strings, not UTC timestamps.
+
+## Target device: iPhone (iOS Safari / home-screen PWA)
+- No `navigator.vibrate` on iOS. Use sound plus a full-screen color flash for cues.
+- Audio only plays after a user tap. Unlock or prime audio on the "Start" tap.
+- iOS may delete storage for sites not used in ~7 days unless installed to the home screen. Call `navigator.storage.persist()` and keep backup/export prominent.
+- Keep tap targets at least `var(--tap)` (56px) and inputs at least 16px font (smaller makes iOS zoom).
+- Respect safe-area insets (`env(safe-area-inset-*)`).
+- The Screen Wake Lock API works on iOS 16.4+. Use it during workouts and rides.
 
 ## Commands
-_To be filled in once the project is scaffolded._
+- `npm run dev`: local dev server at http://localhost:5173
+- `npm run dev:phone`: dev server on your LAN, for a quick look on the phone. No service worker or install, because those need HTTPS.
+- `npm run build`: type-check, then production build into `dist/`
+- `npm run preview`: serve the production build locally (on the LAN too)
+- `npm run typecheck`: TypeScript only
+- `npm run lint`: oxlint
+- `npm run icons`: regenerate PWA icons from `scripts/make-icons.mjs`

@@ -1,0 +1,87 @@
+/* Global theme. Design tokens live here as CSS variables; components use them via var(--name). */
+:root {
+  --bg: #0f1115;
+  --surface: #181b22;
+  --surface-2: #222631;
+  --border: #2c3140;
+  --text: #f3f4f6;
+  --text-muted: #9ca3af;
+  --accent: #4ade80;
+  --accent-text: #052e14;
+  --danger: #f87171;
+
+  /* Minimum tap-target height. Apple's guideline is 44px; we go bigger for gym use. */
+  --tap: 56px;
+  --radius: 14px;
+  --gap: 16px;
+
+  color-scheme: dark;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--text);
+  background: var(--bg);
+
+  /* Stop iOS from resizing text when the phone rotates. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  /* No grey flash when tapping links on iOS. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  /* Removes the iOS double-tap-to-zoom delay on buttons. */
+  touch-action: manipulation;
+  overscroll-behavior-y: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  /* iOS zooms in on any input with text smaller than 16px; ours is 18px. */
+  font-size: max(16px, 1rem);
+  color: inherit;
+}
+
+.app {
+  min-height: 100dvh;
+}
+
+.screen {
+  padding: calc(env(safe-area-inset-top) + var(--gap)) var(--gap)
+    calc(env(safe-area-inset-bottom) + var(--tap) + 32px);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 1.8rem;
+  margin: 0 0 var(--gap);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--gap);
+  margin-bottom: var(--gap);
+}
+
+.muted {
+  color: var(--text-muted);
+}
