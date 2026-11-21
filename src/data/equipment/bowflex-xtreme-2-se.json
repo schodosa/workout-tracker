@@ -1,0 +1,49 @@
+{
+  "id": "bowflex-xtreme-2-se",
+  "name": "Bowflex Xtreme 2 SE",
+  "kind": "builtin",
+  "type": "strength",
+  "resistanceUnit": "lb",
+  "maxUserWeight": 300,
+  "manualRef": { "file": "Bowflex Xtreme 2 SE Workout Guide" },
+  "setupOptions": {
+    "positions": {
+      "seated-facing-out": "Seated, facing out",
+      "seated-facing-machine": "Seated, facing machine",
+      "seated-sideways": "Seated sideways",
+      "standing-facing-machine": "Standing, facing machine",
+      "standing-facing-out": "Standing, facing out",
+      "standing-side-on": "Standing side-on",
+      "standing-beside-facing-away": "Standing beside machine, facing away"
+    },
+    "pulleys": {
+      "ccb-wide": "Center Cross Bar (wide)",
+      "ccb-standard": "Center Cross Bar (standard)",
+      "ccb-narrow": "Center Cross Bar (narrow)",
+      "lat-tower": "Lat Tower",
+      "lat-cross-bar": "Lat Cross Bar",
+      "spf": "Squat Pulley Frame",
+      "spf-standard": "Squat Pulley Frame (standard)",
+      "spf-narrow": "Squat Pulley Frame (narrow)",
+      "abdominal-bar": "Abdominal bar"
+    },
+    "accessories": {
+      "hand-grips": "Hand Grips",
+      "hand-grips-hammer": "Hand Grips (hammer grip)",
+      "hand-grips-over-elbow": "Hand Grips (over elbows / forearms)",
+      "hand-grips-ankle": "Hand Grips (around ankle / foot arch)",
+      "bent-lat-bar": "50\" Bent Lat Bar",
+      "lat-pulldown-bar": "Lat Pulldown Bar",
+      "squat-bar": "Squat Bar + squat straps",
+      "squat-straps": "Squat straps",
+      "ab-crunch-harness": "Abdominal Crunch Shoulder Harness",
+      "leg-extension": "Leg Extension"
+    },
+    "adjustments": {
+      "remove-leg-extension": "Remove the Leg Extension",
+      "remove-seat": "Remove the seat",
+      "seat-height": "Set seat height",
+      "seat-lowest": "Seat in lowest position"
+    }
+  }
+}

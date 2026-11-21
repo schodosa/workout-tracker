@@ -1,0 +1,17 @@
+{
+  "id": "upper",
+  "name": "Upper",
+  "goalTags": ["build-strength", "build-muscle"],
+  "estMinutes": 45,
+  "requiredEquipmentIds": ["bowflex-xtreme-2-se"],
+  "format": "straight-sets",
+  "items": [
+    { "exerciseId": "bowflex-bench-press" },
+    { "exerciseId": "bowflex-seated-lat-pulldown" },
+    { "exerciseId": "bowflex-bent-over-row" },
+    { "exerciseId": "bowflex-seated-shoulder-press" },
+    { "exerciseId": "bowflex-crossover-rear-deltoid-row" },
+    { "exerciseId": "bowflex-biceps-curl", "supersetGroup": "A" },
+    { "exerciseId": "bowflex-triceps-pushdown", "supersetGroup": "A" }
+  ]
+}

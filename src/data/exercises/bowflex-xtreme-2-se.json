@@ -1,0 +1,128 @@
+[
+  {
+    "id": "bowflex-bench-press",
+    "name": "Bench Press",
+    "equipmentId": "bowflex-xtreme-2-se",
+    "category": "chest",
+    "movementPattern": "horizontal-push",
+    "primaryMuscles": ["chest", "front shoulders", "triceps"],
+    "measure": "reps",
+    "unilateral": false,
+    "setup": {
+      "position": "seated-facing-out",
+      "pulleys": ["ccb-wide"],
+      "accessoryOptions": ["hand-grips"],
+      "adjustments": ["remove-leg-extension"]
+    },
+    "guidePage": 22,
+    "cautions": []
+  },
+  {
+    "id": "bowflex-seated-lat-pulldown",
+    "name": "Seated Lat Pulldown",
+    "equipmentId": "bowflex-xtreme-2-se",
+    "category": "back",
+    "movementPattern": "vertical-pull",
+    "primaryMuscles": ["lats", "biceps"],
+    "measure": "reps",
+    "unilateral": false,
+    "setup": {
+      "position": "seated-facing-machine",
+      "pulleys": ["lat-tower"],
+      "accessoryOptions": ["hand-grips"],
+      "adjustments": ["remove-leg-extension"]
+    },
+    "guidePage": 39,
+    "cautions": []
+  },
+  {
+    "id": "bowflex-bent-over-row",
+    "name": "Bent Over Row",
+    "equipmentId": "bowflex-xtreme-2-se",
+    "category": "back",
+    "movementPattern": "horizontal-pull",
+    "primaryMuscles": ["upper back", "lats", "biceps"],
+    "measure": "reps",
+    "unilateral": false,
+    "setup": {
+      "position": "standing-facing-machine",
+      "pulleys": ["spf"],
+      "accessoryOptions": ["hand-grips"],
+      "adjustments": ["remove-seat", "remove-leg-extension"]
+    },
+    "guidePage": 35,
+    "cautions": []
+  },
+  {
+    "id": "bowflex-seated-shoulder-press",
+    "name": "Seated Shoulder Press",
+    "equipmentId": "bowflex-xtreme-2-se",
+    "category": "shoulders",
+    "movementPattern": "vertical-push",
+    "primaryMuscles": ["shoulders", "triceps"],
+    "measure": "reps",
+    "unilateral": false,
+    "setup": {
+      "position": "seated-facing-out",
+      "pulleys": ["ccb-wide"],
+      "accessoryOptions": ["hand-grips"],
+      "adjustments": ["remove-leg-extension"]
+    },
+    "guidePage": 28,
+    "cautions": []
+  },
+  {
+    "id": "bowflex-crossover-rear-deltoid-row",
+    "name": "Crossover Rear Deltoid Row",
+    "equipmentId": "bowflex-xtreme-2-se",
+    "category": "shoulders",
+    "movementPattern": "shoulder-isolation",
+    "primaryMuscles": ["rear shoulders", "upper back"],
+    "measure": "reps",
+    "unilateral": false,
+    "setup": {
+      "position": "standing-facing-machine",
+      "pulleys": ["ccb-narrow"],
+      "accessoryOptions": ["hand-grips"],
+      "adjustments": ["remove-seat", "remove-leg-extension"]
+    },
+    "guidePage": 26,
+    "cautions": []
+  },
+  {
+    "id": "bowflex-biceps-curl",
+    "name": "Biceps Curl",
+    "equipmentId": "bowflex-xtreme-2-se",
+    "category": "arms",
+    "movementPattern": "elbow-flexion",
+    "primaryMuscles": ["biceps"],
+    "measure": "reps",
+    "unilateral": false,
+    "setup": {
+      "position": "standing-facing-machine",
+      "pulleys": ["spf"],
+      "accessoryOptions": ["hand-grips"],
+      "adjustments": ["remove-seat", "remove-leg-extension"]
+    },
+    "guidePage": 45,
+    "cautions": []
+  },
+  {
+    "id": "bowflex-triceps-pushdown",
+    "name": "Triceps Pushdown",
+    "equipmentId": "bowflex-xtreme-2-se",
+    "category": "arms",
+    "movementPattern": "elbow-extension",
+    "primaryMuscles": ["triceps"],
+    "measure": "reps",
+    "unilateral": false,
+    "setup": {
+      "position": "standing-facing-machine",
+      "pulleys": ["lat-tower"],
+      "accessoryOptions": ["hand-grips"],
+      "adjustments": ["remove-seat", "remove-leg-extension"]
+    },
+    "guidePage": 40,
+    "cautions": []
+  }
+]

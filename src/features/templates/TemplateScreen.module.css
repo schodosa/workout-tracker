@@ -1,0 +1,57 @@
+.itemHeader {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.number {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.itemName {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.dose {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.muscles {
+  margin: 6px 0 0 44px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.rest {
+  margin: 10px 0 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.superset {
+  border-left: 3px solid var(--accent);
+  padding-left: 10px;
+  margin-bottom: var(--gap);
+}
+
+.superset :global(.card):last-child {
+  margin-bottom: 0;
+}
+
+.supersetLabel {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+}

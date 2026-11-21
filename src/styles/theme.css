@@ -9,6 +9,8 @@
   --accent: #4ade80;
   --accent-text: #052e14;
   --danger: #f87171;
+  --warn: #fbbf24;
+  --warn-bg: #3a2c0b;
 
   /* Minimum tap-target height. Apple's guideline is 44px; we go bigger for gym use. */
   --tap: 56px;

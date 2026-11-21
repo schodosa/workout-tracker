@@ -1,0 +1,38 @@
+.setup {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--surface-2);
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+/* Two-column label/value grid; it stays readable at phone width because labels are short. */
+.rows {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 12px;
+  margin: 0;
+}
+
+.rows dt {
+  color: var(--text-muted);
+}
+
+.rows dd {
+  margin: 0;
+}
+
+.cue,
+.guide {
+  margin: 10px 0 0;
+  color: var(--text-muted);
+}
+
+.caution {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--warn-bg);
+  color: var(--warn);
+  font-weight: 600;
+}

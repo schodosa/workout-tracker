@@ -1,0 +1,79 @@
+import { useParams } from 'wouter'
+import { BackLink } from '../../components/BackLink.tsx'
+import { SetupCard } from '../../components/SetupCard.tsx'
+import { builtinCatalog } from '../../domain/builtins.ts'
+import { formatRepRange, groupSupersets, resolveTemplateItem, type ResolvedItem } from '../../domain/catalog.ts'
+import { DEFAULT_TEMPLATE_SETTINGS } from '../../domain/types.ts'
+import styles from './TemplateScreen.module.css'
+
+export function TemplateScreen() {
+  const { id } = useParams<{ id: string }>()
+  const template = builtinCatalog.templates.get(id)
+
+  if (!template) {
+    return (
+      <>
+        <BackLink href="/" label="Today" />
+        <h1>Not found</h1>
+        <p className="muted">There's no template called "{id}".</p>
+      </>
+    )
+  }
+
+  // Settings will come from the database in a later milestone; until then, spec defaults.
+  // Number items before grouping so the numbering runs straight through superset blocks.
+  const items = template.items.map((item, i) => ({
+    ...resolveTemplateItem(item, DEFAULT_TEMPLATE_SETTINGS),
+    number: i + 1,
+  }))
+  const blocks = groupSupersets(items)
+  const equipmentNames = template.requiredEquipmentIds.map((eqId) => builtinCatalog.equipment.get(eqId)?.name ?? eqId)
+
+  return (
+    <>
+      <BackLink href="/" label="Today" />
+      <h1>{template.name}</h1>
+      <p className="muted">
+        ~{template.estMinutes} min · {template.items.length} exercises · {equipmentNames.join(', ')}
+      </p>
+
+      {blocks.map((block) => {
+        // In a superset you rest after the whole pair, so only the last card shows rest.
+        const cards = block.map((item, i) => (
+          <ItemCard key={item.number} item={item} number={item.number} showRest={i === block.length - 1} />
+        ))
+        return block.length > 1 ? (
+          <section key={block[0].supersetGroup} className={styles.superset}>
+            <h2 className={styles.supersetLabel}>Superset: alternate sets, rest after each pair</h2>
+            {cards}
+          </section>
+        ) : (
+          cards
+        )
+      })}
+    </>
+  )
+}
+
+function ItemCard({ item, number, showRest }: { item: ResolvedItem; number: number; showRest: boolean }) {
+  const exercise = item.exerciseId ? builtinCatalog.exercises.get(item.exerciseId) : undefined
+  const equipment = exercise ? builtinCatalog.equipment.get(exercise.equipmentId) : undefined
+  // Pattern-only items get filled in from owned equipment in milestone 8.
+  const title = exercise?.name ?? `Any ${item.pattern?.replace('-', ' ')} exercise`
+
+  return (
+    <article className="card">
+      <header className={styles.itemHeader}>
+        <span className={styles.number}>{number}</span>
+        <h3 className={styles.itemName}>{title}</h3>
+        <span className={styles.dose}>
+          {item.sets} × {formatRepRange(item.reps)}
+          {exercise?.unilateral && ' /side'}
+        </span>
+      </header>
+      {exercise && <p className={styles.muscles}>{exercise.primaryMuscles.join(' · ')}</p>}
+      {exercise && <SetupCard exercise={exercise} equipment={equipment} />}
+      {showRest && <p className={styles.rest}>Rest {item.restSec} s</p>}
+    </article>
+  )
+}

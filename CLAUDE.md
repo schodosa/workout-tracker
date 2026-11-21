@@ -36,6 +36,7 @@ A local-first, installable PWA workout tracker for home gyms. The full product s
 - Keep tap targets at least `var(--tap)` (56px) and inputs at least 16px font (smaller makes iOS zoom).
 - Respect safe-area insets (`env(safe-area-inset-*)`).
 - The Screen Wake Lock API works on iOS 16.4+. Use it during workouts and rides.
+- An installed PWA has no browser back button. Every sub-screen needs an in-app `BackLink`.
 
 ## Commands
 - `npm run dev`: local dev server at http://localhost:5173
@@ -44,4 +45,5 @@ A local-first, installable PWA workout tracker for home gyms. The full product s
 - `npm run preview`: serve the production build locally (on the LAN too)
 - `npm run typecheck`: TypeScript only
 - `npm run lint`: oxlint
+- `npm test`: run unit tests once (Vitest). `npm run test:watch` re-runs them on save.
 - `npm run icons`: regenerate PWA icons from `scripts/make-icons.mjs`
