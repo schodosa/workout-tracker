@@ -105,30 +105,25 @@
   padding: 0;
 }
 
-.logged li {
-  display: grid;
-  grid-template-columns: 32px 1fr 48px;
-  align-items: center;
-  min-height: 48px;
-  border-bottom: 1px solid var(--border);
+.superset {
+  margin: 6px 0 0;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
-.setNo {
+.lastTime {
+  margin: 6px 0 0;
   color: var(--text-muted);
-  font-weight: 700;
 }
 
-.setText {
-  font-size: 1.2rem;
-  font-weight: 700;
+.lastTime strong {
+  color: var(--text);
 }
 
-.remove {
-  height: 48px;
-  border: 0;
-  background: none;
-  color: var(--text-muted);
-  font-size: 1.5rem;
+/* Keeps the last buttons scrollable above the rest bar. */
+.restSpacer {
+  height: 72px;
 }
 
 .doneNote {

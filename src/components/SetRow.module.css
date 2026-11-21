@@ -1,0 +1,50 @@
+.row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  align-items: center;
+  width: 100%;
+  min-height: 52px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  color: inherit;
+  text-align: left;
+}
+
+.row:active {
+  background: var(--surface-2);
+}
+
+.no {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.text {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.edit {
+  padding: 0 4px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.editor {
+  margin: 8px 0;
+  padding: 12px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.editorTitle {
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+
+.delete {
+  margin-top: 4px;
+}

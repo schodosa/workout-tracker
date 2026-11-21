@@ -26,13 +26,25 @@
 }
 
 .sets {
+  list-style: none;
   margin: 0;
-  padding-left: 1.6em;
-  font-size: 1.05rem;
+  padding: 0;
 }
 
-.sets li {
-  padding: 2px 0;
+.notesLabel {
+  display: block;
+  margin: 8px 0 4px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.notes {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  resize: vertical;
 }
 
 .delete {

@@ -1,14 +1,19 @@
 import { useState } from 'react'
 import { Redirect, useLocation, useParams } from 'wouter'
 import { BackLink } from '../../components/BackLink.tsx'
+import { RestBar } from '../../components/RestBar.tsx'
+import { SetRow } from '../../components/SetRow.tsx'
 import { SetupCard } from '../../components/SetupCard.tsx'
 import { Stepper } from '../../components/Stepper.tsx'
-import { deleteSet, discardSession, finishSession, logSet, useSession, useSessionSets } from '../../db/sessions.ts'
+import { discardSession, finishSession, logSet, useLastPerformance, useSession, useSessionSets, type LastPerformance } from '../../db/sessions.ts'
 import { builtinCatalog } from '../../domain/builtins.ts'
 import { formatRepRange, resolveTemplateItem, type ResolvedItem } from '../../domain/catalog.ts'
+import { formatDayLong } from '../../domain/dates.ts'
 import type { SessionRecord, SetRecord } from '../../domain/records.ts'
-import { countByItem, formatSet, nextItemIndex, resistanceStep } from '../../domain/session.ts'
-import { DEFAULT_TEMPLATE_SETTINGS, type Template } from '../../domain/types.ts'
+import { afterLog, countByItem, nextItemIndex, prefill, resistanceStep, summarizeLastTime } from '../../domain/session.ts'
+import { DEFAULT_TEMPLATE_SETTINGS, type Exercise, type Template } from '../../domain/types.ts'
+import { unlockAudio } from '../../platform/cues.ts'
+import { useWakeLock } from '../../platform/wakeLock.ts'
 import styles from './SessionScreen.module.css'
 
 /** Loads the session from the database, then hands off to the logger once data is ready. */
@@ -44,14 +49,26 @@ export function SessionScreen() {
 
 function SessionLogger({ session, sets, template }: { session: SessionRecord; sets: SetRecord[]; template: Template }) {
   const [, navigate] = useLocation()
+  useWakeLock(true) // keep the screen on for the whole session
+
   const items = template.items.map((item) => resolveTemplateItem(item, DEFAULT_TEMPLATE_SETTINGS))
   const counts = countByItem(sets, items.length)
   const targets = items.map((i) => i.sets)
 
   // Start on the first unfinished exercise. Not saved anywhere: it's recomputed on reopen.
   const [index, setIndex] = useState(() => nextItemIndex(targets, counts))
+  const [restEndsAt, setRestEndsAt] = useState<number | null>(null)
   const item = items[index]
   const isLast = index === items.length - 1
+
+  // Called by the form after a set is saved. The live query hasn't refreshed `sets` yet,
+  // so we add the new set to the counts ourselves before deciding what comes next.
+  function onLogged(loggedIndex: number, loggedAt: number) {
+    const updated = counts.map((c, i) => (i === loggedIndex ? c + 1 : c))
+    const { next, rest } = afterLog(items, updated, loggedIndex)
+    setRestEndsAt(rest ? loggedAt + items[loggedIndex].restSec * 1000 : null)
+    setIndex(next)
+  }
 
   async function finish() {
     if (sets.length === 0) {
@@ -72,6 +89,13 @@ function SessionLogger({ session, sets, template }: { session: SessionRecord; se
     await discardSession(session.id)
     navigate('/', { replace: true })
   }
+
+  // Name of the other exercise(s) in this item's superset, for the "Superset with…" hint.
+  const partners = item.supersetGroup
+    ? items
+        .filter((it, i) => i !== index && it.supersetGroup === item.supersetGroup)
+        .map((it) => (it.exerciseId ? builtinCatalog.exercises.get(it.exerciseId)?.name : it.pattern))
+    : []
 
   return (
     <>
@@ -96,8 +120,16 @@ function SessionLogger({ session, sets, template }: { session: SessionRecord; se
         })}
       </nav>
 
-      {/* key={index}: a fresh logger (fresh inputs) for each exercise. */}
-      <ExerciseLogger key={index} sessionId={session.id} item={item} itemIndex={index} sets={sets.filter((s) => s.itemIndex === index)} />
+      {/* key={index}: a fresh form (fresh inputs and prefill) for each exercise. */}
+      <ExerciseLogger
+        key={index}
+        sessionId={session.id}
+        item={item}
+        itemIndex={index}
+        sets={sets.filter((s) => s.itemIndex === index)}
+        partners={partners.filter((p): p is string => Boolean(p))}
+        onLogged={onLogged}
+      />
 
       <div className={`row ${styles.nav}`}>
         <button type="button" className="btn" onClick={() => setIndex(index - 1)} disabled={index === 0}>
@@ -117,6 +149,17 @@ function SessionLogger({ session, sets, template }: { session: SessionRecord; se
       <button type="button" className={`btn btn-danger ${styles.discard}`} onClick={discard}>
         Discard session
       </button>
+
+      {restEndsAt !== null && (
+        <>
+          <div className={styles.restSpacer} />
+          <RestBar
+            endsAt={restEndsAt}
+            onAdd={(ms) => setRestEndsAt(Math.max(restEndsAt, Date.now()) + ms)}
+            onDismiss={() => setRestEndsAt(null)}
+          />
+        </>
+      )}
     </>
   )
 }
@@ -126,38 +169,58 @@ interface ExerciseLoggerProps {
   item: ResolvedItem
   itemIndex: number
   sets: SetRecord[]
+  partners: string[]
+  onLogged: (itemIndex: number, loggedAt: number) => void
 }
 
-function ExerciseLogger({ sessionId, item, itemIndex, sets }: ExerciseLoggerProps) {
-  const exercise = item.exerciseId ? builtinCatalog.exercises.get(item.exerciseId) : undefined
-  const equipment = exercise ? builtinCatalog.equipment.get(exercise.equipmentId) : undefined
-  const unit = equipment?.resistanceUnit === 'kg' ? 'kg' : 'lb'
-
-  // Start from this exercise's last set in this session, so set 2 is usually one tap.
-  const last = sets.at(-1)
-  const [weight, setWeight] = useState(last?.resistance?.toString() ?? '')
-  const [reps, setReps] = useState(String(last?.reps ?? item.reps.min))
+/** Waits for "last time" data so the inputs can start pre-filled, then shows the form. */
+function ExerciseLogger(props: ExerciseLoggerProps) {
+  const exercise = props.item.exerciseId ? builtinCatalog.exercises.get(props.item.exerciseId) : undefined
+  const lastTime = useLastPerformance(exercise?.id, props.sessionId)
 
   if (!exercise) {
     return (
       <div className="card">
-        <p>This item ({item.pattern}) can't be logged yet. Exercise substitution arrives in a later milestone.</p>
+        <p>This item ({props.item.pattern}) can't be logged yet. Exercise substitution arrives in a later milestone.</p>
       </div>
     )
   }
+  if (lastTime === undefined) return null
+  return <ExerciseForm {...props} exercise={exercise} lastTime={lastTime} />
+}
+
+function ExerciseForm({
+  sessionId,
+  item,
+  itemIndex,
+  sets,
+  partners,
+  onLogged,
+  exercise,
+  lastTime,
+}: ExerciseLoggerProps & { exercise: Exercise; lastTime: LastPerformance | null }) {
+  const equipment = builtinCatalog.equipment.get(exercise.equipmentId)
+  const unit = equipment?.resistanceUnit === 'kg' ? 'kg' : 'lb'
+
+  const [initial] = useState(() => prefill(sets, lastTime?.sets ?? [], item.reps.min))
+  const [weight, setWeight] = useState(initial.weight)
+  const [reps, setReps] = useState(initial.reps)
+  const [saving, setSaving] = useState(false)
 
   const repsNum = Number.parseInt(reps, 10)
   const weightNum = Number.parseFloat(weight)
   const hasWeight = Number.isFinite(weightNum)
-  const nextNumber = sets.length + 1
   const done = sets.length >= item.sets
 
   async function onLog() {
-    if (!(repsNum > 0)) return
+    if (!(repsNum > 0) || saving) return
+    unlockAudio() // must run inside the tap so iOS allows the rest-over beep later
+    const tappedAt = Date.now()
+    setSaving(true) // guards against a double tap logging two sets
     // Saved immediately: nothing is held only in memory, so a locked phone loses nothing.
     await logSet({
       sessionId,
-      exerciseId: exercise!.id,
+      exerciseId: exercise.id,
       itemIndex,
       setNumber: Math.max(0, ...sets.map((s) => s.setNumber)) + 1,
       side: 'both',
@@ -165,10 +228,8 @@ function ExerciseLogger({ sessionId, item, itemIndex, sets }: ExerciseLoggerProp
       resistanceUnit: hasWeight ? unit : undefined,
       reps: repsNum,
     })
-  }
-
-  async function onDelete(s: SetRecord, n: number) {
-    if (confirm(`Delete set ${n} (${formatSet(s)})?`)) await deleteSet(s.id)
+    setSaving(false)
+    onLogged(itemIndex, tappedAt)
   }
 
   return (
@@ -178,6 +239,12 @@ function ExerciseLogger({ sessionId, item, itemIndex, sets }: ExerciseLoggerProp
         <p className={styles.target}>
           Target {item.sets} × {formatRepRange(item.reps)} · rest {item.restSec} s
         </p>
+        {partners.length > 0 && <p className={styles.superset}>Superset with {partners.join(', ')}</p>}
+        {lastTime && lastTime.sets.length > 0 && (
+          <p className={styles.lastTime}>
+            Last time{lastTime.date && ` (${formatDayLong(lastTime.date)})`}: <strong>{summarizeLastTime(lastTime.sets)}</strong>
+          </p>
+        )}
       </header>
 
       <details className={styles.setupDetails} open={sets.length === 0}>
@@ -188,13 +255,7 @@ function ExerciseLogger({ sessionId, item, itemIndex, sets }: ExerciseLoggerProp
       {sets.length > 0 && (
         <ol className={styles.logged}>
           {sets.map((s, i) => (
-            <li key={s.id}>
-              <span className={styles.setNo}>{i + 1}</span>
-              <span className={styles.setText}>{formatSet(s)}</span>
-              <button type="button" className={styles.remove} onClick={() => onDelete(s, i + 1)} aria-label={`Delete set ${i + 1}`}>
-                ×
-              </button>
-            </li>
+            <SetRow key={s.id} set={s} number={i + 1} />
           ))}
         </ol>
       )}
@@ -204,8 +265,8 @@ function ExerciseLogger({ sessionId, item, itemIndex, sets }: ExerciseLoggerProp
       <div className="card">
         <Stepper label="Weight" unit={unit} value={weight} onChange={setWeight} step={resistanceStep(unit)} />
         <Stepper label="Reps" value={reps} onChange={setReps} step={1} inputMode="numeric" />
-        <button type="button" className="btn btn-primary" onClick={onLog} disabled={!(repsNum > 0)}>
-          {done ? 'Log extra set' : `Log set ${nextNumber}`}
+        <button type="button" className="btn btn-primary" onClick={onLog} disabled={!(repsNum > 0) || saving}>
+          {done ? 'Log extra set' : `Log set ${sets.length + 1}`}
         </button>
       </div>
     </article>

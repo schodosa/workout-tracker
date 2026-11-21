@@ -18,6 +18,13 @@ db.version(1).stores({
   sets: 'id, sessionId, exerciseId, loggedAt',
 })
 
+// v2 (M4): compound index so "this exercise's sets, newest first" is a single ordered index walk.
+// Rows sharing a plain exerciseId index are ordered by primary key (a random id), not by time.
+// Only indexes changed, so no .upgrade() is needed; Dexie builds the new index from existing rows.
+db.version(2).stores({
+  sets: 'id, sessionId, exerciseId, loggedAt, [exerciseId+loggedAt]',
+})
+
 /**
  * Asks the browser not to evict our data under storage pressure. On iOS this matters most:
  * Safari may clear data for sites that go unused for ~7 days unless the app is installed to the

@@ -1,0 +1,84 @@
+/* Sits directly above the tab bar (which is var(--tap) tall plus the home-indicator inset). */
+.bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--tap) + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px var(--gap);
+  background: var(--surface-2);
+  border-top: 2px solid var(--accent);
+  z-index: 10;
+}
+
+.time {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.label {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.count {
+  font-size: 2.2rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.small {
+  min-width: 72px;
+  height: 48px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.over {
+  background: var(--accent);
+  border-top-color: var(--accent);
+}
+
+.goButton {
+  flex: 1;
+  height: 52px;
+  border: 0;
+  background: none;
+  color: var(--accent-text);
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+/* Full-screen pulse when rest ends: visible from across the room, even with the sound muted. */
+.flash {
+  position: fixed;
+  inset: 0;
+  background: var(--accent);
+  pointer-events: none;
+  z-index: 20;
+  animation: flash 0.5s ease-out 3;
+  opacity: 0;
+}
+
+@keyframes flash {
+  0% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flash {
+    animation: none;
+  }
+}

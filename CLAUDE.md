@@ -25,7 +25,8 @@ A local-first, installable PWA workout tracker for home gyms. The full product s
 - `src/data/` holds built-in content as JSON only. It is bundled, never copied into IndexedDB. User data (custom items, logs) lives in IndexedDB and is merged with built-ins at read time.
 - Built-in IDs (exercises, templates, equipment) are stable slugs. Never rename one after it ships, because logged data references it.
 - `src/domain/` holds types and pure logic: no React, no DB. This is where unit tests go.
-- `src/db/` holds the Dexie schema and data access. `src/features/<area>/` holds screens. `src/components/` holds shared UI.
+- `src/db/` holds the Dexie schema and data access. `src/features/<area>/` holds screens. `src/components/` holds shared UI. `src/platform/` holds browser/device APIs (wake lock, audio cues).
+- Timers compute time left from an end timestamp, never by counting ticks. iOS pauses JS timers in the background.
 - Save each logged set immediately (write-through) so a locked phone or killed tab loses nothing.
 - Screens never touch `db` directly. They use the functions and `use*` hooks in `src/db/*.ts`.
 - Never edit a shipped `db.version(n)`. Schema changes go in a new `version(n+1)` with an `.upgrade()`.

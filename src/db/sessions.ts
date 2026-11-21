@@ -3,6 +3,7 @@
 // The use* hooks wrap Dexie's useLiveQuery: the component re-renders automatically whenever the
 // underlying data changes (from any screen). That's why we need no separate state library.
 // They return `undefined` while the first read is in flight.
+import Dexie from 'dexie'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { localDate } from '../domain/dates.ts'
 import { newId } from '../domain/ids.ts'
@@ -34,6 +35,14 @@ export async function deleteSet(id: string): Promise<void> {
   await db.sets.delete(id)
 }
 
+export async function updateSet(id: string, changes: Pick<SetRecord, 'resistance' | 'resistanceUnit' | 'reps'>): Promise<void> {
+  await db.sets.update(id, changes)
+}
+
+export async function updateSessionNotes(id: string, notes: string): Promise<void> {
+  await db.sessions.update(id, { notes: notes.trim() || undefined })
+}
+
 export async function finishSession(id: string): Promise<void> {
   await db.sessions.update(id, { status: 'done', finishedAt: Date.now() })
 }
@@ -57,6 +66,33 @@ export function useSession(id: string): SessionRecord | null | undefined {
 
 export function useSessionSets(sessionId: string): SetRecord[] | undefined {
   return useLiveQuery(() => db.sets.where('sessionId').equals(sessionId).sortBy('loggedAt'), [sessionId])
+}
+
+export interface LastPerformance {
+  date: string
+  sets: SetRecord[]
+}
+
+/**
+ * This exercise's sets from the most recent *other* session, or null if it's never been done.
+ * Walks the exerciseId index newest-first and stops at the first set from a different session.
+ */
+export function useLastPerformance(exerciseId: string | undefined, excludeSessionId: string): LastPerformance | null | undefined {
+  return useLiveQuery(async () => {
+    if (!exerciseId) return null
+    const latest = await db.sets
+      .where('[exerciseId+loggedAt]')
+      .between([exerciseId, Dexie.minKey], [exerciseId, Dexie.maxKey])
+      .reverse()
+      .filter((s) => s.sessionId !== excludeSessionId)
+      .first()
+    if (!latest) return null
+    const [session, sets] = await Promise.all([
+      db.sessions.get(latest.sessionId),
+      db.sets.where('sessionId').equals(latest.sessionId).filter((s) => s.exerciseId === exerciseId).sortBy('loggedAt'),
+    ])
+    return { date: session?.date ?? '', sets }
+  }, [exerciseId, excludeSessionId])
 }
 
 export interface SessionSummary {

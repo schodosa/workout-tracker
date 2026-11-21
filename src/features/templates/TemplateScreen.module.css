@@ -3,6 +3,13 @@
   min-height: var(--tap);
 }
 
+.safety {
+  margin: 8px 0 0;
+  color: var(--warn);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
 .itemHeader {
   display: grid;
   grid-template-columns: auto 1fr auto;

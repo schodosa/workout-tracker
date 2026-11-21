@@ -54,6 +54,7 @@ export function TemplateScreen() {
             Start session
           </button>
         )}
+        <p className={styles.safety}>Stop if you feel dizzy, chest pain, or nausea.</p>
       </div>
 
       {blocks.map((block) => {
