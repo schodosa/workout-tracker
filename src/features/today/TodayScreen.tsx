@@ -1,16 +1,17 @@
 import { useState } from 'react'
 import { Link } from 'wouter'
+import { PlannedItemRow } from '../../components/PlannedItemRow.tsx'
 import { ResumeBanner } from '../../components/ResumeBanner.tsx'
 import { SetupPrompt } from '../../components/SetupPrompt.tsx'
 import { useBackupDue } from '../../db/backupReminder.ts'
 import { useInventory } from '../../db/inventory.ts'
+import { useSchedule } from '../../db/plan.ts'
 import { useInProgressSession } from '../../db/sessions.ts'
 import { useCatalog } from '../../db/useCatalog.ts'
 import { fitTemplate, type TemplateFit } from '../../domain/substitution.ts'
 import type { Template } from '../../domain/types.ts'
 import { equipmentLine } from '../templates/equipmentLine.ts'
 import styles from './TodayScreen.module.css'
-
 
 export function TodayScreen() {
   const catalog = useCatalog()
@@ -21,6 +22,8 @@ export function TodayScreen() {
   const inProgress = useInProgressSession()
   const backupDue = useBackupDue()
   const inv = useInventory()
+  const schedule = useSchedule(7)
+  const [openItem, setOpenItem] = useState<string | null>(null)
   // Your templates first, then built-ins; main workouts before warm-ups; alphabetical within each.
   const templates = [...catalog.templates.values()].sort(
     (a, b) =>
@@ -28,9 +31,8 @@ export function TodayScreen() {
       Number(a.warmup ?? false) - Number(b.warmup ?? false) ||
       a.name.localeCompare(b.name),
   )
-  if (!inv) return null
+  if (!inv || schedule === undefined) return null
 
-  // Until the plan editor exists (M12), Today lists the templates you can do with what you own.
   // A template counts as available when every exercise can be done, as written or swapped.
   const fits = new Map(templates.map((t) => [t.id, fitTemplate(catalog, inv, t)]))
   const available = templates.filter((t) => fits.get(t.id)!.doable === t.items.length)
@@ -49,26 +51,60 @@ export function TodayScreen() {
       )}
       {!inv.configured && <SetupPrompt />}
 
-      <h2 className={styles.section}>Templates</h2>
-      {available.length === 0 && <p className="muted">None of the built-in templates match your equipment yet.</p>}
-      {available.map((t) => (
-        <TemplateCard key={t.id} template={t} fit={fits.get(t.id)!} />
-      ))}
-
-      <Link href="/templates/new" className={`btn ${styles.newTemplate}`}>
-        + New template
-      </Link>
-
-      {unavailable.length > 0 && (
-        <details className={styles.unavailable}>
-          <summary>
-            {unavailable.length} template{unavailable.length === 1 ? '' : 's'} need equipment you don't have
-          </summary>
-          {unavailable.map((t) => (
-            <TemplateCard key={t.id} template={t} fit={fits.get(t.id)!} />
-          ))}
-        </details>
+      {schedule ? (
+        <>
+          <h2 className={styles.section}>Today's plan</h2>
+          {schedule.days[0].items.length === 0 ? (
+            <p className="muted">Rest day. Nothing planned.</p>
+          ) : (
+            <ul className={`card ${styles.planList}`}>
+              {schedule.days[0].items.map((item) => (
+                <PlannedItemRow
+                  key={item.key}
+                  item={item}
+                  days={schedule.days}
+                  plan={schedule.plan!}
+                  overrides={schedule.overrides}
+                  open={openItem === item.key}
+                  onToggle={() => setOpenItem(openItem === item.key ? null : item.key)}
+                />
+              ))}
+            </ul>
+          )}
+          <Link href="/week" className={styles.weekLink}>
+            See the week ›
+          </Link>
+        </>
+      ) : (
+        <Link href="/settings/plan" className={`card ${styles.planPrompt}`}>
+          <strong>Plan your week ›</strong>
+          <span className="muted">Set fixed days or a rotation, and Today will show what's next.</span>
+        </Link>
       )}
+
+      {/* With a plan, the full list is tucked away; without one, it's the main thing on Today. */}
+      <details className={styles.allTemplates} open={!schedule}>
+        <summary className={styles.section}>{schedule ? 'Start something else' : 'Templates'}</summary>
+        {available.length === 0 && <p className="muted">None of the built-in templates match your equipment yet.</p>}
+        {available.map((t) => (
+          <TemplateCard key={t.id} template={t} fit={fits.get(t.id)!} />
+        ))}
+  
+        <Link href="/templates/new" className={`btn ${styles.newTemplate}`}>
+          + New template
+        </Link>
+  
+        {unavailable.length > 0 && (
+          <details className={styles.unavailable}>
+            <summary>
+              {unavailable.length} template{unavailable.length === 1 ? '' : 's'} need equipment you don't have
+            </summary>
+            {unavailable.map((t) => (
+              <TemplateCard key={t.id} template={t} fit={fits.get(t.id)!} />
+            ))}
+          </details>
+        )}
+      </details>
     </>
   )
 }

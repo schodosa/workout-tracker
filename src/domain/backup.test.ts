@@ -98,7 +98,7 @@ describe('parseBackup', () => {
     const result = parseBackup(JSON.stringify(v1))
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.backup.formatVersion).toBe(3)
+    expect(result.backup.formatVersion).toBe(4)
     expect(result.backup.data.bands).toEqual([])
     expect(result.backup.data.settings).toEqual([])
     expect(result.backup.data.userTemplates).toEqual([])
@@ -110,7 +110,7 @@ describe('parseBackup', () => {
     delete v2.data.customExercises
     delete v2.data.userTemplates
     const result = parseBackup(JSON.stringify(v2))
-    expect(result.ok && result.backup.formatVersion).toBe(3)
+    expect(result.ok && result.backup.formatVersion).toBe(4)
     expect(result.ok && result.backup.data.customExercises).toEqual([])
   })
 

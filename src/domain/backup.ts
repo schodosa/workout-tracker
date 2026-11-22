@@ -16,7 +16,8 @@ import { ACCESSORIES, BAND_TYPES } from './types.ts'
 
 // v1 (M5): sessions + sets. v2 (M7): adds bands, settings, and bandIds on sets.
 // v3 (M11): adds custom exercises and user templates.
-export const BACKUP_FORMAT_VERSION = 3
+// v4 (M12): settings can hold the weekly plan and week overrides.
+export const BACKUP_FORMAT_VERSION = 4
 const APP_ID = 'home-gym-tracker'
 
 const localDateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be a YYYY-MM-DD date')
@@ -93,6 +94,30 @@ const bandSchema = z.object({
 const settingSchema = z.discriminatedUnion('key', [
   z.object({ key: z.literal('ownedEquipment'), value: z.array(z.string().min(1)) }),
   z.object({ key: z.literal('accessories'), value: z.array(z.enum(ACCESSORIES)) }),
+  z.object({
+    key: z.literal('plan'),
+    value: z.object({
+      type: z.enum(['fixed', 'rotation']),
+      days: z.array(z.array(z.string())).length(7),
+      order: z.array(z.string()),
+      perWeek: z.number().int().nonnegative(),
+      everyDay: z.array(z.string()),
+      availableDays: z.array(z.number().int().min(0).max(6)),
+      sessionMinutes: z.number().positive().optional(),
+    }),
+  }),
+  z.object({
+    key: z.literal('weekOverrides'),
+    value: z.array(
+      z.object({
+        date: localDateString,
+        templateId: z.string().min(1),
+        skip: z.boolean().optional(),
+        toDate: localDateString.optional(),
+        replacementId: z.string().min(1).optional(),
+      }),
+    ),
+  }),
 ])
 
 const backupSchema = z.object({
@@ -180,6 +205,10 @@ function upgradeBackup(raw: unknown): unknown {
   if (file.formatVersion === 2) {
     // v2 → v3: v2 files predate custom exercises and user templates.
     file = { ...file, formatVersion: 3, data: { ...file.data, customExercises: [], userTemplates: [] } }
+  }
+  if (file.formatVersion === 3) {
+    // v3 → v4: only new kinds of settings; existing data is unchanged.
+    file = { ...file, formatVersion: 4 }
   }
   return file
 }

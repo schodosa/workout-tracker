@@ -1,0 +1,56 @@
+.row {
+  border-top: 1px solid var(--border);
+}
+
+.row:first-child {
+  border-top: 0;
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 56px;
+  justify-content: center;
+  color: inherit;
+  text-decoration: none;
+}
+
+.name {
+  font-weight: 700;
+}
+
+.meta {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.done .name {
+  color: var(--accent);
+}
+
+.in-progress .meta {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.skipped .name {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.change {
+  min-width: 76px;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 600;
+}

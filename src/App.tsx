@@ -9,6 +9,7 @@ import { ExerciseScreen } from './features/library/ExerciseScreen.tsx'
 import { LibraryScreen } from './features/library/LibraryScreen.tsx'
 import { SessionScreen } from './features/session/SessionScreen.tsx'
 import { EquipmentScreen } from './features/settings/EquipmentScreen.tsx'
+import { PlanScreen } from './features/settings/PlanScreen.tsx'
 import { SettingsScreen } from './features/settings/SettingsScreen.tsx'
 
 // Loaded on demand: the backup screen pulls in Zod (~60 KB gzipped), which nothing else needs.
@@ -18,6 +19,7 @@ const BackupScreen = lazy(() => import('./features/settings/BackupScreen.tsx').t
 import { TemplateEditorScreen } from './features/templates/TemplateEditorScreen.tsx'
 import { TemplateScreen } from './features/templates/TemplateScreen.tsx'
 import { TodayScreen } from './features/today/TodayScreen.tsx'
+import { WeekScreen } from './features/week/WeekScreen.tsx'
 
 export default function App() {
   return (
@@ -30,6 +32,7 @@ export default function App() {
             <Route path="/templates/:id/edit" component={TemplateEditorScreen} />
             <Route path="/templates/:id" component={TemplateScreen} />
             <Route path="/session/:id" component={SessionScreen} />
+            <Route path="/week" component={WeekScreen} />
             <Route path="/library" component={LibraryScreen} />
             <Route path="/library/new" component={CustomExerciseScreen} />
             <Route path="/library/:id/edit" component={CustomExerciseScreen} />
@@ -38,6 +41,7 @@ export default function App() {
             <Route path="/history/:id" component={SessionDetailScreen} />
             <Route path="/settings" component={SettingsScreen} />
             <Route path="/settings/equipment" component={EquipmentScreen} />
+            <Route path="/settings/plan" component={PlanScreen} />
             <Route path="/settings/backup">
               <Suspense fallback={null}>
                 <BackupScreen />

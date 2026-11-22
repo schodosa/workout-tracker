@@ -67,3 +67,33 @@
 .newTemplate {
   margin: 4px 0 var(--gap);
 }
+
+.planList {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 4px 16px;
+}
+
+.weekLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.planPrompt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: var(--gap);
+  border-color: var(--accent);
+  color: inherit;
+  text-decoration: none;
+}
+
+.allTemplates > summary {
+  min-height: 44px;
+  cursor: pointer;
+}

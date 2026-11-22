@@ -1,0 +1,72 @@
+.panel {
+  margin: 8px 0 4px;
+  padding: 12px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.prompt {
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  min-width: 72px;
+  min-height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.listButton {
+  margin-bottom: 8px;
+}
+
+.select {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.default {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.default input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--accent);
+}
+
+.note {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.cancel {
+  margin-top: 4px;
+}

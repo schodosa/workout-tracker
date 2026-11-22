@@ -44,6 +44,8 @@ A local-first, installable PWA workout tracker for home gyms. The full product s
 - User templates and exercises are validated on save with `validateCatalog()`, the same checks as built-ins. The editor computes `requiredEquipmentIds` and superset groups (`src/domain/templateDraft.ts`). Don't hand-edit those.
 - Deletion guards: a custom exercise used by a template can't be deleted. Warn if it's in history (shown as "Deleted exercise"). A template with an in-progress session can't be deleted.
 - Backup format is v3 (adds custom exercises and user templates, Zod schemas in `src/domain/contentSchema.ts`). Imported user content is also run through `validateCatalog()`.
+- Planning (`src/domain/schedule.ts`, `src/db/plan.ts`): the `plan` and `weekOverrides` settings plus session history go through `scheduleDays()` to produce days. A planned day is an ordered list of separate sessions; there are no multi-section sessions. Overrides are keyed by the item's original date and template. "Make default" edits the plan via `changePlan()` instead. Switching plan type clears overrides. Rotations advance only on completed sessions.
+- Backup format is v4 (settings may hold `plan` and `weekOverrides`).
 - Writing TSX through `node -e "..."` in Bash breaks template literals (the shell expands `${}`). Use the Edit/Write tools for code containing backticks.
 - Save each logged set immediately (write-through) so a locked phone or killed tab loses nothing.
 - Screens never touch `db` directly. They use the functions and `use*` hooks in `src/db/*.ts`.

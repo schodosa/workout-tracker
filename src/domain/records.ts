@@ -105,4 +105,41 @@ export interface BandRecord {
  * Key/value settings. A discriminated union: the `key` decides the type of `value`, so TypeScript
  * (and the backup validator) know exactly what each setting holds.
  */
-export type SettingRecord = { key: 'ownedEquipment'; value: string[] } | { key: 'accessories'; value: Accessory[] }
+export type SettingRecord =
+  | { key: 'ownedEquipment'; value: string[] }
+  | { key: 'accessories'; value: Accessory[] }
+  | { key: 'plan'; value: Plan }
+  | { key: 'weekOverrides'; value: WeekOverride[] }
+
+/**
+ * The weekly plan. One object holds both kinds, so switching between fixed days and a rotation
+ * never loses what was set up in the other.
+ */
+export interface Plan {
+  type: 'fixed' | 'rotation'
+  /** Fixed: template ids per weekday, index 0 = Sunday … 6 = Saturday (JavaScript's getDay()). */
+  days: string[][]
+  /** Rotation: templates in order; the next one follows whichever you did last. */
+  order: string[]
+  /** Rotation: target sessions per week (Monday–Sunday). */
+  perWeek: number
+  /** Templates planned on every day, e.g. Daily Mobility. */
+  everyDay: string[]
+  /** Days you can usually train (0 = Sunday). Rotations only schedule on these. */
+  availableDays: number[]
+  /** How long a session can usually be, in minutes. */
+  sessionMinutes?: number
+}
+
+/**
+ * A change to one planned session for that week only (spec: weekOverrides). Keyed by where the
+ * plan originally put it; one record per original item, holding whichever changes apply.
+ */
+export interface WeekOverride {
+  /** Original date (YYYY-MM-DD) and template of the planned item. */
+  date: string
+  templateId: string
+  skip?: boolean
+  toDate?: string
+  replacementId?: string
+}

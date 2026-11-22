@@ -1,0 +1,53 @@
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.edit {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.today {
+  border-color: var(--accent);
+}
+
+.day {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.minutes {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.over {
+  color: var(--warn);
+  font-weight: 700;
+}
+
+.overNote {
+  margin: 0 0 4px;
+  color: var(--warn);
+  font-size: 0.85rem;
+}
+
+.rest {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+}
+
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
