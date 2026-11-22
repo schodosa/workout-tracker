@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { activityDays, describeLoad } from './activities.ts'
+import { ACTIVITY_SUGGESTIONS, activityDays, describeLoad } from './activities.ts'
+import { INTENSITY_LEVELS, LOAD_LEVELS } from './records.ts'
 import type { ActivityOccurrence, ActivityRecord, ActivitySeries } from './records.ts'
 
 const hockey: ActivityRecord = { id: 'hockey', name: 'Hockey', color: '#3b82f6', typicalMinutes: 75, legLoad: 'hard', cardioLoad: 'hard', intensity: 'hard', createdAt: 0 }
@@ -54,5 +55,18 @@ describe('describeLoad', () => {
     expect(describeLoad(hockey)).toBe('Legs hard · cardio hard')
     expect(describeLoad(yoga)).toBe('Legs light')
     expect(describeLoad({ legLoad: 'none', cardioLoad: 'none' })).toBe('Light on the body')
+  })
+})
+
+describe('activity suggestions (src/data/activities.json)', () => {
+  it('every entry has valid loads, a color and a length', () => {
+    for (const a of ACTIVITY_SUGGESTIONS) {
+      expect(LOAD_LEVELS).toContain(a.legLoad)
+      expect(LOAD_LEVELS).toContain(a.cardioLoad)
+      expect(INTENSITY_LEVELS).toContain(a.intensity)
+      expect(a.color).toMatch(/^#[0-9a-f]{6}$/)
+      expect(a.typicalMinutes).toBeGreaterThan(0)
+    }
+    expect(new Set(ACTIVITY_SUGGESTIONS.map((a) => a.name)).size).toBe(ACTIVITY_SUGGESTIONS.length)
   })
 })

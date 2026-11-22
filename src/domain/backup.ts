@@ -12,7 +12,7 @@ import { BAND_LEVELS, INTENSITY_LEVELS, LOAD_LEVELS, type ActivityOccurrence, ty
 import { builtinSource } from './builtins.ts'
 import { validateCatalog } from './catalog.ts'
 import { exerciseSchema, templateSchema } from './contentSchema.ts'
-import { ACCESSORIES, BAND_TYPES } from './types.ts'
+import { ACCESSORIES, BAND_TYPES, GOALS } from './types.ts'
 
 // v1 (M5): sessions + sets. v2 (M7): adds bands, settings, and bandIds on sets.
 // v3 (M11): adds custom exercises and user templates.
@@ -20,10 +20,11 @@ import { ACCESSORIES, BAND_TYPES } from './types.ts'
 // v5 (M13): adds activities, their recurring series, and occurrences.
 // v6 (M14): settings can hold conflict-rule switches and dismissed suggestions; plans carry updatedOn.
 // v7 (M15): progression settings, and a program snapshot on sessions.
-export const BACKUP_FORMAT_VERSION = 7
-const APP_ID = 'home-gym-tracker'
+// v8 (M16): the profile setting (name, units, goals, availability).
+export const BACKUP_FORMAT_VERSION = 8
+export const APP_ID = 'home-gym-tracker'
 
-const localDateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be a YYYY-MM-DD date')
+export const localDateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be a YYYY-MM-DD date')
 const timestamp = z.number().int().nonnegative()
 
 const sessionSchema = z.object({
@@ -92,7 +93,7 @@ const setSchema = z.object({
   loggedAt: timestamp,
 })
 
-const bandSchema = z.object({
+export const bandSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a #rrggbb color'),
@@ -103,23 +104,50 @@ const bandSchema = z.object({
   createdAt: timestamp,
 })
 
+// Setting values reused by the preset format (src/domain/preset.ts).
+export const planSchema = z.object({
+  type: z.enum(['fixed', 'rotation']),
+  days: z.array(z.array(z.string())).length(7),
+  order: z.array(z.string()),
+  perWeek: z.number().int().nonnegative(),
+  everyDay: z.array(z.string()),
+  availableDays: z.array(z.number().int().min(0).max(6)),
+  sessionMinutes: z.number().positive().optional(),
+  updatedOn: localDateString.optional(),
+})
+
+export const conflictRulesSchema = z.object({
+  hardCardio: z.boolean(),
+  legsBeforeGame: z.boolean(),
+  hardDays: z.boolean(),
+  hardDaysLimit: z.number().int().min(1).max(7),
+  missed: z.boolean(),
+})
+
+export const progressionSchema = z.object({
+  experience: z.enum(['new', 'returning', 'training']),
+  startDate: localDateString,
+  rampUpWeeks: z.number().int().min(0).max(12),
+  impactUnlockWeek: z.number().int().min(1).max(52),
+  intervalRoundsRampUp: z.number().int().min(1).max(20),
+  intervalRoundsAfter: z.number().int().min(1).max(20),
+})
+
+export const profileSchema = z.object({
+  displayName: z.string().optional(),
+  weightUnit: z.enum(['lb', 'kg']),
+  distanceUnit: z.enum(['mi', 'km']),
+  age: z.number().int().min(10).max(120).optional(),
+  goals: z.array(z.enum(GOALS)),
+  availability: z.object({ days: z.array(z.number().int().min(0).max(6)), sessionMinutes: z.number().positive().optional() }).optional(),
+  onboardedAt: timestamp.optional(),
+})
+
 // One schema per setting key: `key` picks which shape `value` must have.
 const settingSchema = z.discriminatedUnion('key', [
   z.object({ key: z.literal('ownedEquipment'), value: z.array(z.string().min(1)) }),
   z.object({ key: z.literal('accessories'), value: z.array(z.enum(ACCESSORIES)) }),
-  z.object({
-    key: z.literal('plan'),
-    value: z.object({
-      type: z.enum(['fixed', 'rotation']),
-      days: z.array(z.array(z.string())).length(7),
-      order: z.array(z.string()),
-      perWeek: z.number().int().nonnegative(),
-      everyDay: z.array(z.string()),
-      availableDays: z.array(z.number().int().min(0).max(6)),
-      sessionMinutes: z.number().positive().optional(),
-      updatedOn: localDateString.optional(),
-    }),
-  }),
+  z.object({ key: z.literal('plan'), value: planSchema }),
   z.object({
     key: z.literal('weekOverrides'),
     value: z.array(
@@ -132,31 +160,13 @@ const settingSchema = z.discriminatedUnion('key', [
       }),
     ),
   }),
-  z.object({
-    key: z.literal('conflictRules'),
-    value: z.object({
-      hardCardio: z.boolean(),
-      legsBeforeGame: z.boolean(),
-      hardDays: z.boolean(),
-      hardDaysLimit: z.number().int().min(1).max(7),
-      missed: z.boolean(),
-    }),
-  }),
+  z.object({ key: z.literal('conflictRules'), value: conflictRulesSchema }),
   z.object({ key: z.literal('dismissedConflicts'), value: z.array(z.string()) }),
-  z.object({
-    key: z.literal('progression'),
-    value: z.object({
-      experience: z.enum(['new', 'returning', 'training']),
-      startDate: localDateString,
-      rampUpWeeks: z.number().int().min(0).max(12),
-      impactUnlockWeek: z.number().int().min(1).max(52),
-      intervalRoundsRampUp: z.number().int().min(1).max(20),
-      intervalRoundsAfter: z.number().int().min(1).max(20),
-    }),
-  }),
+  z.object({ key: z.literal('progression'), value: progressionSchema }),
+  z.object({ key: z.literal('profile'), value: profileSchema }),
 ])
 
-const activitySchema = z.object({
+export const activitySchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a #rrggbb color'),
@@ -299,6 +309,10 @@ function upgradeBackup(raw: unknown): unknown {
   if (file.formatVersion === 6) {
     // v6 → v7: only new optional fields and a new kind of setting.
     file = { ...file, formatVersion: 7 }
+  }
+  if (file.formatVersion === 7) {
+    // v7 → v8: only a new kind of setting.
+    file = { ...file, formatVersion: 8 }
   }
   return file
 }

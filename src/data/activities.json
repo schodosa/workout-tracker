@@ -1,0 +1,11 @@
+[
+  { "name": "Hockey", "color": "#3b82f6", "typicalMinutes": 75, "legLoad": "hard", "cardioLoad": "hard", "intensity": "hard" },
+  { "name": "Soccer", "color": "#22c55e", "typicalMinutes": 90, "legLoad": "hard", "cardioLoad": "hard", "intensity": "hard" },
+  { "name": "Basketball", "color": "#fb923c", "typicalMinutes": 60, "legLoad": "hard", "cardioLoad": "hard", "intensity": "hard" },
+  { "name": "Running", "color": "#ef4444", "typicalMinutes": 40, "legLoad": "hard", "cardioLoad": "hard", "intensity": "moderate" },
+  { "name": "Cycling", "color": "#facc15", "typicalMinutes": 60, "legLoad": "light", "cardioLoad": "hard", "intensity": "moderate" },
+  { "name": "Tennis", "color": "#a3e635", "typicalMinutes": 60, "legLoad": "light", "cardioLoad": "light", "intensity": "moderate" },
+  { "name": "Swimming", "color": "#06b6d4", "typicalMinutes": 45, "legLoad": "light", "cardioLoad": "hard", "intensity": "moderate" },
+  { "name": "Yoga", "color": "#a855f7", "typicalMinutes": 60, "legLoad": "light", "cardioLoad": "none", "intensity": "easy" },
+  { "name": "Hiking", "color": "#84cc16", "typicalMinutes": 120, "legLoad": "light", "cardioLoad": "light", "intensity": "moderate" }
+]

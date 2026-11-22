@@ -1,0 +1,55 @@
+{
+  "app": "home-gym-tracker",
+  "kind": "preset",
+  "formatVersion": 1,
+  "name": "Hockey home gym",
+  "description": "Returning after a long break, training around hockey. Bowflex Xtreme 2 SE, Bladez Master GS, floor work and a basic band set. Strength four days a week, intervals and agility on two more, mobility every day. Add hockey games as one-offs on the Week screen; the planning suggestions keep legs and hard cardio away from game days.",
+  "data": {
+    "profile": {
+      "weightUnit": "lb",
+      "distanceUnit": "mi",
+      "goals": ["lose-fat", "mobility", "sport-performance"],
+      "availability": { "days": [0, 1, 2, 3, 4, 5, 6], "sessionMinutes": 60 }
+    },
+    "equipment": ["bowflex-xtreme-2-se", "bladez-master-gs", "floor", "resistance-bands"],
+    "accessories": ["door-anchor", "handles", "ankle-straps"],
+    "bands": [
+      { "id": "preset-tube-yellow", "label": "Yellow", "color": "#facc15", "type": "tube", "level": "x-light", "active": true },
+      { "id": "preset-tube-green", "label": "Green", "color": "#22c55e", "type": "tube", "level": "light", "active": true },
+      { "id": "preset-tube-red", "label": "Red", "color": "#ef4444", "type": "tube", "level": "medium", "active": true },
+      { "id": "preset-tube-blue", "label": "Blue", "color": "#3b82f6", "type": "tube", "level": "heavy", "active": true },
+      { "id": "preset-tube-black", "label": "Black", "color": "#111827", "type": "tube", "level": "x-heavy", "active": true },
+      { "id": "preset-mini-green", "label": "Green mini", "color": "#22c55e", "type": "mini-loop", "level": "light", "active": true },
+      { "id": "preset-mini-blue", "label": "Blue mini", "color": "#3b82f6", "type": "mini-loop", "level": "medium", "active": true },
+      { "id": "preset-mini-black", "label": "Black mini", "color": "#111827", "type": "mini-loop", "level": "heavy", "active": true }
+    ],
+    "activities": [
+      { "id": "preset-hockey", "name": "Hockey", "color": "#3b82f6", "typicalMinutes": 75, "legLoad": "hard", "cardioLoad": "hard", "intensity": "hard" }
+    ],
+    "plan": {
+      "type": "fixed",
+      "days": [
+        [],
+        ["band-activation-upper", "upper"],
+        ["band-activation-lower", "lower-core"],
+        ["bike-intervals", "floor-agility-core"],
+        ["band-activation-upper", "upper"],
+        ["band-activation-lower", "lower-core"],
+        ["bike-intervals", "floor-agility-core"]
+      ],
+      "order": [],
+      "perWeek": 4,
+      "everyDay": ["daily-mobility"],
+      "availableDays": [0, 1, 2, 3, 4, 5, 6],
+      "sessionMinutes": 60
+    },
+    "progression": {
+      "experience": "returning",
+      "rampUpWeeks": 2,
+      "impactUnlockWeek": 5,
+      "intervalRoundsRampUp": 6,
+      "intervalRoundsAfter": 8
+    },
+    "conflictRules": { "hardCardio": true, "legsBeforeGame": true, "hardDays": true, "hardDaysLimit": 3, "missed": true }
+  }
+}

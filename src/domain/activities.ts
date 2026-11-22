@@ -1,5 +1,6 @@
 // Activities on the calendar: recurring series projected onto dates, merged with concrete
 // occurrences. Pure functions; the database side is db/activities.ts.
+import suggestions from '../data/activities.json'
 import { addDays, weekday } from './dates.ts'
 import type { ActivityOccurrence, ActivityRecord, ActivitySeries, Intensity, LoadLevel, OccurrenceStatus } from './records.ts'
 
@@ -49,3 +50,7 @@ export function describeLoad(a: Pick<ActivityRecord, 'legLoad' | 'cardioLoad'>):
   const text = parts.join(' · ') || 'light on the body'
   return text[0].toUpperCase() + text.slice(1)
 }
+
+/** Common activities offered in onboarding (built-in content: src/data/activities.json). */
+export type ActivitySuggestion = Omit<ActivityRecord, 'id' | 'createdAt' | 'archived'>
+export const ACTIVITY_SUGGESTIONS = suggestions as ActivitySuggestion[]

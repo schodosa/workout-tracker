@@ -5,6 +5,7 @@ import { importBackup, useCurrentBackup, type ImportMode } from '../../db/backup
 import { getLastBackupAt, setLastBackupAt } from '../../db/backupReminder.ts'
 import { backupFileName, parseBackup, summarizeBackup, type Backup, type BackupSummary } from '../../domain/backup.ts'
 import { formatDayLong, localDate } from '../../domain/dates.ts'
+import { buildPreset, presetFileName } from '../../domain/preset.ts'
 import { shareOrDownload } from '../../platform/shareFile.ts'
 import styles from './BackupScreen.module.css'
 
@@ -37,6 +38,16 @@ export function BackupScreen() {
     setLastBackupAt(now)
     setLastBackup(now)
     setExportStatus(result === 'shared' ? 'Backup saved.' : `Downloaded ${file.name}.`)
+  }
+
+  // A preset is the setup without history or personal details, for sharing (spec: v1 feature 18).
+  const [presetStatus, setPresetStatus] = useState<string | null>(null)
+  async function onExportPreset() {
+    if (!current) return
+    const preset = buildPreset(current.data, 'My home gym setup', localDate())
+    const file = new File([JSON.stringify(preset, null, 2)], presetFileName(localDate()), { type: 'application/json' })
+    const result = await shareOrDownload(file)
+    if (result !== 'cancelled') setPresetStatus(result === 'shared' ? 'Preset saved.' : `Downloaded ${file.name}.`)
   }
 
   async function onFileChosen(e: ChangeEvent<HTMLInputElement>) {
@@ -133,6 +144,18 @@ export function BackupScreen() {
             ✓ {importDone} <Link href="/history">View history ›</Link>
           </p>
         )}
+      </section>
+
+      <section className="card">
+        <h2 className={styles.heading}>Share your setup</h2>
+        <p className="muted">Save your equipment, bands, activities, plan and progression as a preset file, without any workout history, name or age. Someone else can load it to skip setup.</p>
+        <button type="button" className="btn" onClick={onExportPreset} disabled={!current}>
+          Export setup as preset
+        </button>
+        {presetStatus && <p className={styles.ok}>✓ {presetStatus}</p>}
+        <Link href="/welcome/preset" className={styles.presetLink}>
+          Load a preset ›
+        </Link>
       </section>
     </>
   )

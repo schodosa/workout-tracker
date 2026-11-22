@@ -4,6 +4,7 @@ import { BackLink } from '../../components/BackLink.tsx'
 import { FlagCard } from '../../components/ProgressFlags.tsx'
 import { Stepper } from '../../components/Stepper.tsx'
 import { useRecentRides } from '../../db/progression.ts'
+import { useProfile } from '../../db/profile.ts'
 import { discardSession, saveRideAndFinish, setRideClock, useLastRide } from '../../db/sessions.ts'
 import { formatDayLong } from '../../domain/dates.ts'
 import { rideFlag, rideForSession } from '../../domain/progression.ts'
@@ -209,8 +210,9 @@ function RideLogForm({
   const [, navigate] = useLocation()
   const exerciseId = template.items[0].exerciseId!
   const last = useLastRide(exerciseId, session.id)
-  if (last === undefined) return null
-  return <RideLogFields session={session} template={template} inventory={inventory} clock={clock} structure={structure} exerciseId={exerciseId} last={last} onSaved={() => navigate(`/history/${session.id}`, { replace: true })} />
+  const profile = useProfile()
+  if (last === undefined || !profile) return null
+  return <RideLogFields session={session} template={template} inventory={inventory} clock={clock} structure={structure} exerciseId={exerciseId} last={last} defaultUnit={profile.distanceUnit} onSaved={() => navigate(`/history/${session.id}`, { replace: true })} />
 }
 
 function RideLogFields({
@@ -221,14 +223,16 @@ function RideLogFields({
   structure,
   exerciseId,
   last,
+  defaultUnit,
   onSaved,
-}: Props & { clock: RideClock; structure: RideStructure; exerciseId: string; last: (RideLog & { date: string }) | null; onSaved: () => void }) {
+}: Props & { clock: RideClock; structure: RideStructure; exerciseId: string; last: (RideLog & { date: string }) | null; defaultUnit: 'mi' | 'km'; onSaved: () => void }) {
   const timeline = rideTimeline(structure)
   const elapsed = Math.round(elapsedMs(clock, clock.endedAt!) / 1000)
   const rounds = structure.intervals ? roundsCompleted(timeline, elapsed) : undefined
   // The console prompt only applies to the Master GS, whose display clears 45 s after you stop.
   const hasMasterGs = inventory.equipmentIds.includes('bladez-master-gs')
-  const unit = last?.distanceUnit ?? 'mi'
+  // Last ride's unit, else the one picked in onboarding.
+  const unit = last?.distanceUnit ?? defaultUnit
 
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {

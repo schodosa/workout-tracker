@@ -4,6 +4,7 @@ import { getLastBackupAt } from '../../db/backupReminder.ts'
 import { useInventory } from '../../db/inventory.ts'
 import { usePlanState } from '../../db/plan.ts'
 import { useProgression } from '../../db/progression.ts'
+import { useProfile } from '../../db/profile.ts'
 import styles from './SettingsScreen.module.css'
 
 // Shows build info and how the app is running. Useful while testing installs and updates.
@@ -26,10 +27,18 @@ export function SettingsScreen() {
   const inv = useInventory()
   const planState = usePlanState()
   const progression = useProgression()
+  const profile = useProfile()
 
   return (
     <>
       <h1>Settings</h1>
+      <Link href="/settings/profile" className={`card ${styles.link}`}>
+        <span className={styles.linkTitle}>About you</span>
+        <span className="muted">{profile?.displayName ? `${profile.displayName} · ` : ''}Units, goals, setup and presets</span>
+        <span className={styles.chevron} aria-hidden="true">
+          ›
+        </span>
+      </Link>
       <Link href="/settings/plan" className={`card ${styles.link}`}>
         <span className={styles.linkTitle}>Weekly plan</span>
         <span className="muted">{planState === undefined ? '…' : planState.plan ? (planState.plan.type === 'fixed' ? 'Fixed days' : 'Rotation') : 'Not set up yet'}</span>

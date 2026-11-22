@@ -17,6 +17,10 @@ export const CATEGORIES = [
 ] as const
 export type Category = (typeof CATEGORIES)[number]
 
+/** Training goals (spec: onboarding step 3). Templates tag themselves with these in `goalTags`. */
+export const GOALS = ['lose-fat', 'build-strength', 'build-muscle', 'endurance', 'mobility', 'sport-performance'] as const
+export type Goal = (typeof GOALS)[number]
+
 export const MOVEMENT_PATTERNS = [
   'horizontal-push',
   'horizontal-pull',

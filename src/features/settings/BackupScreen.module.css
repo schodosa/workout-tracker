@@ -42,3 +42,10 @@
   font-size: 0.85rem;
   color: var(--text-muted);
 }
+
+.presetLink {
+  display: inline-block;
+  min-height: 44px;
+  padding-top: 12px;
+  font-weight: 600;
+}

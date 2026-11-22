@@ -12,6 +12,7 @@ import { useConflicts } from '../../db/conflicts.ts'
 import { useInventory } from '../../db/inventory.ts'
 import { useSchedule } from '../../db/plan.ts'
 import { useProgression } from '../../db/progression.ts'
+import { markOnboarded, useNeedsOnboarding } from '../../db/profile.ts'
 import { useInProgressSession } from '../../db/sessions.ts'
 import { useCatalog } from '../../db/useCatalog.ts'
 import { fitTemplate, type TemplateFit } from '../../domain/substitution.ts'
@@ -33,6 +34,7 @@ export function TodayScreen() {
   const activityData = useActivityData()
   const conflicts = useConflicts()
   const progression = useProgression()
+  const needsOnboarding = useNeedsOnboarding()
   const [openItem, setOpenItem] = useState<string | null>(null)
   // Your templates first, then built-ins; main workouts before warm-ups; alphabetical within each.
   const templates = [...catalog.templates.values()].sort(
@@ -69,7 +71,23 @@ export function TodayScreen() {
           <span>Your workouts are stored only on this phone. Save a copy ›</span>
         </Link>
       )}
-      {!inv.configured && <SetupPrompt />}
+      {needsOnboarding ? (
+        <section className={`card ${styles.welcome}`} aria-label="Welcome">
+          <strong>Welcome to Home Gym Tracker</strong>
+          <span className="muted">Tell it what you own and what you play, and it builds a weekly plan around both.</span>
+          <Link href="/welcome/start" className="btn btn-primary">
+            Set up (about 2 minutes)
+          </Link>
+          <Link href="/welcome/preset" className="btn">
+            Load a preset
+          </Link>
+          <button type="button" className={styles.welcomeSkip} onClick={() => void markOnboarded()}>
+            Not now
+          </button>
+        </section>
+      ) : (
+        !inv.configured && <SetupPrompt />
+      )}
 
       {schedule ? (
         <>

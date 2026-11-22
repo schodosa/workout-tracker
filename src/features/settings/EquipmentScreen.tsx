@@ -16,21 +16,56 @@ const catalogEquipment = [...builtinCatalog.equipment.values()].sort(
   (a, b) => (a.kind === b.kind ? a.name.localeCompare(b.name) : a.kind === 'builtin' ? -1 : 1),
 )
 
+/** Settings > Equipment & bands. The two parts are also steps in the onboarding wizard. */
 export function EquipmentScreen() {
   const inv = useInventory()
-  const [editing, setEditing] = useState<string | 'new' | null>(null)
   if (!inv) return null
+  return (
+    <>
+      <BackLink href="/settings" label="Settings" />
+      <h1>Equipment &amp; bands</h1>
+      {!inv.configured && <p className={styles.notice}>Tick what you own. Until you do, the app shows every exercise and template.</p>}
+      <h2 className={styles.section}>Equipment</h2>
+      <EquipmentChecklist />
+      <BandInventory />
+    </>
+  )
+}
 
+/** Tick what you own. Each tap saves immediately; the first save is what marks the inventory as set up. */
+export function EquipmentChecklist() {
+  const inv = useInventory()
+  if (!inv) return null
   const owned = new Set(inv.equipmentIds)
-  const ownsBands = owned.has('resistance-bands')
-
-  // Each tap saves immediately; the first save is what marks the inventory as set up.
   const toggleEquipment = (id: string) => {
     const next = new Set(owned)
     if (next.has(id)) next.delete(id)
     else next.add(id)
     void setOwnedEquipment([...next])
   }
+  return (
+    <div className="card">
+      {catalogEquipment.map((eq) => (
+        <label key={eq.id} className={styles.check}>
+          <input type="checkbox" checked={owned.has(eq.id)} onChange={() => toggleEquipment(eq.id)} />
+          <span>
+            <span className={styles.checkTitle}>{eq.name}</span>
+            <span className={styles.checkMeta}>
+              {eq.kind === 'builtin' ? 'Built-in profile' : 'Generic'} · {TYPE_LABEL[eq.type]}
+              {eq.maxUserWeight && ` · rated to ${eq.maxUserWeight} lb`}
+            </span>
+          </span>
+        </label>
+      ))}
+    </div>
+  )
+}
+
+/** Band accessories and the band list. Shows nothing unless resistance bands are owned. */
+export function BandInventory() {
+  const inv = useInventory()
+  const [editing, setEditing] = useState<string | 'new' | null>(null)
+  if (!inv || !inv.equipmentIds.includes('resistance-bands')) return null
   const toggleAccessory = (a: Accessory) => {
     const next = inv.accessories.includes(a) ? inv.accessories.filter((x) => x !== a) : [...inv.accessories, a]
     void setAccessories(next)
@@ -38,83 +73,56 @@ export function EquipmentScreen() {
 
   return (
     <>
-      <BackLink href="/settings" label="Settings" />
-      <h1>Equipment &amp; bands</h1>
-
-      {!inv.configured && (
-        <p className={styles.notice}>Tick what you own. Until you do, the app shows every exercise and template.</p>
-      )}
-
-      <h2 className={styles.section}>Equipment</h2>
+      <h2 className={styles.section}>Band accessories</h2>
       <div className="card">
-        {catalogEquipment.map((eq) => (
-          <label key={eq.id} className={styles.check}>
-            <input type="checkbox" checked={owned.has(eq.id)} onChange={() => toggleEquipment(eq.id)} />
-            <span>
-              <span className={styles.checkTitle}>{eq.name}</span>
-              <span className={styles.checkMeta}>
-                {eq.kind === 'builtin' ? 'Built-in profile' : 'Generic'} · {TYPE_LABEL[eq.type]}
-                {eq.maxUserWeight && ` · rated to ${eq.maxUserWeight} lb`}
-              </span>
-            </span>
+        {ACCESSORIES.map((a) => (
+          <label key={a} className={styles.check}>
+            <input type="checkbox" checked={inv.accessories.includes(a)} onChange={() => toggleAccessory(a)} />
+            <span className={styles.checkTitle}>{ACCESSORY_LABELS[a]}</span>
           </label>
         ))}
       </div>
 
-      {ownsBands && (
-        <>
-          <h2 className={styles.section}>Band accessories</h2>
-          <div className="card">
-            {ACCESSORIES.map((a) => (
-              <label key={a} className={styles.check}>
-                <input type="checkbox" checked={inv.accessories.includes(a)} onChange={() => toggleAccessory(a)} />
-                <span className={styles.checkTitle}>{ACCESSORY_LABELS[a]}</span>
-              </label>
-            ))}
+      <h2 className={styles.section}>Bands</h2>
+      {BAND_TYPES.map((type) => {
+        const bands = sortBands(inv.bands.filter((b) => b.type === type))
+        if (bands.length === 0) return null
+        return (
+          <div key={type} className="card">
+            <h3 className={styles.bandGroup}>{BAND_TYPE_LABELS[type]}s</h3>
+            <ul className={styles.bandList}>
+              {bands.map((b) =>
+                editing === b.id ? (
+                  <li key={b.id}>
+                    <BandEditor band={b} onDone={() => setEditing(null)} />
+                  </li>
+                ) : (
+                  <li key={b.id}>
+                    <button type="button" className={styles.bandRow} onClick={() => setEditing(b.id)} aria-label={`Edit ${b.label} band`}>
+                      <BandChip band={b} />
+                      <span className={styles.checkMeta}>
+                        {BAND_LEVEL_LABELS[b.level]}
+                        {b.ratedLb && ` · ${b.ratedLb} lb`}
+                        {!b.active && ' · retired'}
+                      </span>
+                    </button>
+                  </li>
+                ),
+              )}
+            </ul>
           </div>
-
-          <h2 className={styles.section}>Bands</h2>
-          {BAND_TYPES.map((type) => {
-            const bands = sortBands(inv.bands.filter((b) => b.type === type))
-            if (bands.length === 0) return null
-            return (
-              <div key={type} className="card">
-                <h3 className={styles.bandGroup}>{BAND_TYPE_LABELS[type]}s</h3>
-                <ul className={styles.bandList}>
-                  {bands.map((b) =>
-                    editing === b.id ? (
-                      <li key={b.id}>
-                        <BandEditor band={b} onDone={() => setEditing(null)} />
-                      </li>
-                    ) : (
-                      <li key={b.id}>
-                        <button type="button" className={styles.bandRow} onClick={() => setEditing(b.id)} aria-label={`Edit ${b.label} band`}>
-                          <BandChip band={b} />
-                          <span className={styles.checkMeta}>
-                            {BAND_LEVEL_LABELS[b.level]}
-                            {b.ratedLb && ` · ${b.ratedLb} lb`}
-                            {!b.active && ' · retired'}
-                          </span>
-                        </button>
-                      </li>
-                    ),
-                  )}
-                </ul>
-              </div>
-            )
-          })}
-          {editing === 'new' ? (
-            <div className="card">
-              <BandEditor onDone={() => setEditing(null)} usedColors={inv.bands.map((b) => b.color)} />
-            </div>
-          ) : (
-            <button type="button" className="btn" onClick={() => setEditing('new')}>
-              + Add a band
-            </button>
-          )}
-          <p className={styles.hint}>Bands are logged by which one you used, not by pounds. Retire a worn-out band to hide it without losing its name in your history.</p>
-        </>
+        )
+      })}
+      {editing === 'new' ? (
+        <div className="card">
+          <BandEditor onDone={() => setEditing(null)} usedColors={inv.bands.map((b) => b.color)} />
+        </div>
+      ) : (
+        <button type="button" className="btn" onClick={() => setEditing('new')}>
+          + Add a band
+        </button>
       )}
+      <p className={styles.hint}>Bands are logged by which one you used, not by pounds. Retire a worn-out band to hide it without losing its name in your history.</p>
     </>
   )
 }

@@ -105,3 +105,22 @@
   font-weight: 600;
   text-decoration: none;
 }
+
+.welcome {
+  display: grid;
+  gap: 10px;
+  border-color: var(--accent);
+}
+
+.welcome .btn {
+  text-align: center;
+  text-decoration: none;
+}
+
+.welcomeSkip {
+  min-height: 44px;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font-weight: 600;
+}

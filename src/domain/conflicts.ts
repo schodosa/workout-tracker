@@ -65,6 +65,9 @@ function lowerBodyItems(catalog: Catalog, t: Template): number {
   }).length
 }
 
+/** Share of a template's items that are leg moves (0–1). */
+export const lowerBodyShare = (catalog: Catalog, t: Template) => (t.items.length === 0 ? 0 : lowerBodyItems(catalog, t) / t.items.length)
+
 /** "Lower-body work": two or more leg moves (Lower + Core, Full Body). One stray glute move doesn't count. */
 export const hasLowerBodyWork = (catalog: Catalog, t: Template) => isStrength(t) && lowerBodyItems(catalog, t) >= 2
 /** An upper-body or core day: strength without real leg work (Upper, Core Finisher). */

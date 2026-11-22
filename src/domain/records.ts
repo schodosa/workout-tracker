@@ -5,7 +5,7 @@
 // through an index without loading whole sessions.
 import type { ConflictSettings } from './conflicts.ts'
 import type { ProgressionSettings } from './progression.ts'
-import type { Accessory, BandType } from './types.ts'
+import type { Accessory, BandType, Goal } from './types.ts'
 
 export type SessionStatus = 'in-progress' | 'done'
 
@@ -129,6 +129,23 @@ export type SettingRecord =
   /** Ids of conflict suggestions the user dismissed. */
   | { key: 'dismissedConflicts'; value: string[] }
   | { key: 'progression'; value: ProgressionSettings }
+  | { key: 'profile'; value: Profile }
+
+/** About the user (spec: profile). Experience lives in the progression setting, the plan type in the plan. */
+export interface Profile {
+  displayName?: string
+  weightUnit: 'lb' | 'kg'
+  distanceUnit: 'mi' | 'km'
+  /** Only used for heart-rate zones. */
+  age?: number
+  goals: Goal[]
+  /** Days you can usually train (0 = Sunday) and session length; the starter plan uses these. */
+  availability?: { days: number[]; sessionMinutes?: number }
+  /** Set when onboarding was finished or skipped, so the welcome card stops showing. */
+  onboardedAt?: number
+}
+
+export const DEFAULT_PROFILE: Profile = { weightUnit: 'lb', distanceUnit: 'mi', goals: [] }
 
 /**
  * The weekly plan. One object holds both kinds, so switching between fixed days and a rotation

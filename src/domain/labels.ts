@@ -1,6 +1,15 @@
 // Display labels for the fixed vocabularies in types.ts. (Machine-specific vocab, like Bowflex
 // pulleys, lives in each equipment's JSON file instead.)
-import type { Accessory, BandAnchor, BandType, Category, MovementPattern } from './types.ts'
+import type { Accessory, BandAnchor, BandType, Category, Goal, MovementPattern } from './types.ts'
+
+export const GOAL_LABELS: Record<Goal, string> = {
+  'lose-fat': 'Lose fat',
+  'build-strength': 'Build strength',
+  'build-muscle': 'Build muscle',
+  endurance: 'Endurance',
+  mobility: 'Mobility & flexibility',
+  'sport-performance': 'Sport performance',
+}
 
 export const CATEGORY_LABELS: Record<Category, string> = {
   chest: 'Chest',

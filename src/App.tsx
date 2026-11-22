@@ -14,11 +14,15 @@ import { PlanScreen } from './features/settings/PlanScreen.tsx'
 import { SuggestionsScreen } from './features/settings/SuggestionsScreen.tsx'
 import { ProgressionScreen } from './features/settings/ProgressionScreen.tsx'
 import { SettingsScreen } from './features/settings/SettingsScreen.tsx'
+import { ProfileScreen } from './features/settings/ProfileScreen.tsx'
+import { OnboardingScreen } from './features/onboarding/OnboardingScreen.tsx'
 
 // Loaded on demand: the backup screen pulls in Zod (~60 KB gzipped), which nothing else needs.
 // Vite turns the dynamic import() into a separate file; the service worker still pre-caches it,
 // so it opens offline too.
 const BackupScreen = lazy(() => import('./features/settings/BackupScreen.tsx').then((m) => ({ default: m.BackupScreen })))
+// Same for presets (Zod again).
+const PresetScreen = lazy(() => import('./features/onboarding/PresetScreen.tsx').then((m) => ({ default: m.PresetScreen })))
 import { TemplateEditorScreen } from './features/templates/TemplateEditorScreen.tsx'
 import { TemplateScreen } from './features/templates/TemplateScreen.tsx'
 import { TodayScreen } from './features/today/TodayScreen.tsx'
@@ -42,7 +46,14 @@ export default function App() {
             <Route path="/library/:id" component={ExerciseScreen} />
             <Route path="/history" component={HistoryScreen} />
             <Route path="/history/:id" component={SessionDetailScreen} />
+            <Route path="/welcome/preset">
+              <Suspense fallback={null}>
+                <PresetScreen />
+              </Suspense>
+            </Route>
+            <Route path="/welcome/:step?" component={OnboardingScreen} />
             <Route path="/settings" component={SettingsScreen} />
+            <Route path="/settings/profile" component={ProfileScreen} />
             <Route path="/settings/equipment" component={EquipmentScreen} />
             <Route path="/settings/plan" component={PlanScreen} />
             <Route path="/settings/activities" component={ActivitiesScreen} />
