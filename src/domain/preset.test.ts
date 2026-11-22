@@ -19,6 +19,7 @@ describe('the reference preset (presets/hockey-home-gym.json)', () => {
     expect(lines).toContain('Experience: Returning')
     expect(lines.some((l) => l.startsWith('Equipment: Bowflex Xtreme 2 SE, Bladez Master GS'))).toBe(true)
     expect(lines).toContain('Activities: Hockey')
+    expect(lines).toContain('Check-ins, weekly: body weight, waist')
   })
   it('loads with today as the program start and plan date', () => {
     if (!parsed.ok) throw new Error()

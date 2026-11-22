@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'wouter'
 import { ActivityRow } from '../../components/ActivityRow.tsx'
 import { ConflictList } from '../../components/ConflictList.tsx'
+import { CheckinDueCard, WeightLimitNotice } from '../../components/Notices.tsx'
 import { PlannedItemRow } from '../../components/PlannedItemRow.tsx'
 import { QuickAddActivity } from '../../components/QuickAddActivity.tsx'
 import { ResumeBanner } from '../../components/ResumeBanner.tsx'
@@ -71,6 +72,8 @@ export function TodayScreen() {
           <span>Your workouts are stored only on this phone. Save a copy ›</span>
         </Link>
       )}
+      <WeightLimitNotice />
+      <CheckinDueCard />
       {needsOnboarding ? (
         <section className={`card ${styles.welcome}`} aria-label="Welcome">
           <strong>Welcome to Home Gym Tracker</strong>

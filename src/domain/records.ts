@@ -5,7 +5,7 @@
 // through an index without loading whole sessions.
 import type { ConflictSettings } from './conflicts.ts'
 import type { ProgressionSettings } from './progression.ts'
-import type { Accessory, BandType, Goal } from './types.ts'
+import type { Accessory, BandType, Goal, TemplateDefaults } from './types.ts'
 
 export type SessionStatus = 'in-progress' | 'done'
 
@@ -130,6 +130,11 @@ export type SettingRecord =
   | { key: 'dismissedConflicts'; value: string[] }
   | { key: 'progression'; value: ProgressionSettings }
   | { key: 'profile'; value: Profile }
+  /** Default sets, rep range, timed range and rest for template items that don't set their own. */
+  | { key: 'trainingDefaults'; value: TemplateDefaults }
+  | { key: 'checkins'; value: CheckinSettings }
+  /** One-time notices already shown: 'band-safety', 'weight-limit:<equipmentId>'. */
+  | { key: 'noticesSeen'; value: string[] }
 
 /** About the user (spec: profile). Experience lives in the progression setting, the plan type in the plan. */
 export interface Profile {
@@ -138,6 +143,8 @@ export interface Profile {
   distanceUnit: 'mi' | 'km'
   /** Only used for heart-rate zones. */
   age?: number
+  /** Uses a heart-rate strap (the Master GS console shows pulse only with one). Zones show only with age + strap. */
+  hrStrap?: boolean
   goals: Goal[]
   /** Days you can usually train (0 = Sunday) and session length; the starter plan uses these. */
   availability?: { days: number[]; sessionMinutes?: number }
@@ -231,5 +238,31 @@ export interface ActivityOccurrence {
   seriesDate?: string
   actualMinutes?: number
   rpe?: number
+  notes?: string
+}
+
+// ---------- Check-ins ----------
+
+/** Something measured at a check-in. Units follow the profile: weight lb/kg, length in/cm. */
+export interface Measure {
+  id: string
+  label: string
+  kind: 'weight' | 'length' | 'number'
+}
+
+export interface CheckinSettings {
+  /** What you track, in order. Body weight and waist are built in; others are your own. */
+  measures: Measure[]
+  /** Show a "check-in due" card on Today a week after the last one. */
+  weekly: boolean
+}
+
+/** One check-in: whichever measures you filled in, in the units used that day. */
+export interface CheckinRecord {
+  id: string
+  date: string
+  weightUnit: 'lb' | 'kg'
+  lengthUnit: 'in' | 'cm'
+  values: Record<string, number>
   notes?: string
 }

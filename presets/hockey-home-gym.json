@@ -50,6 +50,13 @@
       "intervalRoundsRampUp": 6,
       "intervalRoundsAfter": 8
     },
-    "conflictRules": { "hardCardio": true, "legsBeforeGame": true, "hardDays": true, "hardDaysLimit": 3, "missed": true }
+    "conflictRules": { "hardCardio": true, "legsBeforeGame": true, "hardDays": true, "hardDaysLimit": 3, "missed": true },
+    "checkins": {
+      "measures": [
+        { "id": "body-weight", "label": "Body weight", "kind": "weight" },
+        { "id": "waist", "label": "Waist", "kind": "length" }
+      ],
+      "weekly": true
+    }
   }
 }

@@ -6,6 +6,7 @@ import { useBandLabeler, useInventory } from '../../db/inventory.ts'
 import { compatibleBands, ownsExactEquipment, type Inventory } from '../../domain/inventory.ts'
 import { BAND_TYPE_LABELS, PATTERN_LABELS } from '../../domain/labels.ts'
 import { planTemplate, swapOptions } from '../../domain/substitution.ts'
+import { BandSafetyNotice } from '../../components/Notices.tsx'
 import { ExerciseFlags } from '../../components/ProgressFlags.tsx'
 import { RestBar } from '../../components/RestBar.tsx'
 import { SetRow } from '../../components/SetRow.tsx'
@@ -38,7 +39,7 @@ import {
   toLogicalSets,
   workIsValid,
 } from '../../domain/session.ts'
-import { DEFAULT_TEMPLATE_SETTINGS, type Exercise, type Template } from '../../domain/types.ts'
+import { type Exercise, type Template } from '../../domain/types.ts'
 import { unlockAudio } from '../../platform/cues.ts'
 import { useWakeLock } from '../../platform/wakeLock.ts'
 import { ChecklistRunner } from './ChecklistRunner.tsx'
@@ -97,7 +98,7 @@ function SessionLogger({ session, sets, template, inventory }: { session: Sessio
   const items = adjustTargets(
     template,
     template.items.map((item, i) => {
-      const resolved = resolveTemplateItem(item, DEFAULT_TEMPLATE_SETTINGS)
+      const resolved = resolveTemplateItem(item, catalog.defaults)
       return plan[i] === null ? { ...resolved, sets: 0 } : resolved
     }),
     plan.map((id) => (id ? catalog.exercises.get(id) : undefined)),
@@ -163,6 +164,7 @@ function SessionLogger({ session, sets, template, inventory }: { session: Sessio
         {template.name} · exercise {index + 1} of {items.length}
       </p>
       {effort && <p className={styles.effort}>{effort}</p>}
+      <BandSafetyNotice exerciseIds={plan} />
 
       <nav className={styles.dots} aria-label="Exercises">
         {items.map((it, i) => {

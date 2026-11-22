@@ -6,7 +6,7 @@
 // Migrations: never edit version(1) once it has shipped. When the schema changes, add
 // db.version(2).stores({...}).upgrade(tx => ...) below it. Dexie runs each upgrade once per device.
 import Dexie, { type EntityTable } from 'dexie'
-import type { ActivityOccurrence, ActivityRecord, ActivitySeries, BandRecord, SessionRecord, SetRecord, SettingRecord } from '../domain/records.ts'
+import type { ActivityOccurrence, ActivityRecord, ActivitySeries, BandRecord, CheckinRecord, SessionRecord, SetRecord, SettingRecord } from '../domain/records.ts'
 import { localDate } from '../domain/dates.ts'
 import type { Exercise, Template } from '../domain/types.ts'
 
@@ -20,6 +20,7 @@ export const db = new Dexie('home-gym-tracker') as Dexie & {
   activities: EntityTable<ActivityRecord, 'id'>
   activitySeries: EntityTable<ActivitySeries, 'id'>
   activityOccurrences: EntityTable<ActivityOccurrence, 'id'>
+  checkins: EntityTable<CheckinRecord, 'id'>
 }
 
 db.version(1).stores({
@@ -63,6 +64,9 @@ db.version(6)
     const row = await tx.table('settings').get('plan')
     if (row && !row.value.updatedOn) await tx.table('settings').put({ ...row, value: { ...row.value, updatedOn: localDate() } })
   })
+
+// v7 (M17): check-ins (body weight, waist, your own measures), indexed by date.
+db.version(7).stores({ checkins: 'id, date' })
 
 /**
  * Asks the browser not to evict our data under storage pressure. On iOS this matters most:

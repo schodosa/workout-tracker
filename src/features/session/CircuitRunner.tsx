@@ -4,6 +4,7 @@ import { BackLink } from '../../components/BackLink.tsx'
 import { BandPicker } from '../../components/BandPicker.tsx'
 import { CountdownPanel } from '../../components/CountdownPanel.tsx'
 import { HoldTimer } from '../../components/HoldTimer.tsx'
+import { BandSafetyNotice } from '../../components/Notices.tsx'
 import { ExerciseFlags } from '../../components/ProgressFlags.tsx'
 import { SetRow } from '../../components/SetRow.tsx'
 import { SetupCard } from '../../components/SetupCard.tsx'
@@ -22,7 +23,7 @@ import { BAND_TYPE_LABELS } from '../../domain/labels.ts'
 import type { SessionRecord, SetRecord } from '../../domain/records.ts'
 import { prefill, resistanceStep, summarizeLastTime, toLogicalSets, workIsValid } from '../../domain/session.ts'
 import { planTemplate, swapOptions } from '../../domain/substitution.ts'
-import { DEFAULT_TEMPLATE_SETTINGS, type Exercise, type Template } from '../../domain/types.ts'
+import { type Exercise, type Template } from '../../domain/types.ts'
 import { unlockAudio } from '../../platform/cues.ts'
 import { useWakeLock } from '../../platform/wakeLock.ts'
 import styles from './SessionScreen.module.css'
@@ -47,7 +48,7 @@ export function CircuitRunner({ session, sets, template, inventory }: Props) {
   useWakeLock(true)
 
   const plan = session.plan ?? planTemplate(catalog, inventory, template)
-  const items = template.items.map((item) => resolveTemplateItem(item, DEFAULT_TEMPLATE_SETTINGS))
+  const items = template.items.map((item) => resolveTemplateItem(item, catalog.defaults))
   const order = circuitOrder(plan)
   const rounds = template.rounds ?? 1
   // An impact move's first week: one round only (from the snapshot saved at start).
@@ -136,6 +137,7 @@ export function CircuitRunner({ session, sets, template, inventory }: Props) {
         {template.name} · round {pos.round} of {rounds} · exercise {roundOrder(order, pos.round, itemRounds).indexOf(pos.itemIndex) + 1} of {roundOrder(order, pos.round, itemRounds).length}
       </p>
       {effort && <p className={styles.effort}>{effort}</p>}
+      <BandSafetyNotice exerciseIds={plan} />
       <nav className={styles.dots} aria-label="Exercises this round">
         {roundOrder(order, pos.round, itemRounds).map((i) => {
           const cls = [styles.dot, doneThisRound(i) && styles.dotDone, i === pos.itemIndex && styles.dotCurrent].filter(Boolean).join(' ')

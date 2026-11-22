@@ -11,7 +11,7 @@ import { canDoExercise, type Inventory } from '../../domain/inventory.ts'
 import { PATTERN_LABELS } from '../../domain/labels.ts'
 import { filterExercises } from '../../domain/library.ts'
 import { duplicateTemplate, fromDraft, moveItem, newDraftItem, toDraftItems, type DraftItem } from '../../domain/templateDraft.ts'
-import { DEFAULT_TEMPLATE_SETTINGS, MOVEMENT_PATTERNS, TEMPLATE_FORMATS, type MovementPattern, type RepRange, type Template, type TemplateFormat, type TemplateItem } from '../../domain/types.ts'
+import { MOVEMENT_PATTERNS, TEMPLATE_FORMATS, type MovementPattern, type RepRange, type Template, type TemplateFormat, type TemplateItem } from '../../domain/types.ts'
 import styles from '../library/CustomExercise.module.css'
 import ed from './TemplateEditor.module.css'
 
@@ -265,7 +265,7 @@ function ItemRow({ row, index, last, format, catalog, onChange, onSuperset, onMo
   const name = exercise?.name ?? (item.pattern ? `Any ${PATTERN_LABELS[item.pattern].toLowerCase()}` : item.exerciseId)
   const timed = exercise?.measure === 'time'
   const field = timed ? 'duration' : 'reps'
-  const def = timed ? DEFAULT_TEMPLATE_SETTINGS.duration : DEFAULT_TEMPLATE_SETTINGS.reps
+  const def = timed ? catalog.defaults.duration : catalog.defaults.reps
   const range = item[field]
   const straight = format === 'straight-sets'
 
@@ -304,10 +304,10 @@ function ItemRow({ row, index, last, format, catalog, onChange, onSuperset, onMo
       </div>
       {!range && (
         <p className={ed.defaults}>
-          Blank uses your defaults: {straight && `${DEFAULT_TEMPLATE_SETTINGS.sets} × `}
+          Blank uses your defaults: {straight && `${catalog.defaults.sets} × `}
           {def.min}–{def.max}
           {timed ? ' s' : ''}
-          {straight && `, rest ${DEFAULT_TEMPLATE_SETTINGS.restSec} s`}
+          {straight && `, rest ${catalog.defaults.restSec} s`}
         </p>
       )}
       <input className={ed.note} type="text" value={item.note ?? ''} onChange={(e) => onChange({ note: e.target.value || undefined })} placeholder="Note (optional)" aria-label={`Note for ${name}`} />

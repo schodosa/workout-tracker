@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { buildBackup, summarizeBackup, type Backup, type BackupSummary } from '../domain/backup.ts'
 import { db, requestPersistentStorage } from './db.ts'
 
-const allTables = () => [db.sessions, db.sets, db.bands, db.settings, db.customExercises, db.userTemplates, db.activities, db.activitySeries, db.activityOccurrences]
+const allTables = () => [db.sessions, db.sets, db.bands, db.settings, db.customExercises, db.userTemplates, db.activities, db.activitySeries, db.activityOccurrences, db.checkins]
 
 /**
  * The full backup, kept ready while the backup screen is open. iOS only allows the share sheet
@@ -12,7 +12,7 @@ const allTables = () => [db.sessions, db.sets, db.bands, db.settings, db.customE
 export function useCurrentBackup(): Backup | undefined {
   return useLiveQuery(async () => {
     // A read-only transaction gives one consistent snapshot of every table.
-    const [sessions, sets, bands, settings, customExercises, userTemplates, activities, activitySeries, activityOccurrences] = await db.transaction('r', allTables(), () =>
+    const [sessions, sets, bands, settings, customExercises, userTemplates, activities, activitySeries, activityOccurrences, checkins] = await db.transaction('r', allTables(), () =>
       Promise.all([
         db.sessions.toArray(),
         db.sets.toArray(),
@@ -23,9 +23,10 @@ export function useCurrentBackup(): Backup | undefined {
         db.activities.toArray(),
         db.activitySeries.toArray(),
         db.activityOccurrences.toArray(),
+        db.checkins.toArray(),
       ]),
     )
-    return buildBackup({ sessions, sets, bands, settings, customExercises, userTemplates, activities, activitySeries, activityOccurrences }, __APP_VERSION__)
+    return buildBackup({ sessions, sets, bands, settings, customExercises, userTemplates, activities, activitySeries, activityOccurrences, checkins }, __APP_VERSION__)
   })
 }
 
@@ -67,6 +68,7 @@ export async function importBackup(backup: Backup, mode: ImportMode): Promise<Im
     await db.activities.bulkPut(backup.data.activities)
     await db.activitySeries.bulkPut(backup.data.activitySeries)
     await db.activityOccurrences.bulkPut(backup.data.activityOccurrences)
+    await db.checkins.bulkPut(backup.data.checkins)
   })
   void requestPersistentStorage()
   const s = summarizeBackup(backup)

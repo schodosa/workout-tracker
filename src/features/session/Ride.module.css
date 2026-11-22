@@ -159,3 +159,12 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+.zone {
+  margin: 8px 0;
+  color: var(--text-muted);
+}
+
+.zone strong {
+  color: var(--text);
+}

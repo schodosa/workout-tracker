@@ -13,7 +13,7 @@ import { PATTERN_LABELS } from '../../domain/labels.ts'
 import { adjustTargets, circuitItemRounds, effortNote, rideForSession, sessionProgram } from '../../domain/progression.ts'
 import { describeRide } from '../../domain/ride.ts'
 import { fitTemplate, planTemplate, type Resolution } from '../../domain/substitution.ts'
-import { DEFAULT_TEMPLATE_SETTINGS, type TemplateFormat } from '../../domain/types.ts'
+import { type TemplateFormat } from '../../domain/types.ts'
 import { equipmentLine } from './equipmentLine.ts'
 import styles from './TemplateScreen.module.css'
 
@@ -45,7 +45,7 @@ export function TemplateScreen() {
   // Where the program stands today (ramp-up sets, interval rounds). Saved with the session at start.
   const program = sessionProgram(progression.state, template)
   const exercises = fit.resolutions.map((r) => (r.kind === 'none' ? undefined : catalog.exercises.get(r.exerciseId)))
-  const adjusted = adjustTargets(template, template.items.map((item) => resolveTemplateItem(item, DEFAULT_TEMPLATE_SETTINGS)), exercises, program)
+  const adjusted = adjustTargets(template, template.items.map((item) => resolveTemplateItem(item, catalog.defaults)), exercises, program)
   const oneRound = circuitItemRounds(template, exercises, program)
   const items = adjusted.map((item, i) => ({ ...item, number: i + 1, resolution: fit.resolutions[i] }))
   const ride = template.ride ? rideForSession(template.ride, program) : undefined

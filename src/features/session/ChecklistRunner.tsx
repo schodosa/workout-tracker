@@ -9,7 +9,7 @@ import { formatDose, resolveTemplateItem } from '../../domain/catalog.ts'
 import type { Inventory } from '../../domain/inventory.ts'
 import type { SessionRecord } from '../../domain/records.ts'
 import { planTemplate } from '../../domain/substitution.ts'
-import { DEFAULT_TEMPLATE_SETTINGS, type Template } from '../../domain/types.ts'
+import { type Template } from '../../domain/types.ts'
 import { useWakeLock } from '../../platform/wakeLock.ts'
 import styles from './Checklist.module.css'
 
@@ -77,7 +77,7 @@ export function ChecklistRunner({ session, template, inventory }: { session: Ses
               </li>
             )
           }
-          const item = resolveTemplateItem(raw, DEFAULT_TEMPLATE_SETTINGS)
+          const item = resolveTemplateItem(raw, catalog.defaults)
           const isChecked = checked.has(i)
           const isOpen = open === i
           return (

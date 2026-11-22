@@ -8,7 +8,7 @@
 // Imported files are untrusted input, so they go through Zod: it checks every field's type and
 // returns readable errors instead of letting a bad file corrupt the database.
 import { z } from 'zod'
-import { BAND_LEVELS, INTENSITY_LEVELS, LOAD_LEVELS, type ActivityOccurrence, type ActivityRecord, type ActivitySeries, type BandRecord, type SessionRecord, type SetRecord, type SettingRecord } from './records.ts'
+import { BAND_LEVELS, INTENSITY_LEVELS, LOAD_LEVELS, type CheckinRecord, type ActivityOccurrence, type ActivityRecord, type ActivitySeries, type BandRecord, type SessionRecord, type SetRecord, type SettingRecord } from './records.ts'
 import { builtinSource } from './builtins.ts'
 import { validateCatalog } from './catalog.ts'
 import { exerciseSchema, templateSchema } from './contentSchema.ts'
@@ -21,7 +21,8 @@ import { ACCESSORIES, BAND_TYPES, GOALS } from './types.ts'
 // v6 (M14): settings can hold conflict-rule switches and dismissed suggestions; plans carry updatedOn.
 // v7 (M15): progression settings, and a program snapshot on sessions.
 // v8 (M16): the profile setting (name, units, goals, availability).
-export const BACKUP_FORMAT_VERSION = 8
+// v9 (M17): check-ins, plus training-default, check-in and notice settings.
+export const BACKUP_FORMAT_VERSION = 9
 export const APP_ID = 'home-gym-tracker'
 
 export const localDateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be a YYYY-MM-DD date')
@@ -138,9 +139,25 @@ export const profileSchema = z.object({
   weightUnit: z.enum(['lb', 'kg']),
   distanceUnit: z.enum(['mi', 'km']),
   age: z.number().int().min(10).max(120).optional(),
+  hrStrap: z.boolean().optional(),
   goals: z.array(z.enum(GOALS)),
   availability: z.object({ days: z.array(z.number().int().min(0).max(6)), sessionMinutes: z.number().positive().optional() }).optional(),
   onboardedAt: timestamp.optional(),
+})
+
+const range = z.object({ min: z.number().nonnegative(), max: z.number().nonnegative() })
+export const trainingDefaultsSchema = z.object({ sets: z.number().int().min(1).max(10), reps: range, duration: range, restSec: z.number().int().min(0).max(600) })
+
+export const measureSchema = z.object({ id: z.string().min(1), label: z.string().min(1), kind: z.enum(['weight', 'length', 'number']) })
+export const checkinSettingsSchema = z.object({ measures: z.array(measureSchema), weekly: z.boolean() })
+
+const checkinSchema = z.object({
+  id: z.string().min(1),
+  date: localDateString,
+  weightUnit: z.enum(['lb', 'kg']),
+  lengthUnit: z.enum(['in', 'cm']),
+  values: z.record(z.string(), z.number().nonnegative()),
+  notes: z.string().optional(),
 })
 
 // One schema per setting key: `key` picks which shape `value` must have.
@@ -164,6 +181,9 @@ const settingSchema = z.discriminatedUnion('key', [
   z.object({ key: z.literal('dismissedConflicts'), value: z.array(z.string()) }),
   z.object({ key: z.literal('progression'), value: progressionSchema }),
   z.object({ key: z.literal('profile'), value: profileSchema }),
+  z.object({ key: z.literal('trainingDefaults'), value: trainingDefaultsSchema }),
+  z.object({ key: z.literal('checkins'), value: checkinSettingsSchema }),
+  z.object({ key: z.literal('noticesSeen'), value: z.array(z.string()) }),
 ])
 
 export const activitySchema = z.object({
@@ -215,6 +235,7 @@ const backupSchema = z.object({
     activities: z.array(activitySchema),
     activitySeries: z.array(activitySeriesSchema),
     activityOccurrences: z.array(activityOccurrenceSchema),
+    checkins: z.array(checkinSchema),
   }),
 })
 
@@ -238,6 +259,8 @@ const occurrenceMatches: Equals<ActivityOccurrence, z.infer<typeof activityOccur
 void activityMatches
 void seriesMatches
 void occurrenceMatches
+const checkinMatches: Equals<CheckinRecord, z.infer<typeof checkinSchema>> = true
+void checkinMatches
 
 export type BackupData = Backup['data']
 
@@ -313,6 +336,10 @@ function upgradeBackup(raw: unknown): unknown {
   if (file.formatVersion === 7) {
     // v7 → v8: only a new kind of setting.
     file = { ...file, formatVersion: 8 }
+  }
+  if (file.formatVersion === 8) {
+    // v8 → v9: v8 files predate check-ins.
+    file = { ...file, formatVersion: 9, data: { ...file.data, checkins: [] } }
   }
   return file
 }

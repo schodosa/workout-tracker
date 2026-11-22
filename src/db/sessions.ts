@@ -142,6 +142,8 @@ export interface SessionSummary {
   session: SessionRecord
   setCount: number
   exerciseCount: number
+  /** Exercises actually logged (sets, or the ride), for History's equipment filter. */
+  exerciseIds: string[]
 }
 
 /** Finished sessions, newest first, with set/exercise counts for the History list. */
@@ -153,7 +155,8 @@ export function useFinishedSessions(): SessionSummary[] | undefined {
         const sets = await db.sets.where('sessionId').equals(session.id).toArray()
         // A per-side pair is two records but one set.
         const setCount = new Set(sets.map((s) => `${s.itemIndex}:${s.setNumber}`)).size
-        return { session, setCount, exerciseCount: new Set(sets.map((s) => s.exerciseId)).size }
+        const exerciseIds = [...new Set([...sets.map((s) => s.exerciseId), ...(session.ride ? [session.ride.exerciseId] : [])])]
+        return { session, setCount, exerciseCount: new Set(sets.map((s) => s.exerciseId)).size, exerciseIds }
       }),
     )
   })

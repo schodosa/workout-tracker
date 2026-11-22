@@ -203,3 +203,19 @@
 .error {
   color: var(--danger);
 }
+
+.strap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: var(--tap);
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+
+.strap input {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  accent-color: var(--accent);
+}

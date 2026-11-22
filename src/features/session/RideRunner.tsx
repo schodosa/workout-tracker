@@ -8,6 +8,7 @@ import { useProfile } from '../../db/profile.ts'
 import { discardSession, saveRideAndFinish, setRideClock, useLastRide } from '../../db/sessions.ts'
 import { formatDayLong } from '../../domain/dates.ts'
 import { rideFlag, rideForSession } from '../../domain/progression.ts'
+import { hrZone } from '../../domain/health.ts'
 import type { Inventory } from '../../domain/inventory.ts'
 import type { RideClock, RideLog, SessionRecord } from '../../domain/records.ts'
 import { describeRide, elapsedMs, formatClock, rideStatus, rideTimeline, roundsCompleted, totalSec, type Segment } from '../../domain/ride.ts'
@@ -37,6 +38,8 @@ export function RideRunner({ session, template, inventory }: Props) {
   const clock = session.rideClock
   const recent = useRecentRides(Boolean(structure.intervals), session.id)
   const flag = recent ? rideFlag(structure, recent, template.warmup) : null
+  const profile = useProfile()
+  const zone = hrZone(profile?.age, profile?.hrStrap)
 
   async function discard() {
     if (!confirm('Discard this ride? This cannot be undone.')) return
@@ -60,6 +63,11 @@ export function RideRunner({ session, template, inventory }: Props) {
         <h1>{template.name}</h1>
         <p className="muted">{describeRide(structure)}</p>
         {flag && <FlagCard flag={flag} />}
+        {zone && (
+          <p className={styles.zone}>
+            Heart rate: aim for <strong>{zone.low}–{zone.high} bpm</strong> (65–70% of an estimated max of {zone.max}). A guide, not a rule.
+          </p>
+        )}
         <div className="card">
           {structure.warmupCue && <p>Warm-up: {structure.warmupCue}</p>}
           {structure.intervals && (

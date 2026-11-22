@@ -208,6 +208,14 @@ export function AboutYouFields({ profile }: { profile: Profile }) {
           }}
         />
       </label>
+      <label className={styles.strap}>
+        <input type="checkbox" checked={profile.hrStrap ?? false} onChange={() => void saveProfile({ hrStrap: !profile.hrStrap })} />
+        <span>
+          I use a heart-rate chest strap
+          <br />
+          <span className="muted">With your age, rides show a target heart-rate range.</span>
+        </span>
+      </label>
     </div>
   )
 }

@@ -60,6 +60,20 @@ export function SettingsScreen() {
           ›
         </span>
       </Link>
+      <Link href="/settings/training" className={`card ${styles.link}`}>
+        <span className={styles.linkTitle}>Training defaults</span>
+        <span className="muted">Sets, rep range, rest timer</span>
+        <span className={styles.chevron} aria-hidden="true">
+          ›
+        </span>
+      </Link>
+      <Link href="/settings/checkins" className={`card ${styles.link}`}>
+        <span className={styles.linkTitle}>Check-ins</span>
+        <span className="muted">Body weight, waist and your own measures</span>
+        <span className={styles.chevron} aria-hidden="true">
+          ›
+        </span>
+      </Link>
       <Link href="/settings/suggestions" className={`card ${styles.link}`}>
         <span className={styles.linkTitle}>Planning suggestions</span>
         <span className="muted">Clashes between your plan and activities</span>

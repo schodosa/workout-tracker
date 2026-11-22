@@ -1,0 +1,161 @@
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: var(--tap);
+  padding: 6px 0;
+}
+
+.row + .row,
+.notes {
+  border-top: 1px solid var(--border);
+}
+
+.label {
+  font-weight: 700;
+}
+
+.box {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.row input,
+.notes textarea {
+  min-height: 48px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px; /* iOS zooms into smaller inputs */
+}
+
+.box input {
+  width: 96px;
+  text-align: right;
+}
+
+.notes {
+  display: grid;
+  gap: 6px;
+  padding: 10px 0 4px;
+}
+
+.notes textarea {
+  padding: 10px;
+  font-family: inherit;
+}
+
+.hint {
+  margin: 10px 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.delete {
+  margin-top: 12px;
+}
+
+/* Settings > Check-ins */
+.measure {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: var(--tap);
+}
+
+.measure + .measure {
+  border-top: 1px solid var(--border);
+}
+
+.remove {
+  min-width: 48px;
+  min-height: 44px;
+  border: 0;
+  background: none;
+  color: var(--danger);
+  font-size: 1.1rem;
+}
+
+.add {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.add input {
+  min-height: 48px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+}
+
+.kinds {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.kinds button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.kinds .kindOn {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: var(--tap);
+}
+
+.toggle input {
+  width: 26px;
+  height: 26px;
+  accent-color: var(--accent);
+}
+
+.section {
+  margin: 24px 0 8px;
+  font-size: 1rem;
+}
+
+/* Notices (weight limit, check-in due) */
+.notice {
+  display: grid;
+  gap: 8px;
+  border-color: var(--warn);
+  background: var(--warn-bg);
+}
+
+.notice strong {
+  color: var(--warn);
+}
+
+.dismiss {
+  justify-self: start;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font-weight: 600;
+}

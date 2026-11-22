@@ -3,7 +3,7 @@
 // onboarding wizard; export your own to share. Like backups, files are untrusted input, so they
 // go through Zod. Only lazily loaded screens import this file (it pulls in Zod).
 import { z } from 'zod'
-import { activitySchema, APP_ID, bandSchema, conflictRulesSchema, planSchema, profileSchema, progressionSchema } from './backup.ts'
+import { activitySchema, APP_ID, bandSchema, checkinSettingsSchema, conflictRulesSchema, planSchema, profileSchema, progressionSchema, trainingDefaultsSchema } from './backup.ts'
 import { builtinSource } from './builtins.ts'
 import { validateCatalog } from './catalog.ts'
 import { exerciseSchema, templateSchema } from './contentSchema.ts'
@@ -32,6 +32,9 @@ const presetSchema = z.object({
     // The program starts the day the preset is loaded.
     progression: progressionSchema.omit({ startDate: true }).optional(),
     conflictRules: conflictRulesSchema.optional(),
+    // Added in M17 (optional, so older preset files still load).
+    checkins: checkinSettingsSchema.optional(),
+    trainingDefaults: trainingDefaultsSchema.optional(),
     customExercises: z.array(exerciseSchema).optional(),
     userTemplates: z.array(templateSchema).optional(),
   }),
@@ -92,6 +95,7 @@ export function describePreset(p: Preset): string[] {
   if (d.equipment?.length) lines.push(`Equipment: ${d.equipment.map(eqName).join(', ')}`)
   if (d.bands?.length) lines.push(`${d.bands.length} band${d.bands.length === 1 ? '' : 's'}`)
   if (d.activities?.length) lines.push(`Activities: ${d.activities.map((a) => a.name).join(', ')}`)
+  if (d.checkins?.measures.length) lines.push(`Check-ins${d.checkins.weekly ? ', weekly' : ''}: ${d.checkins.measures.map((m) => m.label.toLowerCase()).join(', ')}`)
   if (d.plan) {
     const names = [...new Set([...d.plan.days.flat(), ...d.plan.order, ...d.plan.everyDay])].map(tName)
     lines.push(`${d.plan.type === 'fixed' ? 'Weekly plan (fixed days)' : `Rotation, ${d.plan.perWeek} a week`}: ${names.join(', ')}`)
@@ -120,6 +124,8 @@ export function presetToRecords(p: Preset, today: string, now: number): PresetRe
   if (d.plan) settings.push({ key: 'plan', value: { ...d.plan, updatedOn: today } })
   if (d.progression) settings.push({ key: 'progression', value: { ...d.progression, startDate: today } })
   if (d.conflictRules) settings.push({ key: 'conflictRules', value: d.conflictRules })
+  if (d.checkins) settings.push({ key: 'checkins', value: d.checkins })
+  if (d.trainingDefaults) settings.push({ key: 'trainingDefaults', value: d.trainingDefaults })
   return {
     settings,
     profile: d.profile ? { ...d.profile, onboardedAt: now } : undefined,
@@ -163,6 +169,8 @@ export function buildPreset(src: SetupSource, name: string, today: string): Pres
       plan: plan ? (({ updatedOn: _u, ...rest }) => rest)(plan) : undefined,
       progression: progression ? (({ startDate: _s, ...rest }) => rest)(progression) : undefined,
       conflictRules: get('conflictRules'),
+      checkins: get('checkins'),
+      trainingDefaults: get('trainingDefaults'),
       customExercises: src.customExercises,
       userTemplates: src.userTemplates,
     },

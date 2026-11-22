@@ -63,12 +63,13 @@ const sample = () =>
       activities: [{ id: 'hockey', name: 'Hockey', color: '#3b82f6', typicalMinutes: 75, legLoad: 'hard' as const, cardioLoad: 'hard' as const, intensity: 'hard' as const, createdAt: 1 }],
       activitySeries: [{ id: 's1', activityId: 'hockey', weekdays: [4], startDate: '2026-11-01', exceptions: [] }],
       activityOccurrences: [{ id: 'o1', activityId: 'hockey', date: '2026-11-19', status: 'done' as const, actualMinutes: 80 }],
+      checkins: [{ id: 'c1', date: '2026-11-20', weightUnit: 'lb' as const, lengthUnit: 'in' as const, values: { 'body-weight': 210, waist: 38 } }],
     },
     'abc1234',
     new Date('2026-11-21T12:00:00Z'),
   )
 
-const empty = { sessions: [], sets: [], bands: [], settings: [], customExercises: [], userTemplates: [], activities: [], activitySeries: [], activityOccurrences: [] }
+const empty = { sessions: [], sets: [], bands: [], settings: [], customExercises: [], userTemplates: [], activities: [], activitySeries: [], activityOccurrences: [], checkins: [] }
 
 describe('parseBackup', () => {
   it('round-trips a backup it built', () => {
@@ -101,7 +102,7 @@ describe('parseBackup', () => {
     const result = parseBackup(JSON.stringify(v1))
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.backup.formatVersion).toBe(8)
+    expect(result.backup.formatVersion).toBe(9)
     expect(result.backup.data.bands).toEqual([])
     expect(result.backup.data.settings).toEqual([])
     expect(result.backup.data.userTemplates).toEqual([])
@@ -113,7 +114,7 @@ describe('parseBackup', () => {
     delete v2.data.customExercises
     delete v2.data.userTemplates
     const result = parseBackup(JSON.stringify(v2))
-    expect(result.ok && result.backup.formatVersion).toBe(8)
+    expect(result.ok && result.backup.formatVersion).toBe(9)
     expect(result.ok && result.backup.data.customExercises).toEqual([])
   })
 
