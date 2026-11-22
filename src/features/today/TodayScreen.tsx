@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'wouter'
+import { ActivityRow } from '../../components/ActivityRow.tsx'
 import { PlannedItemRow } from '../../components/PlannedItemRow.tsx'
+import { QuickAddActivity } from '../../components/QuickAddActivity.tsx'
 import { ResumeBanner } from '../../components/ResumeBanner.tsx'
 import { SetupPrompt } from '../../components/SetupPrompt.tsx'
+import { useActivityData, useActivityDays } from '../../db/activities.ts'
 import { useBackupDue } from '../../db/backupReminder.ts'
 import { useInventory } from '../../db/inventory.ts'
 import { useSchedule } from '../../db/plan.ts'
@@ -23,6 +26,8 @@ export function TodayScreen() {
   const backupDue = useBackupDue()
   const inv = useInventory()
   const schedule = useSchedule(7)
+  const activityDays = useActivityDays(7)
+  const activityData = useActivityData()
   const [openItem, setOpenItem] = useState<string | null>(null)
   // Your templates first, then built-ins; main workouts before warm-ups; alphabetical within each.
   const templates = [...catalog.templates.values()].sort(
@@ -31,7 +36,8 @@ export function TodayScreen() {
       Number(a.warmup ?? false) - Number(b.warmup ?? false) ||
       a.name.localeCompare(b.name),
   )
-  if (!inv || schedule === undefined) return null
+  if (!inv || schedule === undefined || !activityDays || !activityData) return null
+  const todayActivities = activityDays[0].items
 
   // A template counts as available when every exercise can be done, as written or swapped.
   const fits = new Map(templates.map((t) => [t.id, fitTemplate(catalog, inv, t)]))
@@ -81,6 +87,17 @@ export function TodayScreen() {
           <span className="muted">Set fixed days or a rotation, and Today will show what's next.</span>
         </Link>
       )}
+
+      <h2 className={styles.section}>Activities</h2>
+      {todayActivities.length > 0 && (
+        <ul className={`card ${styles.planList}`}>
+          {todayActivities.map((a) => {
+            const activity = activityData.activities.find((x) => x.id === a.activityId)
+            return activity ? <ActivityRow key={a.key} item={a} activity={activity} moveDates={activityDays.map((d) => d.date)} /> : null
+          })}
+        </ul>
+      )}
+      <QuickAddActivity date={activityDays[0].date} activities={activityData.activities} />
 
       {/* With a plan, the full list is tucked away; without one, it's the main thing on Today. */}
       <details className={styles.allTemplates} open={!schedule}>

@@ -51,3 +51,10 @@
   margin: 0;
   padding: 0;
 }
+
+/* Activities sit under the workouts, separated by a hairline when both are present. */
+.items + .activities {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--border);
+}

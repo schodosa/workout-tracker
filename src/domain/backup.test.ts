@@ -60,12 +60,15 @@ const sample = () =>
       ],
       customExercises: [structuredClone(customEx)], // fresh copies: tests mutate them
       userTemplates: [structuredClone(userTpl)],
+      activities: [{ id: 'hockey', name: 'Hockey', color: '#3b82f6', typicalMinutes: 75, legLoad: 'hard' as const, cardioLoad: 'hard' as const, intensity: 'hard' as const, createdAt: 1 }],
+      activitySeries: [{ id: 's1', activityId: 'hockey', weekdays: [4], startDate: '2026-11-01', exceptions: [] }],
+      activityOccurrences: [{ id: 'o1', activityId: 'hockey', date: '2026-11-19', status: 'done' as const, actualMinutes: 80 }],
     },
     'abc1234',
     new Date('2026-11-21T12:00:00Z'),
   )
 
-const empty = { sessions: [], sets: [], bands: [], settings: [], customExercises: [], userTemplates: [] }
+const empty = { sessions: [], sets: [], bands: [], settings: [], customExercises: [], userTemplates: [], activities: [], activitySeries: [], activityOccurrences: [] }
 
 describe('parseBackup', () => {
   it('round-trips a backup it built', () => {
@@ -98,7 +101,7 @@ describe('parseBackup', () => {
     const result = parseBackup(JSON.stringify(v1))
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.backup.formatVersion).toBe(4)
+    expect(result.backup.formatVersion).toBe(5)
     expect(result.backup.data.bands).toEqual([])
     expect(result.backup.data.settings).toEqual([])
     expect(result.backup.data.userTemplates).toEqual([])
@@ -110,7 +113,7 @@ describe('parseBackup', () => {
     delete v2.data.customExercises
     delete v2.data.userTemplates
     const result = parseBackup(JSON.stringify(v2))
-    expect(result.ok && result.backup.formatVersion).toBe(4)
+    expect(result.ok && result.backup.formatVersion).toBe(5)
     expect(result.ok && result.backup.data.customExercises).toEqual([])
   })
 
@@ -127,6 +130,14 @@ describe('parseBackup', () => {
     bad.data.customExercises[0].id = 'bowflex-bench-press'
     bad.data.userTemplates[0].items[0] = { exerciseId: 'bowflex-bench-press' }
     expect(parseBackup(JSON.stringify(bad))).toEqual({ ok: false, error: 'The backup file is damaged: a custom exercise or template has a built-in ID.' })
+  })
+
+  it('rejects an activity occurrence for an activity not in the file', () => {
+    const bad = sample()
+    bad.data.activityOccurrences[0].activityId = 'ghost'
+    const result = parseBackup(JSON.stringify(bad))
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error).toContain("points at an activity that isn't in the file")
   })
 
   it('counts a per-side pair as one set in the summary', () => {

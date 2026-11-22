@@ -8,7 +8,7 @@
 // Imported files are untrusted input, so they go through Zod: it checks every field's type and
 // returns readable errors instead of letting a bad file corrupt the database.
 import { z } from 'zod'
-import { BAND_LEVELS, type BandRecord, type SessionRecord, type SetRecord, type SettingRecord } from './records.ts'
+import { BAND_LEVELS, INTENSITY_LEVELS, LOAD_LEVELS, type ActivityOccurrence, type ActivityRecord, type ActivitySeries, type BandRecord, type SessionRecord, type SetRecord, type SettingRecord } from './records.ts'
 import { builtinSource } from './builtins.ts'
 import { validateCatalog } from './catalog.ts'
 import { exerciseSchema, templateSchema } from './contentSchema.ts'
@@ -17,7 +17,8 @@ import { ACCESSORIES, BAND_TYPES } from './types.ts'
 // v1 (M5): sessions + sets. v2 (M7): adds bands, settings, and bandIds on sets.
 // v3 (M11): adds custom exercises and user templates.
 // v4 (M12): settings can hold the weekly plan and week overrides.
-export const BACKUP_FORMAT_VERSION = 4
+// v5 (M13): adds activities, their recurring series, and occurrences.
+export const BACKUP_FORMAT_VERSION = 5
 const APP_ID = 'home-gym-tracker'
 
 const localDateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be a YYYY-MM-DD date')
@@ -120,6 +121,39 @@ const settingSchema = z.discriminatedUnion('key', [
   }),
 ])
 
+const activitySchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a #rrggbb color'),
+  typicalMinutes: z.number().nonnegative(),
+  legLoad: z.enum(LOAD_LEVELS),
+  cardioLoad: z.enum(LOAD_LEVELS),
+  intensity: z.enum(INTENSITY_LEVELS),
+  archived: z.boolean().optional(),
+  createdAt: timestamp,
+})
+
+const activitySeriesSchema = z.object({
+  id: z.string().min(1),
+  activityId: z.string().min(1),
+  weekdays: z.array(z.number().int().min(0).max(6)),
+  startDate: localDateString,
+  endDate: localDateString.optional(),
+  exceptions: z.array(localDateString),
+})
+
+const activityOccurrenceSchema = z.object({
+  id: z.string().min(1),
+  activityId: z.string().min(1),
+  date: localDateString,
+  status: z.enum(['planned', 'done', 'skipped']),
+  seriesId: z.string().min(1).optional(),
+  seriesDate: localDateString.optional(),
+  actualMinutes: z.number().nonnegative().optional(),
+  rpe: z.number().min(1).max(10).optional(),
+  notes: z.string().optional(),
+})
+
 const backupSchema = z.object({
   app: z.literal(APP_ID),
   kind: z.literal('backup'),
@@ -133,6 +167,9 @@ const backupSchema = z.object({
     settings: z.array(settingSchema),
     customExercises: z.array(exerciseSchema),
     userTemplates: z.array(templateSchema),
+    activities: z.array(activitySchema),
+    activitySeries: z.array(activitySeriesSchema),
+    activityOccurrences: z.array(activityOccurrenceSchema),
   }),
 })
 
@@ -150,6 +187,12 @@ void sessionSchemaMatches
 void setSchemaMatches
 void bandSchemaMatches
 void settingSchemaMatches
+const activityMatches: Equals<ActivityRecord, z.infer<typeof activitySchema>> = true
+const seriesMatches: Equals<ActivitySeries, z.infer<typeof activitySeriesSchema>> = true
+const occurrenceMatches: Equals<ActivityOccurrence, z.infer<typeof activityOccurrenceSchema>> = true
+void activityMatches
+void seriesMatches
+void occurrenceMatches
 
 export type BackupData = Backup['data']
 
@@ -210,6 +253,10 @@ function upgradeBackup(raw: unknown): unknown {
     // v3 → v4: only new kinds of settings; existing data is unchanged.
     file = { ...file, formatVersion: 4 }
   }
+  if (file.formatVersion === 4) {
+    // v4 → v5: v4 files predate activities.
+    file = { ...file, formatVersion: 5, data: { ...file.data, activities: [], activitySeries: [], activityOccurrences: [] } }
+  }
   return file
 }
 
@@ -253,6 +300,11 @@ export function parseBackup(text: string): ParseResult {
   if (customExercises.some((e) => !e.id.startsWith('custom-')) || userTemplates.some((t) => !t.id.startsWith('user-'))) {
     return { ok: false, error: 'The backup file is damaged: a custom exercise or template has a built-in ID.' }
   }
+  // Activity records must point at activities in the file.
+  const activityIds = new Set(backup.data.activities.map((a) => a.id))
+  const strayActivity = [...backup.data.activitySeries, ...backup.data.activityOccurrences].find((x) => !activityIds.has(x.activityId))
+  if (strayActivity) return { ok: false, error: `The backup file is damaged: an activity entry points at an activity that isn't in the file.` }
+
   const problems = validateCatalog({
     equipment: builtinSource.equipment,
     exercises: [...builtinSource.exercises, ...customExercises],

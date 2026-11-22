@@ -6,7 +6,7 @@
 // Migrations: never edit version(1) once it has shipped. When the schema changes, add
 // db.version(2).stores({...}).upgrade(tx => ...) below it. Dexie runs each upgrade once per device.
 import Dexie, { type EntityTable } from 'dexie'
-import type { BandRecord, SessionRecord, SetRecord, SettingRecord } from '../domain/records.ts'
+import type { ActivityOccurrence, ActivityRecord, ActivitySeries, BandRecord, SessionRecord, SetRecord, SettingRecord } from '../domain/records.ts'
 import type { Exercise, Template } from '../domain/types.ts'
 
 export const db = new Dexie('home-gym-tracker') as Dexie & {
@@ -16,6 +16,9 @@ export const db = new Dexie('home-gym-tracker') as Dexie & {
   settings: EntityTable<SettingRecord, 'key'>
   customExercises: EntityTable<Exercise, 'id'>
   userTemplates: EntityTable<Template, 'id'>
+  activities: EntityTable<ActivityRecord, 'id'>
+  activitySeries: EntityTable<ActivitySeries, 'id'>
+  activityOccurrences: EntityTable<ActivityOccurrence, 'id'>
 }
 
 db.version(1).stores({
@@ -41,6 +44,14 @@ db.version(3).stores({
 db.version(4).stores({
   customExercises: 'id',
   userTemplates: 'id',
+})
+
+// v5 (M13): activities outside the app (hockey, runs, classes), their recurring series, and
+// concrete dated occurrences. New tables only.
+db.version(5).stores({
+  activities: 'id',
+  activitySeries: 'id, activityId',
+  activityOccurrences: 'id, date, activityId, seriesId',
 })
 
 /**

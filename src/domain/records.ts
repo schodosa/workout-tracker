@@ -143,3 +143,55 @@ export interface WeekOverride {
   toDate?: string
   replacementId?: string
 }
+
+// ---------- Activities (sports and training outside the app) ----------
+
+export const LOAD_LEVELS = ['none', 'light', 'hard'] as const
+export type LoadLevel = (typeof LOAD_LEVELS)[number]
+
+export const INTENSITY_LEVELS = ['easy', 'moderate', 'hard'] as const
+export type Intensity = (typeof INTENSITY_LEVELS)[number]
+
+/** Something the user does that isn't logged set by set: hockey, a run, a yoga class. */
+export interface ActivityRecord {
+  id: string
+  name: string
+  /** Hex color for the dot and chip. */
+  color: string
+  typicalMinutes: number
+  /** How hard it is on the legs and the cardio system (drives the conflict rules in M14). */
+  legLoad: LoadLevel
+  cardioLoad: LoadLevel
+  intensity: Intensity
+  /** Archived activities keep their history but leave quick-add and the editor list. */
+  archived?: boolean
+  createdAt: number
+}
+
+/** A recurring rule, e.g. every Thursday. Instances are projected, not stored, until touched. */
+export interface ActivitySeries {
+  id: string
+  activityId: string
+  /** 0 = Sunday … 6 = Saturday. */
+  weekdays: number[]
+  startDate: string
+  endDate?: string
+  /** Dates removed from the series (spec: per-date exceptions). */
+  exceptions: string[]
+}
+
+export type OccurrenceStatus = 'planned' | 'done' | 'skipped'
+
+/** A concrete, dated activity: a one-off, a logged past activity, or a touched series instance. */
+export interface ActivityOccurrence {
+  id: string
+  activityId: string
+  date: string
+  status: OccurrenceStatus
+  /** Set when this record stands for one instance of a series. */
+  seriesId?: string
+  seriesDate?: string
+  actualMinutes?: number
+  rpe?: number
+  notes?: string
+}

@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Redirect, Route, Switch } from 'wouter'
 import { CatalogProvider } from './components/CatalogProvider.tsx'
+import { ActivitiesScreen, ActivityEditorScreen, LogPastActivityScreen } from './features/activities/ActivitiesScreen.tsx'
 import { TabBar } from './components/TabBar.tsx'
 import { HistoryScreen } from './features/history/HistoryScreen.tsx'
 import { SessionDetailScreen } from './features/history/SessionDetailScreen.tsx'
@@ -42,6 +43,9 @@ export default function App() {
             <Route path="/settings" component={SettingsScreen} />
             <Route path="/settings/equipment" component={EquipmentScreen} />
             <Route path="/settings/plan" component={PlanScreen} />
+            <Route path="/settings/activities" component={ActivitiesScreen} />
+            <Route path="/settings/activities/:id" component={ActivityEditorScreen} />
+            <Route path="/activities/log" component={LogPastActivityScreen} />
             <Route path="/settings/backup">
               <Suspense fallback={null}>
                 <BackupScreen />

@@ -86,3 +86,36 @@
   margin: 0;
   font-weight: 700;
 }
+
+.filter {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin-bottom: var(--gap);
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.filter button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.filter .filterOn {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 8px;
+  border-radius: 50%;
+  vertical-align: middle;
+}

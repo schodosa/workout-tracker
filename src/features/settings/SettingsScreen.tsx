@@ -35,6 +35,13 @@ export function SettingsScreen() {
           ›
         </span>
       </Link>
+      <Link href="/settings/activities" className={`card ${styles.link}`}>
+        <span className={styles.linkTitle}>Activities</span>
+        <span className="muted">Sports and classes outside the app</span>
+        <span className={styles.chevron} aria-hidden="true">
+          ›
+        </span>
+      </Link>
       <Link href="/settings/equipment" className={`card ${styles.link}`}>
         <span className={styles.linkTitle}>Equipment &amp; bands</span>
         <span className="muted">
