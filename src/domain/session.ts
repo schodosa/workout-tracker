@@ -58,6 +58,7 @@ export interface LogicalSet {
   records: SetRecord[]
   resistance?: number
   resistanceUnit?: 'lb' | 'kg'
+  bandIds?: string[]
   /** True when the set is measured in seconds rather than reps. */
   timed: boolean
   /** Reps or seconds: `both` for a two-sided set, `L`/`R` for a per-side set. */
@@ -81,6 +82,7 @@ export function toLogicalSets(sets: SetRecord[]): LogicalSet[] {
         records: [],
         resistance: r.resistance,
         resistanceUnit: r.resistanceUnit,
+        bandIds: r.bandIds,
         timed: r.seconds !== undefined,
         work: {},
       }
@@ -105,38 +107,50 @@ export function prefill(
   sessionSets: LogicalSet[],
   lastTime: LogicalSet[],
   defaultWork: number,
-): { weight: string; work: string; workRight: string } {
+): { weight: string; work: string; workRight: string; bandIds: string[] } {
   const source = sessionSets.at(-1) ?? lastTime[sessionSets.length] ?? lastTime.at(-1)
   const w = source?.work
   return {
     weight: source?.resistance !== undefined ? String(source.resistance) : '',
     work: String(w?.both ?? w?.L ?? defaultWork),
     workRight: String(w?.R ?? w?.both ?? defaultWork),
+    bandIds: source?.bandIds ?? [],
   }
 }
+
+/** Turns a band id into its label ("Red"). Screens pass one built from the user's bands. */
+export type BandLabeler = (id: string) => string
+const anyBand: BandLabeler = () => 'band'
 
 const workText = (ls: LogicalSet) => (isPerSide(ls) ? `${ls.work.L ?? '?'}/${ls.work.R ?? '?'}` : `${ls.work.both ?? '?'}`)
 
+/** The resistance part of a set: "50 lb", "Red", "Red + Blue", or "" for bodyweight. */
+function loadText(ls: LogicalSet, bandLabel: BandLabeler): string {
+  if (ls.resistance !== undefined) return `${ls.resistance} ${ls.resistanceUnit ?? ''}`.trim()
+  if (ls.bandIds?.length) return ls.bandIds.map(bandLabel).join(' + ')
+  return ''
+}
+const loadKey = (ls: LogicalSet) => (ls.resistance !== undefined ? `w${ls.resistance}` : `b${ls.bandIds?.join('+') ?? ''}`)
+
 /**
- * "Last time" summary, e.g. "50 lb × 12, 12, 11" (constant weight), "50×12, 55×10" (weight changed),
- * "× 10/10, 10/9" (per side, L/R), "45 s, 40 s" (timed).
+ * "Last time" summary, e.g. "50 lb × 12, 12, 11" (constant load), "50 lb×12, 55 lb×10" (load changed),
+ * "Red × 12, 12" (band), "× 10/10, 10/9" (per side, L/R), "45 s, 40 s" (timed).
  */
-export function summarizeLastTime(sets: LogicalSet[]): string {
+export function summarizeLastTime(sets: LogicalSet[], bandLabel: BandLabeler = anyBand): string {
   if (sets.length === 0) return ''
   const unit = sets[0].timed ? ' s' : ''
-  const weights = new Set(sets.map((s) => s.resistance))
-  if (weights.size === 1) {
-    const w = sets[0].resistance
+  if (new Set(sets.map(loadKey)).size === 1) {
+    const load = loadText(sets[0], bandLabel)
     const parts = sets.map((s) => workText(s) + unit).join(', ')
-    if (w === undefined) return sets[0].timed ? parts : `× ${parts}`
-    return `${w} ${sets[0].resistanceUnit ?? ''}`.trim() + (sets[0].timed ? `, ${parts}` : ` × ${parts}`)
+    if (!load) return sets[0].timed ? parts : `× ${parts}`
+    return load + (sets[0].timed ? `, ${parts}` : ` × ${parts}`)
   }
-  return sets.map((s) => `${s.resistance ?? 0}×${workText(s)}${unit}`).join(', ')
+  return sets.map((s) => `${loadText(s, bandLabel) || '0'}×${workText(s)}${unit}`).join(', ')
 }
 
-/** "50 lb × 12", "× 10 L / 9 R", "40 s", "30 s L / 30 s R", "45 lb × 10 L / 10 R". */
-export function formatLogicalSet(ls: LogicalSet): string {
-  const load = ls.resistance !== undefined ? `${ls.resistance} ${ls.resistanceUnit ?? ''}`.trim() : ''
+/** "50 lb × 12", "Red + Blue × 12", "× 10 L / 9 R", "40 s", "30 s L / 30 s R", "45 lb × 10 L / 10 R". */
+export function formatLogicalSet(ls: LogicalSet, bandLabel: BandLabeler = anyBand): string {
+  const load = loadText(ls, bandLabel)
   const one = (v: number | undefined) => (ls.timed ? `${v ?? '?'} s` : `${v ?? '?'}`)
   let work: string
   if (isPerSide(ls)) work = ls.timed ? `${one(ls.work.L)} L / ${one(ls.work.R)} R` : `× ${one(ls.work.L)} L / ${one(ls.work.R)} R`

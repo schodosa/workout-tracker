@@ -2,7 +2,9 @@ import { useLocation, useParams } from 'wouter'
 import { BackLink } from '../../components/BackLink.tsx'
 import { ResumeBanner } from '../../components/ResumeBanner.tsx'
 import { SetupCard } from '../../components/SetupCard.tsx'
+import { useInventory } from '../../db/inventory.ts'
 import { startSession, useInProgressSession } from '../../db/sessions.ts'
+import { missingForTemplate } from '../../domain/inventory.ts'
 import { builtinCatalog } from '../../domain/builtins.ts'
 import { formatDose, groupSupersets, resolveTemplateItem, type ResolvedItem } from '../../domain/catalog.ts'
 import { DEFAULT_TEMPLATE_SETTINGS } from '../../domain/types.ts'
@@ -12,7 +14,9 @@ export function TemplateScreen() {
   const { id } = useParams<{ id: string }>()
   const [, navigate] = useLocation()
   const inProgress = useInProgressSession()
+  const inv = useInventory()
   const template = builtinCatalog.templates.get(id)
+  const missing = template && inv ? missingForTemplate(builtinCatalog, inv, template) : []
 
   if (!template) {
     return (
@@ -40,6 +44,12 @@ export function TemplateScreen() {
       <p className="muted">
         ~{template.estMinutes} min · {template.items.length} exercises · {equipmentNames.join(', ')}
       </p>
+
+      {missing.length > 0 && (
+        <p className={styles.missing}>
+          You don't have: {missing.join(', ')}. Substitutes for missing equipment arrive in a later update; you can still start it.
+        </p>
+      )}
 
       {/* Only one session runs at a time; if one is open, offer to resume it instead. */}
       <div className={styles.start}>

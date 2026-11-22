@@ -30,6 +30,9 @@ A local-first, installable PWA workout tracker for home gyms. The full product s
 - A per-side set is stored as two `SetRecord`s (side `L` and `R`) sharing a `setNumber`. Count, display, edit and prefill through `toLogicalSets()` (in `src/domain/session.ts`), never raw records.
 - Movement patterns include `hip-adduction` and `hip-flexion`, which aren't in SPEC.md's list. `keepLight` marks the spec's ⚠ exercises. `cautions` can also hold plain safety notes.
 - Built-in products can declare a `genericType` (Master GS → `stationary-bike`). Use `exercisesForEquipment()` to get everything a piece of equipment can do.
+- Inventory (`src/domain/inventory.ts`, `src/db/inventory.ts`): owned equipment and accessories live in the key/value `settings` table, and bands in `bands`. Until `ownedEquipment` is saved once (`configured: false`), hide nothing. Use `missingForExercise` / `missingForTemplate` / `canDoExercise` rather than checking ownership by hand.
+- Band sets store `bandIds` (max 2 = stacked), never pounds. Retired bands (`active: false`) leave the picker but keep their name in history. Pass `useBandLabeler()` into `formatLogicalSet` / `summarizeLastTime`.
+- Backup format is v2 (adds bands and settings). `upgradeBackup()` converts v1 files, so keep every old version importable.
 - Save each logged set immediately (write-through) so a locked phone or killed tab loses nothing.
 - Screens never touch `db` directly. They use the functions and `use*` hooks in `src/db/*.ts`.
 - Never edit a shipped `db.version(n)`. Schema changes go in a new `version(n+1)` with an `.upgrade()`.

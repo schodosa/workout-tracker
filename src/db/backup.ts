@@ -1,7 +1,9 @@
 // Export and import of all user data.
 import { useLiveQuery } from 'dexie-react-hooks'
-import { buildBackup, type Backup } from '../domain/backup.ts'
+import { buildBackup, summarizeBackup, type Backup, type BackupSummary } from '../domain/backup.ts'
 import { db, requestPersistentStorage } from './db.ts'
+
+const allTables = () => [db.sessions, db.sets, db.bands, db.settings]
 
 /**
  * The full backup, kept ready while the backup screen is open. iOS only allows the share sheet
@@ -9,18 +11,17 @@ import { db, requestPersistentStorage } from './db.ts'
  */
 export function useCurrentBackup(): Backup | undefined {
   return useLiveQuery(async () => {
-    // A read-only transaction gives one consistent snapshot of both tables.
-    const [sessions, sets] = await db.transaction('r', db.sessions, db.sets, () => Promise.all([db.sessions.toArray(), db.sets.toArray()]))
-    return buildBackup({ sessions, sets }, __APP_VERSION__)
+    // A read-only transaction gives one consistent snapshot of every table.
+    const [sessions, sets, bands, settings] = await db.transaction('r', allTables(), () =>
+      Promise.all([db.sessions.toArray(), db.sets.toArray(), db.bands.toArray(), db.settings.toArray()]),
+    )
+    return buildBackup({ sessions, sets, bands, settings }, __APP_VERSION__)
   })
 }
 
 export type ImportMode = 'merge' | 'replace'
 
-export interface ImportResult {
-  sessions: number
-  sets: number
-}
+export type ImportResult = Pick<BackupSummary, 'sessions' | 'sets' | 'bands'>
 
 /**
  * Writes a validated backup into the database, all-or-nothing (one transaction).
@@ -28,10 +29,9 @@ export interface ImportResult {
  * - replace: deletes all current data first, so the device ends up exactly matching the file.
  */
 export async function importBackup(backup: Backup, mode: ImportMode): Promise<ImportResult> {
-  await db.transaction('rw', db.sessions, db.sets, async () => {
+  await db.transaction('rw', allTables(), async () => {
     if (mode === 'replace') {
-      await db.sets.clear()
-      await db.sessions.clear()
+      await Promise.all(allTables().map((t) => t.clear()))
     }
     const sessions = [...backup.data.sessions]
 
@@ -48,7 +48,12 @@ export async function importBackup(backup: Backup, mode: ImportMode): Promise<Im
 
     await db.sessions.bulkPut(sessions)
     await db.sets.bulkPut(backup.data.sets)
+    await db.bands.bulkPut(backup.data.bands)
+    // Settings in the file win (same rule as other records). A v1 file has none, so the
+    // device's inventory is left alone.
+    await db.settings.bulkPut(backup.data.settings)
   })
   void requestPersistentStorage()
-  return { sessions: backup.data.sessions.length, sets: backup.data.sets.length }
+  const s = summarizeBackup(backup)
+  return { sessions: s.sessions, sets: s.sets, bands: s.bands }
 }

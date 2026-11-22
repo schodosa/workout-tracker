@@ -171,6 +171,8 @@ export interface Template {
   requiredEquipmentIds: string[]
   format: TemplateFormat
   rounds?: number
+  /** Warm-ups (e.g. Band Activation) are excluded from progression flags. */
+  warmup?: boolean
   items: TemplateItem[]
 }
 

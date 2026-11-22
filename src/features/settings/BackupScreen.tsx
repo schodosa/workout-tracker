@@ -9,7 +9,9 @@ import { shareOrDownload } from '../../platform/shareFile.ts'
 import styles from './BackupScreen.module.css'
 
 function describeRange(s: BackupSummary): string {
-  const count = `${s.sessions} session${s.sessions === 1 ? '' : 's'}, ${s.sets} set${s.sets === 1 ? '' : 's'}`
+  const count =
+    `${s.sessions} session${s.sessions === 1 ? '' : 's'}, ${s.sets} set${s.sets === 1 ? '' : 's'}` +
+    (s.bands ? `, ${s.bands} band${s.bands === 1 ? '' : 's'}` : '')
   if (!s.firstDate || !s.lastDate) return count
   const range = s.firstDate === s.lastDate ? formatDayLong(s.firstDate) : `${formatDayLong(s.firstDate)} to ${formatDayLong(s.lastDate)}`
   return `${count} (${range})`

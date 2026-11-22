@@ -3,6 +3,15 @@
   min-height: var(--tap);
 }
 
+.missing {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--warn-bg);
+  color: var(--warn);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .safety {
   margin: 8px 0 0;
   color: var(--warn);

@@ -109,17 +109,20 @@ describe('prefill', () => {
     set({ resistance: 55, reps: 10, setNumber: 2, loggedAt: 2 }),
   ])
   it("uses last time's set 1 for the first set", () => {
-    expect(prefill([], last, 10)).toEqual({ weight: '50', work: '12', workRight: '12' })
+    expect(prefill([], last, 10)).toEqual({ weight: '50', work: '12', workRight: '12', bandIds: [] })
   })
   it('for set 2, prefers what you just did over last time', () => {
     const now = toLogicalSets([set({ resistance: 55, reps: 9, setNumber: 1 })])
-    expect(prefill(now, last, 10)).toEqual({ weight: '55', work: '9', workRight: '9' })
+    expect(prefill(now, last, 10)).toEqual({ weight: '55', work: '9', workRight: '9', bandIds: [] })
   })
   it('prefills both sides of a per-side move', () => {
-    expect(prefill([], toLogicalSets(pair(1, 10, 8)), 12)).toEqual({ weight: '', work: '10', workRight: '8' })
+    expect(prefill([], toLogicalSets(pair(1, 10, 8)), 12)).toEqual({ weight: '', work: '10', workRight: '8', bandIds: [] })
+  })
+  it('prefills the band(s) used last time', () => {
+    expect(prefill([], toLogicalSets([set({ bandIds: ['r', 'b'], reps: 12 })]), 10).bandIds).toEqual(['r', 'b'])
   })
   it('falls back to defaults with no history', () => {
-    expect(prefill([], [], 10)).toEqual({ weight: '', work: '10', workRight: '10' })
+    expect(prefill([], [], 10)).toEqual({ weight: '', work: '10', workRight: '10', bandIds: [] })
   })
 })
 
@@ -129,8 +132,15 @@ describe('summarizeLastTime', () => {
     expect(summarizeLastTime(sets)).toBe('50 lb × 12, 12, 11')
   })
   it('lists each set when weight changes', () => {
-    const sets = toLogicalSets([set({ resistance: 50, reps: 12, setNumber: 1 }), set({ resistance: 55, reps: 10, setNumber: 2 })])
-    expect(summarizeLastTime(sets)).toBe('50×12, 55×10')
+    const sets = toLogicalSets([set({ resistance: 50, resistanceUnit: 'lb', reps: 12, setNumber: 1 }), set({ resistance: 55, resistanceUnit: 'lb', reps: 10, setNumber: 2 })])
+    expect(summarizeLastTime(sets)).toBe('50 lb×12, 55 lb×10')
+  })
+  it('names bands, including a stacked pair', () => {
+    const label = (id: string) => ({ r: 'Red', b: 'Blue' })[id] ?? '?'
+    const same = toLogicalSets([set({ bandIds: ['r'], reps: 12, setNumber: 1 }), set({ bandIds: ['r'], reps: 11, setNumber: 2 })])
+    expect(summarizeLastTime(same, label)).toBe('Red × 12, 11')
+    const changed = toLogicalSets([set({ bandIds: ['r'], reps: 15, setNumber: 1 }), set({ bandIds: ['r', 'b'], reps: 10, setNumber: 2 })])
+    expect(summarizeLastTime(changed, label)).toBe('Red×15, Red + Blue×10')
   })
   it('shows per-side as L/R', () => {
     expect(summarizeLastTime(toLogicalSets([...pair(1, 10, 10), ...pair(2, 10, 9)]))).toBe('× 10/10, 10/9')
@@ -144,6 +154,9 @@ describe('summarizeLastTime', () => {
 describe('formatLogicalSet', () => {
   it('formats weight and reps', () => {
     expect(formatLogicalSet(toLogicalSets([set({ resistance: 50, resistanceUnit: 'lb', reps: 12 })])[0])).toBe('50 lb × 12')
+  })
+  it('formats a band set', () => {
+    expect(formatLogicalSet(toLogicalSets([set({ bandIds: ['r', 'b'], reps: 12 })])[0], (id) => (id === 'r' ? 'Red' : 'Blue'))).toBe('Red + Blue × 12')
   })
   it('formats a weighted per-side set', () => {
     expect(formatLogicalSet(toLogicalSets(pair(1, 10, 9, { resistance: 45, resistanceUnit: 'lb' }))[0])).toBe('45 lb × 10 L / 9 R')

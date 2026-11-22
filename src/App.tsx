@@ -6,6 +6,7 @@ import { SessionDetailScreen } from './features/history/SessionDetailScreen.tsx'
 import { ExerciseScreen } from './features/library/ExerciseScreen.tsx'
 import { LibraryScreen } from './features/library/LibraryScreen.tsx'
 import { SessionScreen } from './features/session/SessionScreen.tsx'
+import { EquipmentScreen } from './features/settings/EquipmentScreen.tsx'
 import { SettingsScreen } from './features/settings/SettingsScreen.tsx'
 
 // Loaded on demand: the backup screen pulls in Zod (~60 KB gzipped), which nothing else needs.
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/history" component={HistoryScreen} />
           <Route path="/history/:id" component={SessionDetailScreen} />
           <Route path="/settings" component={SettingsScreen} />
+          <Route path="/settings/equipment" component={EquipmentScreen} />
           <Route path="/settings/backup">
             <Suspense fallback={null}>
               <BackupScreen />

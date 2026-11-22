@@ -1,0 +1,14 @@
+{
+  "id": "band-activation-upper",
+  "name": "Band Activation (before Upper)",
+  "goalTags": ["warm-up"],
+  "estMinutes": 5,
+  "requiredEquipmentIds": ["resistance-bands"],
+  "format": "straight-sets",
+  "warmup": true,
+  "items": [
+    { "exerciseId": "band-pull-apart", "sets": 1, "reps": { "min": 15, "max": 15 }, "restSec": 15, "note": "Light band only: wake the muscles up, don't tire them out." },
+    { "exerciseId": "band-face-pull", "sets": 1, "reps": { "min": 12, "max": 12 }, "restSec": 15 },
+    { "exerciseId": "band-external-rotation", "sets": 1, "reps": { "min": 10, "max": 10 }, "restSec": 15 }
+  ]
+}

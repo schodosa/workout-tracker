@@ -1,6 +1,10 @@
 import { useState } from 'react'
-import { Redirect, useLocation, useParams } from 'wouter'
+import { Link, Redirect, useLocation, useParams } from 'wouter'
 import { BackLink } from '../../components/BackLink.tsx'
+import { BandPicker } from '../../components/BandPicker.tsx'
+import { useBandLabeler, useInventory } from '../../db/inventory.ts'
+import { compatibleBands, type Inventory } from '../../domain/inventory.ts'
+import { BAND_TYPE_LABELS } from '../../domain/labels.ts'
 import { RestBar } from '../../components/RestBar.tsx'
 import { SetRow } from '../../components/SetRow.tsx'
 import { SetupCard } from '../../components/SetupCard.tsx'
@@ -187,6 +191,7 @@ interface ExerciseLoggerProps {
 function ExerciseLogger(props: ExerciseLoggerProps) {
   const exercise = props.item.exerciseId ? builtinCatalog.exercises.get(props.item.exerciseId) : undefined
   const lastTime = useLastPerformance(exercise?.id, props.sessionId)
+  const inventory = useInventory()
 
   if (!exercise) {
     return (
@@ -203,8 +208,8 @@ function ExerciseLogger(props: ExerciseLoggerProps) {
       </div>
     )
   }
-  if (lastTime === undefined) return null
-  return <ExerciseForm {...props} exercise={exercise} lastTime={lastTime} />
+  if (lastTime === undefined || inventory === undefined) return null
+  return <ExerciseForm {...props} exercise={exercise} lastTime={lastTime} inventory={inventory} />
 }
 
 function ExerciseForm({
@@ -216,10 +221,15 @@ function ExerciseForm({
   onLogged,
   exercise,
   lastTime,
-}: ExerciseLoggerProps & { exercise: Exercise; lastTime: LastPerformance | null }) {
+  inventory,
+}: ExerciseLoggerProps & { exercise: Exercise; lastTime: LastPerformance | null; inventory: Inventory }) {
   const equipment = builtinCatalog.equipment.get(exercise.equipmentId)
+  const bandLabel = useBandLabeler()
   // Weight field only for equipment measured in lb/kg (not floor, bands, or bikes).
   const weighted = equipment?.resistanceUnit === 'lb' || equipment?.resistanceUnit === 'kg'
+  // Band exercises log which band(s) were used instead.
+  const banded = equipment?.resistanceUnit === 'band'
+  const bandChoices = banded ? compatibleBands(inventory, exercise) : []
   const unit: 'lb' | 'kg' = equipment?.resistanceUnit === 'kg' ? 'kg' : 'lb'
   const timed = exercise.measure === 'time'
   const perSide = exercise.unilateral
@@ -230,6 +240,8 @@ function ExerciseForm({
   const [weight, setWeight] = useState(initial.weight)
   const [work, setWork] = useState(initial.work)
   const [workRight, setWorkRight] = useState(initial.workRight)
+  // Start with last time's band(s), if they're still available for this exercise.
+  const [bandIds, setBandIds] = useState(() => initial.bandIds.filter((id) => bandChoices.some((b) => b.id === id)))
   const [saving, setSaving] = useState(false)
 
   const valid = workIsValid(perSide, work, workRight)
@@ -250,6 +262,7 @@ function ExerciseForm({
       setNumber: Math.max(0, ...sets.map((s) => s.setNumber)) + 1,
       resistance: hasWeight ? weightNum : undefined,
       resistanceUnit: hasWeight ? unit : undefined,
+      bandIds: banded && bandIds.length > 0 ? bandIds : undefined,
     }
     const amount = (v: string) => (timed ? { seconds: Number.parseInt(v, 10) } : { reps: Number.parseInt(v, 10) })
     // A per-side set is two records (L, R) written together; otherwise one record.
@@ -276,7 +289,7 @@ function ExerciseForm({
         {partners.length > 0 && <p className={styles.superset}>Superset with {partners.join(', ')}</p>}
         {lastLogical.length > 0 && (
           <p className={styles.lastTime}>
-            Last time{lastTime?.date && ` (${formatDayLong(lastTime.date)})`}: <strong>{summarizeLastTime(lastLogical)}</strong>
+            Last time{lastTime?.date && ` (${formatDayLong(lastTime.date)})`}: <strong>{summarizeLastTime(lastLogical, bandLabel)}</strong>
           </p>
         )}
       </header>
@@ -298,6 +311,13 @@ function ExerciseForm({
 
       <div className="card">
         {weighted && <Stepper label="Weight" unit={unit} value={weight} onChange={setWeight} step={resistanceStep(unit)} />}
+        {banded && bandChoices.length > 0 && <BandPicker bands={bandChoices} selected={bandIds} onChange={setBandIds} />}
+        {banded && bandChoices.length === 0 && (
+          <p className={styles.noBands}>
+            No {exercise.bandSetup?.bandTypes.map((t) => BAND_TYPE_LABELS[t].toLowerCase()).join(' or ')} bands in your inventory.{' '}
+            <Link href="/settings/equipment">Add one</Link> to record which band you used.
+          </p>
+        )}
         <WorkFields timed={timed} perSide={perSide} work={work} workRight={workRight} onWork={setWork} onWorkRight={setWorkRight} stopwatch />
         <button type="button" className="btn btn-primary" onClick={onLog} disabled={!valid || saving}>
           {done ? 'Log extra set' : `Log set ${logical.length + 1}`}

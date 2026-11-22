@@ -1,5 +1,8 @@
 import { Link, useLocation, useSearch } from 'wouter'
+import { SetupPrompt } from '../../components/SetupPrompt.tsx'
+import { useInventory } from '../../db/inventory.ts'
 import { builtinCatalog } from '../../domain/builtins.ts'
+import { canDoExercise, usableEquipment } from '../../domain/inventory.ts'
 import { CATEGORY_LABELS, PATTERN_LABELS } from '../../domain/labels.ts'
 import { filterExercises } from '../../domain/library.ts'
 import { CATEGORIES, MOVEMENT_PATTERNS, type Exercise } from '../../domain/types.ts'
@@ -30,13 +33,29 @@ export function LibraryScreen() {
     navigate(qs ? `/library?${qs}` : '/library', { replace: true })
   }
 
-  const results = filterExercises(builtinCatalog, { query: q, equipmentId: eq, category: cat, pattern: pat, setup })
+  const inv = useInventory()
+  if (!inv) return null
+
+  // Default to "only what I own" once equipment is set up; ?all=1 shows everything.
+  const ownedOnly = inv.configured && params.get('all') !== '1'
+  const usable = usableEquipment(builtinCatalog, inv)
+  const results = filterExercises(builtinCatalog, { query: q, equipmentId: eq, category: cat, pattern: pat, setup }).filter(
+    (ex) => !ownedOnly || canDoExercise(builtinCatalog, inv, ex),
+  )
+  const equipmentChoices = ownedOnly ? equipmentOptions.filter((e) => usable.has(e.id)) : equipmentOptions
   const setupOptions = eq ? builtinCatalog.equipment.get(eq)?.setupOptions : undefined
   const filtered = Boolean(q || eq || cat || pat || setup)
 
   return (
     <>
       <h1>Library</h1>
+      {!inv.configured && <SetupPrompt />}
+      {inv.configured && (
+        <label className={styles.ownedToggle}>
+          <input type="checkbox" checked={ownedOnly} onChange={() => update('all', ownedOnly ? '1' : '')} />
+          Only what I own
+        </label>
+      )}
 
       <input
         type="search"
@@ -51,7 +70,7 @@ export function LibraryScreen() {
       <div className={styles.filters}>
         <select value={eq} onChange={(e) => update('eq', e.target.value)} aria-label="Equipment">
           <option value="">All equipment</option>
-          {equipmentOptions.map((e) => (
+          {equipmentChoices.map((e) => (
             <option key={e.id} value={e.id}>
               {e.name}
             </option>
@@ -97,7 +116,7 @@ export function LibraryScreen() {
       <p className={styles.count}>
         {results.length} exercise{results.length === 1 ? '' : 's'}
         {filtered && (
-          <button type="button" className={styles.clear} onClick={() => navigate('/library', { replace: true })}>
+          <button type="button" className={styles.clear} onClick={() => navigate(ownedOnly ? '/library' : '/library?all=1', { replace: true })}>
             Clear filters
           </button>
         )}

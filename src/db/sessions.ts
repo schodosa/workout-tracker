@@ -39,7 +39,7 @@ export async function deleteSets(ids: string[]): Promise<void> {
   await db.sets.bulkDelete(ids)
 }
 
-export async function updateSets(changes: { id: string; changes: Partial<Pick<SetRecord, 'resistance' | 'resistanceUnit' | 'reps' | 'seconds'>> }[]): Promise<void> {
+export async function updateSets(changes: { id: string; changes: Partial<Pick<SetRecord, 'resistance' | 'resistanceUnit' | 'bandIds' | 'reps' | 'seconds'>> }[]): Promise<void> {
   await db.transaction('rw', db.sets, async () => {
     for (const c of changes) await db.sets.update(c.id, c.changes)
   })

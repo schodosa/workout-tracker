@@ -1,0 +1,54 @@
+.picker {
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  margin-bottom: 6px;
+  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.hint {
+  font-weight: 400;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  min-height: 48px;
+  padding: 0 14px;
+  border: 2px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.on {
+  border-color: var(--accent);
+  background: var(--bg);
+  box-shadow: 0 0 0 2px var(--accent) inset;
+}
+
+.chipInner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The outline keeps black and dark-colored bands visible on the dark background. */
+.dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  outline: 2px solid rgb(255 255 255 / 0.35);
+  flex: none;
+}

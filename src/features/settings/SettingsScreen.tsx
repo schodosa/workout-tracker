@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'wouter'
 import { getLastBackupAt } from '../../db/backupReminder.ts'
+import { useInventory } from '../../db/inventory.ts'
 import styles from './SettingsScreen.module.css'
 
 // Shows build info and how the app is running. Useful while testing installs and updates.
@@ -20,10 +21,20 @@ export function SettingsScreen() {
   }, [])
 
   const lastBackupAt = getLastBackupAt()
+  const inv = useInventory()
 
   return (
     <>
       <h1>Settings</h1>
+      <Link href="/settings/equipment" className={`card ${styles.link}`}>
+        <span className={styles.linkTitle}>Equipment &amp; bands</span>
+        <span className="muted">
+          {!inv ? '…' : !inv.configured ? 'Not set up yet' : `${inv.equipmentIds.length} item${inv.equipmentIds.length === 1 ? '' : 's'}, ${inv.bands.filter((b) => b.active).length} band${inv.bands.filter((b) => b.active).length === 1 ? '' : 's'}`}
+        </span>
+        <span className={styles.chevron} aria-hidden="true">
+          ›
+        </span>
+      </Link>
       <Link href="/settings/backup" className={`card ${styles.link}`}>
         <span className={styles.linkTitle}>Backup &amp; restore</span>
         <span className="muted">

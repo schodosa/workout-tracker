@@ -6,11 +6,13 @@
 // Migrations: never edit version(1) once it has shipped. When the schema changes, add
 // db.version(2).stores({...}).upgrade(tx => ...) below it. Dexie runs each upgrade once per device.
 import Dexie, { type EntityTable } from 'dexie'
-import type { SessionRecord, SetRecord } from '../domain/records.ts'
+import type { BandRecord, SessionRecord, SetRecord, SettingRecord } from '../domain/records.ts'
 
 export const db = new Dexie('home-gym-tracker') as Dexie & {
   sessions: EntityTable<SessionRecord, 'id'>
   sets: EntityTable<SetRecord, 'id'>
+  bands: EntityTable<BandRecord, 'id'>
+  settings: EntityTable<SettingRecord, 'key'>
 }
 
 db.version(1).stores({
@@ -23,6 +25,13 @@ db.version(1).stores({
 // Only indexes changed, so no .upgrade() is needed; Dexie builds the new index from existing rows.
 db.version(2).stores({
   sets: 'id, sessionId, exerciseId, loggedAt, [exerciseId+loggedAt]',
+})
+
+// v3 (M7): inventory. New tables only; existing data is untouched, so no .upgrade() needed.
+// `settings` is a small key/value table (owned equipment, accessories, and later settings).
+db.version(3).stores({
+  bands: 'id',
+  settings: 'key',
 })
 
 /**

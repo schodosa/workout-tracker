@@ -8,9 +8,11 @@
 // Imported files are untrusted input, so they go through Zod: it checks every field's type and
 // returns readable errors instead of letting a bad file corrupt the database.
 import { z } from 'zod'
-import type { SessionRecord, SetRecord } from './records.ts'
+import { BAND_LEVELS, type BandRecord, type SessionRecord, type SetRecord, type SettingRecord } from './records.ts'
+import { ACCESSORIES, BAND_TYPES } from './types.ts'
 
-export const BACKUP_FORMAT_VERSION = 1
+// v1 (M5): sessions + sets. v2 (M7): adds bands, settings, and bandIds on sets.
+export const BACKUP_FORMAT_VERSION = 2
 const APP_ID = 'home-gym-tracker'
 
 const localDateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be a YYYY-MM-DD date')
@@ -35,10 +37,28 @@ const setSchema = z.object({
   side: z.enum(['L', 'R', 'both']),
   resistance: z.number().nonnegative().optional(),
   resistanceUnit: z.enum(['lb', 'kg']).optional(),
+  bandIds: z.array(z.string().min(1)).max(2).optional(),
   reps: z.number().int().nonnegative().optional(),
   seconds: z.number().nonnegative().optional(),
   loggedAt: timestamp,
 })
+
+const bandSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be a #rrggbb color'),
+  type: z.enum(BAND_TYPES),
+  level: z.enum(BAND_LEVELS),
+  ratedLb: z.number().positive().optional(),
+  active: z.boolean(),
+  createdAt: timestamp,
+})
+
+// One schema per setting key: `key` picks which shape `value` must have.
+const settingSchema = z.discriminatedUnion('key', [
+  z.object({ key: z.literal('ownedEquipment'), value: z.array(z.string().min(1)) }),
+  z.object({ key: z.literal('accessories'), value: z.array(z.enum(ACCESSORIES)) }),
+])
 
 const backupSchema = z.object({
   app: z.literal(APP_ID),
@@ -49,6 +69,8 @@ const backupSchema = z.object({
   data: z.object({
     sessions: z.array(sessionSchema),
     sets: z.array(setSchema),
+    bands: z.array(bandSchema),
+    settings: z.array(settingSchema),
   }),
 })
 
@@ -60,10 +82,16 @@ export type Backup = z.infer<typeof backupSchema>
 type Equals<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false
 const sessionSchemaMatches: Equals<SessionRecord, z.infer<typeof sessionSchema>> = true
 const setSchemaMatches: Equals<SetRecord, z.infer<typeof setSchema>> = true
+const bandSchemaMatches: Equals<BandRecord, z.infer<typeof bandSchema>> = true
+const settingSchemaMatches: Equals<SettingRecord, z.infer<typeof settingSchema>> = true
 void sessionSchemaMatches
 void setSchemaMatches
+void bandSchemaMatches
+void settingSchemaMatches
 
-export function buildBackup(data: { sessions: SessionRecord[]; sets: SetRecord[] }, appVersion: string, now = new Date()): Backup {
+export type BackupData = Backup['data']
+
+export function buildBackup(data: BackupData, appVersion: string, now = new Date()): Backup {
   return {
     app: APP_ID,
     kind: 'backup',
@@ -80,7 +108,9 @@ export function backupFileName(localDate: string): string {
 
 export interface BackupSummary {
   sessions: number
+  /** Logical sets: a per-side L/R pair counts once. */
   sets: number
+  bands: number
   firstDate?: string
   lastDate?: string
   exportedAt: string
@@ -90,7 +120,8 @@ export function summarizeBackup(b: Backup): BackupSummary {
   const dates = b.data.sessions.map((s) => s.date).sort()
   return {
     sessions: b.data.sessions.length,
-    sets: b.data.sets.length,
+    sets: new Set(b.data.sets.map((s) => `${s.sessionId}:${s.itemIndex}:${s.setNumber}`)).size,
+    bands: b.data.bands.length,
     firstDate: dates[0],
     lastDate: dates.at(-1),
     exportedAt: b.exportedAt,
@@ -99,9 +130,17 @@ export function summarizeBackup(b: Backup): BackupSummary {
 
 export type ParseResult = { ok: true; backup: Backup; summary: BackupSummary } | { ok: false; error: string }
 
-/** Placeholder for future format migrations: v1 → v2 conversions would go here. */
+/**
+ * Converts older backup files to the current shape, one version at a time, so a file from any
+ * past version still imports. Runs before validation; the result is then checked as usual.
+ */
 function upgradeBackup(raw: unknown): unknown {
-  return raw
+  let file = raw as { formatVersion?: unknown; data?: Record<string, unknown> }
+  if (file.formatVersion === 1) {
+    // v1 → v2: v1 files predate bands and settings.
+    file = { ...file, formatVersion: 2, data: { ...file.data, bands: [], settings: [] } }
+  }
+  return file
 }
 
 /** Parses and validates a backup file's text. Never throws; returns a readable error instead. */

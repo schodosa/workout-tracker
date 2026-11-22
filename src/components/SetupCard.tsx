@@ -60,6 +60,13 @@ export function SetupCard({ exercise, equipment }: { exercise: Exercise; equipme
         </p>
       )}
 
+      {band && (
+        <p className={styles.caution} role="note">
+          <span aria-hidden="true">⚠</span> Check the band for nicks or tears first.
+          {band.anchor.startsWith('door') && ' Put the door anchor on the hinge side of a closed door.'}
+        </p>
+      )}
+
       {exercise.cautions.map((c) => (
         <p key={c} className={styles.caution} role="note">
           <span aria-hidden="true">⚠</span> {c}

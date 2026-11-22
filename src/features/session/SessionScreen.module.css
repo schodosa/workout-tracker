@@ -111,6 +111,16 @@
   font-size: 0.9rem;
 }
 
+.noBands {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.noBands a {
+  color: var(--accent);
+}
+
 .superset {
   margin: 6px 0 0;
   color: var(--accent);

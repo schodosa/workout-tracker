@@ -3,6 +3,7 @@
 // Sets are their own table rather than an array inside the session. That keeps "log a set" a
 // tiny insert (saved the instant you tap), and lets later features ask "every set of exercise X"
 // through an index without loading whole sessions.
+import type { Accessory, BandType } from './types.ts'
 
 export type SessionStatus = 'in-progress' | 'done'
 
@@ -31,7 +32,34 @@ export interface SetRecord {
   side: Side
   resistance?: number
   resistanceUnit?: 'lb' | 'kg'
+  /** Band exercises log which band(s) were used, not pounds; two means stacked. */
+  bandIds?: string[]
   reps?: number
   seconds?: number
   loggedAt: number
 }
+
+export const BAND_LEVELS = ['x-light', 'light', 'medium', 'heavy', 'x-heavy'] as const
+export type BandLevel = (typeof BAND_LEVELS)[number]
+
+/** One band the user owns. */
+export interface BandRecord {
+  id: string
+  /** Usually its color, e.g. "Red". */
+  label: string
+  /** Hex color for the chip. */
+  color: string
+  type: BandType
+  level: BandLevel
+  /** The rated pounds printed on the band, if any. Used only to sort bands of the same level. */
+  ratedLb?: number
+  /** False = retired: hidden from the picker, but still named in history. */
+  active: boolean
+  createdAt: number
+}
+
+/**
+ * Key/value settings. A discriminated union: the `key` decides the type of `value`, so TypeScript
+ * (and the backup validator) know exactly what each setting holds.
+ */
+export type SettingRecord = { key: 'ownedEquipment'; value: string[] } | { key: 'accessories'; value: Accessory[] }

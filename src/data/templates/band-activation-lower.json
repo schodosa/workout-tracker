@@ -1,0 +1,14 @@
+{
+  "id": "band-activation-lower",
+  "name": "Band Activation (before Lower + Core)",
+  "goalTags": ["warm-up"],
+  "estMinutes": 5,
+  "requiredEquipmentIds": ["resistance-bands"],
+  "format": "straight-sets",
+  "warmup": true,
+  "items": [
+    { "exerciseId": "band-lateral-walk", "sets": 1, "reps": { "min": 10, "max": 10 }, "restSec": 15, "note": "10 steps each way. Light band only." },
+    { "exerciseId": "band-glute-bridge", "sets": 1, "reps": { "min": 12, "max": 12 }, "restSec": 15 },
+    { "exerciseId": "band-clamshell", "sets": 1, "reps": { "min": 10, "max": 10 }, "restSec": 15 }
+  ]
+}

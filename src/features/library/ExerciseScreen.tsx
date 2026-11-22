@@ -1,8 +1,10 @@
 import { Link, useParams } from 'wouter'
 import { BackLink } from '../../components/BackLink.tsx'
 import { SetupCard } from '../../components/SetupCard.tsx'
+import { useBandLabeler, useInventory } from '../../db/inventory.ts'
 import { useLastPerformance } from '../../db/sessions.ts'
 import { builtinCatalog } from '../../domain/builtins.ts'
+import { missingForExercise } from '../../domain/inventory.ts'
 import { formatDayLong } from '../../domain/dates.ts'
 import { CATEGORY_LABELS, PATTERN_LABELS } from '../../domain/labels.ts'
 import { summarizeLastTime, toLogicalSets } from '../../domain/session.ts'
@@ -13,6 +15,8 @@ export function ExerciseScreen() {
   const { id } = useParams<{ id: string }>()
   const exercise = builtinCatalog.exercises.get(id)
   const last = useLastPerformance(exercise?.id, '')
+  const inv = useInventory()
+  const bandLabel = useBandLabeler()
 
   if (!exercise) {
     return (
@@ -28,6 +32,7 @@ export function ExerciseScreen() {
   const easier = exercise.regressesTo ? builtinCatalog.exercises.get(exercise.regressesTo) : undefined
   const harder = exercise.progressesTo ? builtinCatalog.exercises.get(exercise.progressesTo) : undefined
   const lastSets = toLogicalSets(last?.sets ?? [])
+  const missing = inv ? missingForExercise(builtinCatalog, inv, exercise) : []
 
   return (
     <>
@@ -38,6 +43,7 @@ export function ExerciseScreen() {
       </p>
       <p className={styles.muscles}>{exercise.primaryMuscles.join(' · ')}</p>
       <Chips exercise={exercise} />
+      {missing.length > 0 && <p className={styles.missing}>You'd need: {missing.join(', ')}</p>}
 
       <SetupCard exercise={exercise} equipment={equipment} />
 
@@ -58,7 +64,7 @@ export function ExerciseScreen() {
 
       {lastSets.length > 0 && (
         <p className={styles.last}>
-          Last time{last?.date && ` (${formatDayLong(last.date)})`}: <strong>{summarizeLastTime(lastSets)}</strong>
+          Last time{last?.date && ` (${formatDayLong(last.date)})`}: <strong>{summarizeLastTime(lastSets, bandLabel)}</strong>
         </p>
       )}
     </>
