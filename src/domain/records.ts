@@ -3,6 +3,7 @@
 // Sets are their own table rather than an array inside the session. That keeps "log a set" a
 // tiny insert (saved the instant you tap), and lets later features ask "every set of exercise X"
 // through an index without loading whole sessions.
+import type { ConflictSettings } from './conflicts.ts'
 import type { Accessory, BandType } from './types.ts'
 
 export type SessionStatus = 'in-progress' | 'done'
@@ -110,6 +111,9 @@ export type SettingRecord =
   | { key: 'accessories'; value: Accessory[] }
   | { key: 'plan'; value: Plan }
   | { key: 'weekOverrides'; value: WeekOverride[] }
+  | { key: 'conflictRules'; value: ConflictSettings }
+  /** Ids of conflict suggestions the user dismissed. */
+  | { key: 'dismissedConflicts'; value: string[] }
 
 /**
  * The weekly plan. One object holds both kinds, so switching between fixed days and a rotation
@@ -129,6 +133,8 @@ export interface Plan {
   availableDays: number[]
   /** How long a session can usually be, in minutes. */
   sessionMinutes?: number
+  /** Local date the plan was last saved. "Missed session" only looks at days since then. */
+  updatedOn?: string
 }
 
 /**

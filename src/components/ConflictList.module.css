@@ -1,0 +1,36 @@
+.list {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  padding: 12px 14px;
+  border: 1px solid var(--warn);
+  border-radius: var(--radius);
+  background: var(--warn-bg);
+}
+
+.title {
+  display: block;
+  color: var(--warn);
+}
+
+.detail {
+  margin: 4px 0 10px;
+}
+
+.actions {
+  display: grid;
+  gap: 8px;
+}
+
+.dismiss {
+  min-height: 44px;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font-weight: 600;
+}

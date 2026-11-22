@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'wouter'
 import { ActivityRow } from '../../components/ActivityRow.tsx'
+import { ConflictList } from '../../components/ConflictList.tsx'
 import { PlannedItemRow } from '../../components/PlannedItemRow.tsx'
 import { QuickAddActivity } from '../../components/QuickAddActivity.tsx'
 import { useActivityData, useActivityDays } from '../../db/activities.ts'
+import { useConflicts } from '../../db/conflicts.ts'
 import { useSchedule, weekDates } from '../../db/plan.ts'
 import { useCatalog } from '../../db/useCatalog.ts'
 import { formatDayLong, localDate } from '../../domain/dates.ts'
@@ -15,9 +17,10 @@ export function WeekScreen() {
   const view = useSchedule(7)
   const activityDays = useActivityDays(7)
   const activityData = useActivityData()
+  const conflicts = useConflicts()
   const [open, setOpen] = useState<string | null>(null)
 
-  if (view === undefined || !activityDays || !activityData) return null
+  if (view === undefined || !activityDays || !activityData || !conflicts) return null
   const today = view?.today ?? localDate()
   const dates = weekDates(today)
 
@@ -30,6 +33,7 @@ export function WeekScreen() {
         </Link>
       </div>
       <p className="muted">{!view ? 'No weekly plan yet. Activities still show here.' : view.plan!.type === 'rotation' ? `Rotation · ${view.plan!.perWeek} sessions a week` : 'Fixed days'}</p>
+      <ConflictList conflicts={conflicts.conflicts} overrides={conflicts.overrides} />
 
       {dates.map((date, i) => {
         const sessions = view?.days[i].items ?? []

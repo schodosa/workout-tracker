@@ -20,7 +20,7 @@ export function usePlanState(): PlanState | undefined {
 }
 
 export async function savePlan(plan: Plan): Promise<void> {
-  await db.settings.put({ key: 'plan', value: plan })
+  await db.settings.put({ key: 'plan', value: { ...plan, updatedOn: localDate() } })
 }
 
 export async function removePlan(): Promise<void> {

@@ -7,6 +7,7 @@
 // db.version(2).stores({...}).upgrade(tx => ...) below it. Dexie runs each upgrade once per device.
 import Dexie, { type EntityTable } from 'dexie'
 import type { ActivityOccurrence, ActivityRecord, ActivitySeries, BandRecord, SessionRecord, SetRecord, SettingRecord } from '../domain/records.ts'
+import { localDate } from '../domain/dates.ts'
 import type { Exercise, Template } from '../domain/types.ts'
 
 export const db = new Dexie('home-gym-tracker') as Dexie & {
@@ -53,6 +54,15 @@ db.version(5).stores({
   activitySeries: 'id, activityId',
   activityOccurrences: 'id, date, activityId, seriesId',
 })
+
+// v6 (M14): no table changes. Plans saved before M14 get today as `updatedOn`, so the
+// "missed session" rule doesn't flag days from before this version existed.
+db.version(6)
+  .stores({})
+  .upgrade(async (tx) => {
+    const row = await tx.table('settings').get('plan')
+    if (row && !row.value.updatedOn) await tx.table('settings').put({ ...row, value: { ...row.value, updatedOn: localDate() } })
+  })
 
 /**
  * Asks the browser not to evict our data under storage pressure. On iOS this matters most:

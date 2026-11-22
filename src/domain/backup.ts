@@ -18,7 +18,8 @@ import { ACCESSORIES, BAND_TYPES } from './types.ts'
 // v3 (M11): adds custom exercises and user templates.
 // v4 (M12): settings can hold the weekly plan and week overrides.
 // v5 (M13): adds activities, their recurring series, and occurrences.
-export const BACKUP_FORMAT_VERSION = 5
+// v6 (M14): settings can hold conflict-rule switches and dismissed suggestions; plans carry updatedOn.
+export const BACKUP_FORMAT_VERSION = 6
 const APP_ID = 'home-gym-tracker'
 
 const localDateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be a YYYY-MM-DD date')
@@ -105,6 +106,7 @@ const settingSchema = z.discriminatedUnion('key', [
       everyDay: z.array(z.string()),
       availableDays: z.array(z.number().int().min(0).max(6)),
       sessionMinutes: z.number().positive().optional(),
+      updatedOn: localDateString.optional(),
     }),
   }),
   z.object({
@@ -119,6 +121,17 @@ const settingSchema = z.discriminatedUnion('key', [
       }),
     ),
   }),
+  z.object({
+    key: z.literal('conflictRules'),
+    value: z.object({
+      hardCardio: z.boolean(),
+      legsBeforeGame: z.boolean(),
+      hardDays: z.boolean(),
+      hardDaysLimit: z.number().int().min(1).max(7),
+      missed: z.boolean(),
+    }),
+  }),
+  z.object({ key: z.literal('dismissedConflicts'), value: z.array(z.string()) }),
 ])
 
 const activitySchema = z.object({
@@ -256,6 +269,10 @@ function upgradeBackup(raw: unknown): unknown {
   if (file.formatVersion === 4) {
     // v4 → v5: v4 files predate activities.
     file = { ...file, formatVersion: 5, data: { ...file.data, activities: [], activitySeries: [], activityOccurrences: [] } }
+  }
+  if (file.formatVersion === 5) {
+    // v5 → v6: only new kinds of settings and an optional plan field; existing data is unchanged.
+    file = { ...file, formatVersion: 6 }
   }
   return file
 }

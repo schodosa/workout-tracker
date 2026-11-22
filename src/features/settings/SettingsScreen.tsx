@@ -42,6 +42,13 @@ export function SettingsScreen() {
           ›
         </span>
       </Link>
+      <Link href="/settings/suggestions" className={`card ${styles.link}`}>
+        <span className={styles.linkTitle}>Planning suggestions</span>
+        <span className="muted">Clashes between your plan and activities</span>
+        <span className={styles.chevron} aria-hidden="true">
+          ›
+        </span>
+      </Link>
       <Link href="/settings/equipment" className={`card ${styles.link}`}>
         <span className={styles.linkTitle}>Equipment &amp; bands</span>
         <span className="muted">

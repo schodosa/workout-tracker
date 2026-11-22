@@ -1,0 +1,56 @@
+.check {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: var(--tap);
+  padding: 8px 0;
+}
+
+.check + .check {
+  border-top: 1px solid var(--border);
+}
+
+.check input {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  accent-color: var(--accent);
+}
+
+.checkTitle {
+  display: block;
+  font-weight: 700;
+}
+
+.section {
+  margin: 24px 0 4px;
+  font-size: 1rem;
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.chip,
+.chipOn {
+  flex: 1;
+  min-height: var(--tap);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.chipOn {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.restore {
+  margin-top: 24px;
+}

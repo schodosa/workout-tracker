@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { Link } from 'wouter'
 import { ActivityRow } from '../../components/ActivityRow.tsx'
+import { ConflictList } from '../../components/ConflictList.tsx'
 import { PlannedItemRow } from '../../components/PlannedItemRow.tsx'
 import { QuickAddActivity } from '../../components/QuickAddActivity.tsx'
 import { ResumeBanner } from '../../components/ResumeBanner.tsx'
 import { SetupPrompt } from '../../components/SetupPrompt.tsx'
 import { useActivityData, useActivityDays } from '../../db/activities.ts'
 import { useBackupDue } from '../../db/backupReminder.ts'
+import { useConflicts } from '../../db/conflicts.ts'
 import { useInventory } from '../../db/inventory.ts'
 import { useSchedule } from '../../db/plan.ts'
 import { useInProgressSession } from '../../db/sessions.ts'
@@ -28,6 +30,7 @@ export function TodayScreen() {
   const schedule = useSchedule(7)
   const activityDays = useActivityDays(7)
   const activityData = useActivityData()
+  const conflicts = useConflicts()
   const [openItem, setOpenItem] = useState<string | null>(null)
   // Your templates first, then built-ins; main workouts before warm-ups; alphabetical within each.
   const templates = [...catalog.templates.values()].sort(
@@ -36,7 +39,9 @@ export function TodayScreen() {
       Number(a.warmup ?? false) - Number(b.warmup ?? false) ||
       a.name.localeCompare(b.name),
   )
-  if (!inv || schedule === undefined || !activityDays || !activityData) return null
+  if (!inv || schedule === undefined || !activityDays || !activityData || !conflicts) return null
+  // Today shows what needs a decision now: missed sessions and clashes on today. Week shows the rest.
+  const todayConflicts = conflicts.conflicts.filter((c) => c.rule === 'missed' || c.date === conflicts.today)
   const todayActivities = activityDays[0].items
 
   // A template counts as available when every exercise can be done, as written or swapped.
@@ -60,6 +65,7 @@ export function TodayScreen() {
       {schedule ? (
         <>
           <h2 className={styles.section}>Today's plan</h2>
+          <ConflictList conflicts={todayConflicts} overrides={conflicts.overrides} />
           {schedule.days[0].items.length === 0 ? (
             <p className="muted">Rest day. Nothing planned.</p>
           ) : (
