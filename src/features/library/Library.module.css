@@ -147,3 +147,11 @@
 .last strong {
   color: var(--text);
 }
+
+.addExercise {
+  margin-bottom: 10px;
+}
+
+.editCustom {
+  margin-top: var(--gap);
+}

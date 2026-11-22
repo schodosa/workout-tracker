@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useBandLabeler, useInventory } from '../db/inventory.ts'
 import { deleteSets, updateSets } from '../db/sessions.ts'
-import { builtinCatalog } from '../domain/builtins.ts'
+import { useCatalog } from '../db/useCatalog.ts'
 import { compatibleBands } from '../domain/inventory.ts'
 import type { SetRecord } from '../domain/records.ts'
 import { formatLogicalSet, isPerSide, resistanceStep, workIsValid, type LogicalSet } from '../domain/session.ts'
@@ -34,10 +34,11 @@ export function SetRow({ set, number }: { set: LogicalSet; number: number }) {
 }
 
 function SetEditor({ set, number, text, onDone }: { set: LogicalSet; number: number; text: string; onDone: () => void }) {
+  const catalog = useCatalog()
   const perSide = isPerSide(set)
   const hasWeight = set.resistanceUnit !== undefined
   const unit = set.resistanceUnit ?? 'lb'
-  const exercise = builtinCatalog.exercises.get(set.exerciseId)
+  const exercise = catalog.exercises.get(set.exerciseId)
   const inv = useInventory()
   const isBandExercise = Boolean(exercise?.bandSetup)
 

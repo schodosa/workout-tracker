@@ -22,7 +22,7 @@ import {
   useSessionSets,
   type LastPerformance,
 } from '../../db/sessions.ts'
-import { builtinCatalog } from '../../domain/builtins.ts'
+import { useCatalog } from '../../db/useCatalog.ts'
 import { formatDose, resolveTemplateItem, type ResolvedItem } from '../../domain/catalog.ts'
 import { formatDayLong } from '../../domain/dates.ts'
 import type { SessionRecord, SetRecord } from '../../domain/records.ts'
@@ -46,6 +46,7 @@ import styles from './SessionScreen.module.css'
 
 /** Loads the session from the database, then hands off to the logger once data is ready. */
 export function SessionScreen() {
+  const catalog = useCatalog()
   const { id } = useParams<{ id: string }>()
   const session = useSession(id)
   const sets = useSessionSets(id)
@@ -62,7 +63,7 @@ export function SessionScreen() {
   }
   if (session.status === 'done') return <Redirect to={`/history/${session.id}`} replace />
 
-  const template = builtinCatalog.templates.get(session.templateIds[0])
+  const template = catalog.templates.get(session.templateIds[0])
   if (!template) {
     return (
       <>
@@ -81,12 +82,13 @@ export function SessionScreen() {
 }
 
 function SessionLogger({ session, sets, template, inventory }: { session: SessionRecord; sets: SetRecord[]; template: Template; inventory: Inventory }) {
+  const catalog = useCatalog()
   const [, navigate] = useLocation()
   useWakeLock(true) // keep the screen on for the whole session
 
   // The exercise for each item, fixed when the session started. Sessions from before M8 have no
   // saved plan, so work one out from the current equipment.
-  const plan = session.plan ?? planTemplate(builtinCatalog, inventory, template)
+  const plan = session.plan ?? planTemplate(catalog, inventory, template)
   // A skipped item (no exercise with your equipment) has a target of 0 sets, so it never blocks
   // "next exercise" or "finish".
   const items = template.items.map((item, i) => {
@@ -136,7 +138,7 @@ function SessionLogger({ session, sets, template, inventory }: { session: Sessio
     ? items
         .map((it, i) => ({ it, i }))
         .filter(({ it, i }) => i !== index && it.supersetGroup === item.supersetGroup && plan[i])
-        .map(({ i }) => builtinCatalog.exercises.get(plan[i]!)?.name)
+        .map(({ i }) => catalog.exercises.get(plan[i]!)?.name)
     : []
 
   return (
@@ -169,7 +171,7 @@ function SessionLogger({ session, sets, template, inventory }: { session: Sessio
         item={item}
         itemIndex={index}
         exerciseId={plan[index]}
-        swapChoices={swapOptions(builtinCatalog, inventory, template.items[index])}
+        swapChoices={swapOptions(catalog, inventory, template.items[index])}
         onSwap={(exerciseId) => swapPlanItem(session.id, plan, index, exerciseId)}
         sets={sets.filter((s) => s.itemIndex === index)}
         partners={partners.filter((p): p is string => Boolean(p))}
@@ -224,12 +226,13 @@ interface ExerciseLoggerProps {
 
 /** Waits for "last time" data so the inputs can start pre-filled, then shows the form. */
 function ExerciseLogger(props: ExerciseLoggerProps) {
-  const exercise = props.exerciseId ? builtinCatalog.exercises.get(props.exerciseId) : undefined
+  const catalog = useCatalog()
+  const exercise = props.exerciseId ? catalog.exercises.get(props.exerciseId) : undefined
   const lastTime = useLastPerformance(exercise?.id, props.sessionId)
   const inventory = useInventory()
 
   if (!exercise) {
-    const original = props.item.exerciseId ? builtinCatalog.exercises.get(props.item.exerciseId) : undefined
+    const original = props.item.exerciseId ? catalog.exercises.get(props.item.exerciseId) : undefined
     const pattern = original?.movementPattern ?? props.item.pattern
     return (
       <div className="card">
@@ -265,9 +268,10 @@ function ExerciseForm({
   lastTime,
   inventory,
 }: ExerciseLoggerProps & { exercise: Exercise; lastTime: LastPerformance | null; inventory: Inventory }) {
-  const equipment = builtinCatalog.equipment.get(exercise.equipmentId)
+  const catalog = useCatalog()
+  const equipment = catalog.equipment.get(exercise.equipmentId)
   // The exercise the template named, when this one stands in for it.
-  const original = item.exerciseId && item.exerciseId !== exercise.id ? builtinCatalog.exercises.get(item.exerciseId) : undefined
+  const original = item.exerciseId && item.exerciseId !== exercise.id ? catalog.exercises.get(item.exerciseId) : undefined
   const bandLabel = useBandLabeler()
   // Weight field only for equipment measured in lb/kg (not floor, bands, or bikes).
   const weighted = equipment?.resistanceUnit === 'lb' || equipment?.resistanceUnit === 'kg'

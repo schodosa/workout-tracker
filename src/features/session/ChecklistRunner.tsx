@@ -4,7 +4,7 @@ import { BackLink } from '../../components/BackLink.tsx'
 import { HoldTimer } from '../../components/HoldTimer.tsx'
 import { SetupCard } from '../../components/SetupCard.tsx'
 import { discardSession, finishSession, setCheckedItems } from '../../db/sessions.ts'
-import { builtinCatalog } from '../../domain/builtins.ts'
+import { useCatalog } from '../../db/useCatalog.ts'
 import { formatDose, resolveTemplateItem } from '../../domain/catalog.ts'
 import type { Inventory } from '../../domain/inventory.ts'
 import type { SessionRecord } from '../../domain/records.ts'
@@ -18,11 +18,12 @@ import styles from './Checklist.module.css'
  * that ticks it off when done. No sets or resistance; ticks are saved on the session.
  */
 export function ChecklistRunner({ session, template, inventory }: { session: SessionRecord; template: Template; inventory: Inventory }) {
+  const catalog = useCatalog()
   const [, navigate] = useLocation()
   useWakeLock(true)
   const [open, setOpen] = useState<number | null>(null)
 
-  const plan = session.plan ?? planTemplate(builtinCatalog, inventory, template)
+  const plan = session.plan ?? planTemplate(catalog, inventory, template)
   const checked = new Set(session.checkedItems ?? [])
   const doable = plan.filter(Boolean).length
   const doneCount = plan.filter((id, i) => id && checked.has(i)).length
@@ -67,7 +68,7 @@ export function ChecklistRunner({ session, template, inventory }: { session: Ses
       <ul className={styles.list}>
         {template.items.map((raw, i) => {
           const id = plan[i]
-          const exercise = id ? builtinCatalog.exercises.get(id) : undefined
+          const exercise = id ? catalog.exercises.get(id) : undefined
           if (!exercise) {
             return (
               <li key={i} className={`${styles.row} ${styles.skipped}`}>
@@ -99,7 +100,7 @@ export function ChecklistRunner({ session, template, inventory }: { session: Ses
               </div>
               {isOpen && (
                 <div className={styles.detail}>
-                  <SetupCard exercise={exercise} equipment={builtinCatalog.equipment.get(exercise.equipmentId)} />
+                  <SetupCard exercise={exercise} equipment={catalog.equipment.get(exercise.equipmentId)} />
                   {exercise.measure === 'time' ? (
                     <div className={styles.timer}>
                       <HoldTimer seconds={item.duration.min} perSide={exercise.unilateral} onDone={() => check(i)} />

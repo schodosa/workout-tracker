@@ -1,6 +1,7 @@
 import { Link, useLocation, useSearch } from 'wouter'
 import { SetupPrompt } from '../../components/SetupPrompt.tsx'
 import { useInventory } from '../../db/inventory.ts'
+import { useCatalog } from '../../db/useCatalog.ts'
 import { builtinCatalog } from '../../domain/builtins.ts'
 import { canDoExercise, usableEquipment } from '../../domain/inventory.ts'
 import { CATEGORY_LABELS, PATTERN_LABELS } from '../../domain/labels.ts'
@@ -14,6 +15,7 @@ const equipmentOptions = [...builtinCatalog.equipment.values()].sort(
 )
 
 export function LibraryScreen() {
+  const catalog = useCatalog()
   // Filters live in the URL (/library?eq=floor&cat=core) so they survive opening an exercise and coming back.
   const search = useSearch()
   const [, navigate] = useLocation()
@@ -38,12 +40,12 @@ export function LibraryScreen() {
 
   // Default to "only what I own" once equipment is set up; ?all=1 shows everything.
   const ownedOnly = inv.configured && params.get('all') !== '1'
-  const usable = usableEquipment(builtinCatalog, inv)
-  const results = filterExercises(builtinCatalog, { query: q, equipmentId: eq, category: cat, pattern: pat, setup }).filter(
-    (ex) => !ownedOnly || canDoExercise(builtinCatalog, inv, ex),
+  const usable = usableEquipment(catalog, inv)
+  const results = filterExercises(catalog, { query: q, equipmentId: eq, category: cat, pattern: pat, setup }).filter(
+    (ex) => !ownedOnly || canDoExercise(catalog, inv, ex),
   )
   const equipmentChoices = ownedOnly ? equipmentOptions.filter((e) => usable.has(e.id)) : equipmentOptions
-  const setupOptions = eq ? builtinCatalog.equipment.get(eq)?.setupOptions : undefined
+  const setupOptions = eq ? catalog.equipment.get(eq)?.setupOptions : undefined
   const filtered = Boolean(q || eq || cat || pat || setup)
 
   return (
@@ -56,6 +58,10 @@ export function LibraryScreen() {
           Only what I own
         </label>
       )}
+
+      <Link href="/library/new" className={`btn ${styles.addExercise}`}>
+        + Add your own exercise
+      </Link>
 
       <input
         type="search"
@@ -128,7 +134,7 @@ export function LibraryScreen() {
             <Link href={`/library/${ex.id}`} className={styles.item}>
               <span className={styles.name}>{ex.name}</span>
               <span className={styles.meta}>
-                {builtinCatalog.equipment.get(ex.equipmentId)?.name} · {CATEGORY_LABELS[ex.category]}
+                {catalog.equipment.get(ex.equipmentId)?.name} · {CATEGORY_LABELS[ex.category]}
               </span>
               <Chips exercise={ex} />
             </Link>
@@ -147,6 +153,7 @@ export function Chips({ exercise }: { exercise: Exercise }) {
   if (exercise.measure === 'ride') chips.push({ label: 'Ride' })
   if (exercise.impact) chips.push({ label: 'Impact' })
   if (exercise.keepLight) chips.push({ label: '⚠ Keep light', tone: 'warn' })
+  if (exercise.custom) chips.push({ label: 'Custom' })
   if (chips.length === 0) return null
   return (
     <span className={styles.chips}>

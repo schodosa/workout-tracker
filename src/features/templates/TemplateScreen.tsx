@@ -1,10 +1,11 @@
-import { useLocation, useParams } from 'wouter'
+import { Link, useLocation, useParams } from 'wouter'
 import { BackLink } from '../../components/BackLink.tsx'
 import { ResumeBanner } from '../../components/ResumeBanner.tsx'
 import { SetupCard } from '../../components/SetupCard.tsx'
 import { useInventory } from '../../db/inventory.ts'
 import { startSession, useInProgressSession } from '../../db/sessions.ts'
-import { builtinCatalog } from '../../domain/builtins.ts'
+import { deleteUserTemplate, templateInUse } from '../../db/userContent.ts'
+import { useCatalog } from '../../db/useCatalog.ts'
 import { formatDose, groupSupersets, resolveTemplateItem, type ResolvedItem } from '../../domain/catalog.ts'
 import { ownsExactEquipment, type Inventory } from '../../domain/inventory.ts'
 import { PATTERN_LABELS } from '../../domain/labels.ts'
@@ -15,11 +16,12 @@ import { equipmentLine } from './equipmentLine.ts'
 import styles from './TemplateScreen.module.css'
 
 export function TemplateScreen() {
+  const catalog = useCatalog()
   const { id } = useParams<{ id: string }>()
   const [, navigate] = useLocation()
   const inProgress = useInProgressSession()
   const inv = useInventory()
-  const template = builtinCatalog.templates.get(id)
+  const template = catalog.templates.get(id)
 
   if (!template) {
     return (
@@ -32,7 +34,7 @@ export function TemplateScreen() {
   }
   if (!inv) return null
 
-  const fit = fitTemplate(builtinCatalog, inv, template)
+  const fit = fitTemplate(catalog, inv, template)
   const skipped = fit.total - fit.doable
 
   // Settings will come from the database in a later milestone; until then, spec defaults.
@@ -50,7 +52,7 @@ export function TemplateScreen() {
       <h1>{template.name}</h1>
       <p className="muted">
         ~{template.estMinutes} min · {template.items.length} exercises · {fit.swapped > 0 || skipped > 0 ? 'Written for ' : ''}
-        {equipmentLine(template)}
+        {equipmentLine(catalog, template)}
       </p>
       {template.description && <p className={styles.description}>{template.description}</p>}
       {template.ride && (
@@ -92,13 +94,45 @@ export function TemplateScreen() {
             className="btn btn-primary"
             disabled={fit.doable === 0}
             // The plan is worked out now and saved with the session.
-            onClick={async () => navigate(`/session/${await startSession(template.id, planTemplate(builtinCatalog, inv, template))}`)}
+            onClick={async () => navigate(`/session/${await startSession(template.id, planTemplate(catalog, inv, template))}`)}
           >
             Start session
           </button>
         )}
         <p className={styles.safety}>Stop if you feel dizzy, chest pain, or nausea.</p>
       </div>
+
+      {/* Built-ins are read-only: duplicate to change. Your own templates can be edited or deleted. */}
+      <div className={`row ${styles.manage}`}>
+        {catalog.isBuiltin(template.id) ? (
+          <Link href={`/templates/new?from=${template.id}`} className="btn">
+            Duplicate and edit
+          </Link>
+        ) : (
+          <>
+            <Link href={`/templates/new?from=${template.id}`} className="btn">
+              Duplicate
+            </Link>
+            <Link href={`/templates/${template.id}/edit`} className="btn">
+              Edit
+            </Link>
+          </>
+        )}
+      </div>
+      {!catalog.isBuiltin(template.id) && (
+        <button
+          type="button"
+          className={`btn btn-danger ${styles.manage}`}
+          onClick={async () => {
+            if (await templateInUse(template.id)) return alert('Finish or discard the session in progress that uses this template first.')
+            if (!confirm(`Delete "${template.name}"? Past sessions keep their sets.`)) return
+            await deleteUserTemplate(template.id)
+            navigate('/', { replace: true })
+          }}
+        >
+          Delete template
+        </button>
+      )}
 
       {blocks.map((block) => {
         // In a superset you rest after the whole pair, so only the last card shows rest.
@@ -128,8 +162,9 @@ interface ItemCardProps {
 }
 
 function ItemCard({ item, resolution, number, showRest, inv, format }: ItemCardProps) {
+  const catalog = useCatalog()
   if (resolution.kind === 'none') {
-    const original = resolution.originalId ? builtinCatalog.exercises.get(resolution.originalId) : undefined
+    const original = resolution.originalId ? catalog.exercises.get(resolution.originalId) : undefined
     return (
       <article className={`card ${styles.skippedCard}`}>
         <header className={styles.itemHeader}>
@@ -142,9 +177,9 @@ function ItemCard({ item, resolution, number, showRest, inv, format }: ItemCardP
     )
   }
 
-  const exercise = builtinCatalog.exercises.get(resolution.exerciseId)!
-  const equipment = builtinCatalog.equipment.get(exercise.equipmentId)
-  const original = resolution.kind === 'substitute' ? builtinCatalog.exercises.get(resolution.originalId) : undefined
+  const exercise = catalog.exercises.get(resolution.exerciseId)!
+  const equipment = catalog.equipment.get(exercise.equipmentId)
+  const original = resolution.kind === 'substitute' ? catalog.exercises.get(resolution.originalId) : undefined
 
   return (
     <article className="card">

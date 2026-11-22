@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { buildBackup, summarizeBackup, type Backup, type BackupSummary } from '../domain/backup.ts'
 import { db, requestPersistentStorage } from './db.ts'
 
-const allTables = () => [db.sessions, db.sets, db.bands, db.settings]
+const allTables = () => [db.sessions, db.sets, db.bands, db.settings, db.customExercises, db.userTemplates]
 
 /**
  * The full backup, kept ready while the backup screen is open. iOS only allows the share sheet
@@ -12,10 +12,10 @@ const allTables = () => [db.sessions, db.sets, db.bands, db.settings]
 export function useCurrentBackup(): Backup | undefined {
   return useLiveQuery(async () => {
     // A read-only transaction gives one consistent snapshot of every table.
-    const [sessions, sets, bands, settings] = await db.transaction('r', allTables(), () =>
-      Promise.all([db.sessions.toArray(), db.sets.toArray(), db.bands.toArray(), db.settings.toArray()]),
+    const [sessions, sets, bands, settings, customExercises, userTemplates] = await db.transaction('r', allTables(), () =>
+      Promise.all([db.sessions.toArray(), db.sets.toArray(), db.bands.toArray(), db.settings.toArray(), db.customExercises.toArray(), db.userTemplates.toArray()]),
     )
-    return buildBackup({ sessions, sets, bands, settings }, __APP_VERSION__)
+    return buildBackup({ sessions, sets, bands, settings, customExercises, userTemplates }, __APP_VERSION__)
   })
 }
 
@@ -52,6 +52,8 @@ export async function importBackup(backup: Backup, mode: ImportMode): Promise<Im
     // Settings in the file win (same rule as other records). A v1 file has none, so the
     // device's inventory is left alone.
     await db.settings.bulkPut(backup.data.settings)
+    await db.customExercises.bulkPut(backup.data.customExercises)
+    await db.userTemplates.bulkPut(backup.data.userTemplates)
   })
   void requestPersistentStorage()
   const s = summarizeBackup(backup)

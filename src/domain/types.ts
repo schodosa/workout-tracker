@@ -142,6 +142,8 @@ export interface Exercise {
    * (e.g. Bench Press → Push-up). Must share the movement pattern.
    */
   alternatives?: string[]
+  /** True for exercises the user added (stored in IndexedDB, not in src/data). */
+  custom?: boolean
 }
 
 export interface RepRange {
@@ -164,10 +166,10 @@ interface TemplateItemCommon {
 /** A template item names a specific exercise OR a movement pattern, never both. */
 export type TemplateItem = TemplateItemCommon &
   (
-    | { exerciseId: string; pattern?: never; prefer?: never }
+    | { exerciseId: string; pattern?: undefined; prefer?: undefined }
     | {
         pattern: MovementPattern
-        exerciseId?: never
+        exerciseId?: undefined
         /** Exercises to try first for this pattern, best first (e.g. Squat before Leg Extension). */
         prefer?: string[]
       }

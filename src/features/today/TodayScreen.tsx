@@ -5,16 +5,15 @@ import { SetupPrompt } from '../../components/SetupPrompt.tsx'
 import { useBackupDue } from '../../db/backupReminder.ts'
 import { useInventory } from '../../db/inventory.ts'
 import { useInProgressSession } from '../../db/sessions.ts'
-import { builtinCatalog } from '../../domain/builtins.ts'
+import { useCatalog } from '../../db/useCatalog.ts'
 import { fitTemplate, type TemplateFit } from '../../domain/substitution.ts'
 import type { Template } from '../../domain/types.ts'
 import { equipmentLine } from '../templates/equipmentLine.ts'
 import styles from './TodayScreen.module.css'
 
-// Main workouts first, warm-ups after; alphabetical within each.
-const templates = [...builtinCatalog.templates.values()].sort((a, b) => Number(a.warmup ?? false) - Number(b.warmup ?? false) || a.name.localeCompare(b.name))
 
 export function TodayScreen() {
+  const catalog = useCatalog()
   // Computed once when the screen mounts, not on every re-render.
   const [today] = useState(() =>
     new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }),
@@ -22,11 +21,18 @@ export function TodayScreen() {
   const inProgress = useInProgressSession()
   const backupDue = useBackupDue()
   const inv = useInventory()
+  // Your templates first, then built-ins; main workouts before warm-ups; alphabetical within each.
+  const templates = [...catalog.templates.values()].sort(
+    (a, b) =>
+      Number(catalog.isBuiltin(a.id)) - Number(catalog.isBuiltin(b.id)) ||
+      Number(a.warmup ?? false) - Number(b.warmup ?? false) ||
+      a.name.localeCompare(b.name),
+  )
   if (!inv) return null
 
   // Until the plan editor exists (M12), Today lists the templates you can do with what you own.
   // A template counts as available when every exercise can be done, as written or swapped.
-  const fits = new Map(templates.map((t) => [t.id, fitTemplate(builtinCatalog, inv, t)]))
+  const fits = new Map(templates.map((t) => [t.id, fitTemplate(catalog, inv, t)]))
   const available = templates.filter((t) => fits.get(t.id)!.doable === t.items.length)
   const unavailable = templates.filter((t) => fits.get(t.id)!.doable < t.items.length)
 
@@ -49,6 +55,10 @@ export function TodayScreen() {
         <TemplateCard key={t.id} template={t} fit={fits.get(t.id)!} />
       ))}
 
+      <Link href="/templates/new" className={`btn ${styles.newTemplate}`}>
+        + New template
+      </Link>
+
       {unavailable.length > 0 && (
         <details className={styles.unavailable}>
           <summary>
@@ -64,8 +74,9 @@ export function TodayScreen() {
 }
 
 function TemplateCard({ template: t, fit }: { template: Template; fit: TemplateFit }) {
+  const catalog = useCatalog()
   const partial = fit.doable < fit.total
-  let detail = equipmentLine(t)
+  let detail = equipmentLine(catalog, t)
   if (partial) detail = `${fit.doable} of ${fit.total} exercises possible with your equipment`
   else if (fit.swapped > 0) detail = `${fit.swapped} exercise${fit.swapped === 1 ? '' : 's'} swapped for your equipment`
   return (
@@ -75,6 +86,7 @@ function TemplateCard({ template: t, fit }: { template: Template; fit: TemplateF
         ~{t.estMinutes} min · {t.format === 'ride' ? (t.ride?.intervals ? 'intervals' : 'steady ride') : `${t.items.length} ${t.format === 'checklist' ? 'moves' : 'exercises'}`}
         {t.format === 'circuit' && ` · ${t.rounds} rounds`}
         {t.warmup && ' · warm-up'}
+        {!catalog.isBuiltin(t.id) && ' · yours'}
       </span>
       <span className={styles.equipment}>{detail}</span>
       <span className={styles.chevron} aria-hidden="true">

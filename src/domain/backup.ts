@@ -9,10 +9,14 @@
 // returns readable errors instead of letting a bad file corrupt the database.
 import { z } from 'zod'
 import { BAND_LEVELS, type BandRecord, type SessionRecord, type SetRecord, type SettingRecord } from './records.ts'
+import { builtinSource } from './builtins.ts'
+import { validateCatalog } from './catalog.ts'
+import { exerciseSchema, templateSchema } from './contentSchema.ts'
 import { ACCESSORIES, BAND_TYPES } from './types.ts'
 
 // v1 (M5): sessions + sets. v2 (M7): adds bands, settings, and bandIds on sets.
-export const BACKUP_FORMAT_VERSION = 2
+// v3 (M11): adds custom exercises and user templates.
+export const BACKUP_FORMAT_VERSION = 3
 const APP_ID = 'home-gym-tracker'
 
 const localDateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be a YYYY-MM-DD date')
@@ -102,6 +106,8 @@ const backupSchema = z.object({
     sets: z.array(setSchema),
     bands: z.array(bandSchema),
     settings: z.array(settingSchema),
+    customExercises: z.array(exerciseSchema),
+    userTemplates: z.array(templateSchema),
   }),
 })
 
@@ -171,6 +177,10 @@ function upgradeBackup(raw: unknown): unknown {
     // v1 → v2: v1 files predate bands and settings.
     file = { ...file, formatVersion: 2, data: { ...file.data, bands: [], settings: [] } }
   }
+  if (file.formatVersion === 2) {
+    // v2 → v3: v2 files predate custom exercises and user templates.
+    file = { ...file, formatVersion: 3, data: { ...file.data, customExercises: [], userTemplates: [] } }
+  }
   return file
 }
 
@@ -208,6 +218,18 @@ export function parseBackup(text: string): ParseResult {
   if (sessionIds.size !== backup.data.sessions.length) return { ok: false, error: 'The backup file is damaged: duplicate session IDs.' }
   const orphan = backup.data.sets.find((s) => !sessionIds.has(s.sessionId))
   if (orphan) return { ok: false, error: `The backup file is damaged: set ${orphan.id} belongs to a session that isn't in the file.` }
+
+  // User content gets the same checks as the built-in data (references exist, valid values...).
+  const { customExercises, userTemplates } = backup.data
+  if (customExercises.some((e) => !e.id.startsWith('custom-')) || userTemplates.some((t) => !t.id.startsWith('user-'))) {
+    return { ok: false, error: 'The backup file is damaged: a custom exercise or template has a built-in ID.' }
+  }
+  const problems = validateCatalog({
+    equipment: builtinSource.equipment,
+    exercises: [...builtinSource.exercises, ...customExercises],
+    templates: [...builtinSource.templates, ...userTemplates],
+  })
+  if (problems.length > 0) return { ok: false, error: `The backup file is damaged: ${problems[0]}.` }
 
   return { ok: true, backup, summary: summarizeBackup(backup) }
 }

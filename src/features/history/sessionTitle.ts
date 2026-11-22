@@ -1,10 +1,11 @@
-import { builtinCatalog } from '../../domain/builtins.ts'
+import type { Catalog } from '../../domain/catalog.ts'
 import type { SessionRecord } from '../../domain/records.ts'
 import { formatClock } from '../../domain/ride.ts'
 
 /** "Upper", or "Band Activation + Upper" for multi-section sessions. */
-export function sessionTitle(templateIds: string[]): string {
-  return templateIds.map((id) => builtinCatalog.templates.get(id)?.name ?? id).join(' + ')
+export function sessionTitle(catalog: Catalog, templateIds: string[]): string {
+  // A deleted user template has no name any more.
+  return templateIds.map((id) => catalog.templates.get(id)?.name ?? 'Deleted template').join(' + ')
 }
 
 /** "24:30 · 5.2 mi · 210 cal" for a ride session; undefined for other sessions. */
@@ -18,8 +19,8 @@ export function rideSummary(session: SessionRecord): string | undefined {
 }
 
 /** "4 of 6 moves" for a checklist session (Daily Mobility); undefined for other formats. */
-export function checklistSummary(session: SessionRecord): string | undefined {
-  const template = builtinCatalog.templates.get(session.templateIds[0])
+export function checklistSummary(catalog: Catalog, session: SessionRecord): string | undefined {
+  const template = catalog.templates.get(session.templateIds[0])
   if (template?.format !== 'checklist') return undefined
   const doable = session.plan ? session.plan.filter(Boolean).length : template.items.length
   return `${session.checkedItems?.length ?? 0} of ${doable} moves`

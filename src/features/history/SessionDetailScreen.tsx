@@ -2,13 +2,14 @@ import { useLocation, useParams } from 'wouter'
 import { BackLink } from '../../components/BackLink.tsx'
 import { SetRow } from '../../components/SetRow.tsx'
 import { discardSession, updateSessionNotes, useSession, useSessionSets } from '../../db/sessions.ts'
-import { builtinCatalog } from '../../domain/builtins.ts'
+import { useCatalog } from '../../db/useCatalog.ts'
 import { formatDayLong, formatDuration } from '../../domain/dates.ts'
 import { groupByExercise, toLogicalSets } from '../../domain/session.ts'
 import styles from './History.module.css'
 import { checklistSummary, rideSummary, sessionTitle } from './sessionTitle.ts'
 
 export function SessionDetailScreen() {
+  const catalog = useCatalog()
   const { id } = useParams<{ id: string }>()
   const [, navigate] = useLocation()
   const session = useSession(id)
@@ -24,7 +25,7 @@ export function SessionDetailScreen() {
     )
   }
 
-  const template = builtinCatalog.templates.get(session.templateIds[0])
+  const template = catalog.templates.get(session.templateIds[0])
   const started = new Date(session.startedAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
 
   async function onDelete() {
@@ -36,7 +37,7 @@ export function SessionDetailScreen() {
   return (
     <>
       <BackLink href="/history" label="History" />
-      <h1>{sessionTitle(session.templateIds)}</h1>
+      <h1>{sessionTitle(catalog, session.templateIds)}</h1>
       <p className="muted">
         {formatDayLong(session.date)} · started {started}
         {session.finishedAt && ` · ${formatDuration(session.finishedAt - session.startedAt)}`}
@@ -94,7 +95,7 @@ export function SessionDetailScreen() {
 
       {template?.format === 'checklist' && (
         <section className="card">
-          <h2 className={styles.exercise}>{checklistSummary(session)}</h2>
+          <h2 className={styles.exercise}>{checklistSummary(catalog, session)}</h2>
           <ul className={styles.checks}>
             {template.items.map((item, i) => {
               const id = session.plan?.[i] ?? item.exerciseId
@@ -102,7 +103,7 @@ export function SessionDetailScreen() {
               const done = session.checkedItems?.includes(i) ?? false
               return (
                 <li key={i} className={done ? styles.checkDone : styles.checkTodo}>
-                  <span aria-hidden="true">{done ? '✓' : '○'}</span> {builtinCatalog.exercises.get(id)?.name ?? id}
+                  <span aria-hidden="true">{done ? '✓' : '○'}</span> {catalog.exercises.get(id)?.name ?? id}
                   <span className="sr-only">{done ? ' (done)' : ' (not done)'}</span>
                 </li>
               )
@@ -113,7 +114,7 @@ export function SessionDetailScreen() {
 
       {groupByExercise(sets).map(({ exerciseId, sets }) => (
         <section key={exerciseId} className="card">
-          <h2 className={styles.exercise}>{builtinCatalog.exercises.get(exerciseId)?.name ?? exerciseId}</h2>
+          <h2 className={styles.exercise}>{catalog.exercises.get(exerciseId)?.name ?? 'Deleted exercise'}</h2>
           <ol className={styles.sets}>
             {toLogicalSets(sets).map((s, i) => (
               <SetRow key={s.key} set={s} number={i + 1} />

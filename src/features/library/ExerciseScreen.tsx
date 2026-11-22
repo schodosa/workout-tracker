@@ -3,7 +3,7 @@ import { BackLink } from '../../components/BackLink.tsx'
 import { SetupCard } from '../../components/SetupCard.tsx'
 import { useBandLabeler, useInventory } from '../../db/inventory.ts'
 import { useLastPerformance } from '../../db/sessions.ts'
-import { builtinCatalog } from '../../domain/builtins.ts'
+import { useCatalog } from '../../db/useCatalog.ts'
 import { missingForExercise } from '../../domain/inventory.ts'
 import { formatDayLong } from '../../domain/dates.ts'
 import { CATEGORY_LABELS, PATTERN_LABELS } from '../../domain/labels.ts'
@@ -12,8 +12,9 @@ import styles from './Library.module.css'
 import { Chips } from './LibraryScreen.tsx'
 
 export function ExerciseScreen() {
+  const catalog = useCatalog()
   const { id } = useParams<{ id: string }>()
-  const exercise = builtinCatalog.exercises.get(id)
+  const exercise = catalog.exercises.get(id)
   const last = useLastPerformance(exercise?.id, '')
   const inv = useInventory()
   const bandLabel = useBandLabeler()
@@ -28,11 +29,11 @@ export function ExerciseScreen() {
     )
   }
 
-  const equipment = builtinCatalog.equipment.get(exercise.equipmentId)
-  const easier = exercise.regressesTo ? builtinCatalog.exercises.get(exercise.regressesTo) : undefined
-  const harder = exercise.progressesTo ? builtinCatalog.exercises.get(exercise.progressesTo) : undefined
+  const equipment = catalog.equipment.get(exercise.equipmentId)
+  const easier = exercise.regressesTo ? catalog.exercises.get(exercise.regressesTo) : undefined
+  const harder = exercise.progressesTo ? catalog.exercises.get(exercise.progressesTo) : undefined
   const lastSets = toLogicalSets(last?.sets ?? [])
-  const missing = inv ? missingForExercise(builtinCatalog, inv, exercise) : []
+  const missing = inv ? missingForExercise(catalog, inv, exercise) : []
 
   return (
     <>
@@ -46,6 +47,12 @@ export function ExerciseScreen() {
       {missing.length > 0 && <p className={styles.missing}>You'd need: {missing.join(', ')}</p>}
 
       <SetupCard exercise={exercise} equipment={equipment} />
+
+      {exercise.custom && (
+        <Link href={`/library/${exercise.id}/edit`} className={`btn ${styles.editCustom}`}>
+          Edit exercise
+        </Link>
+      )}
 
       {(easier || harder) && (
         <div className={styles.chain}>

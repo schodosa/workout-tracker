@@ -63,3 +63,7 @@
   font-size: 2rem;
   color: var(--text-muted);
 }
+
+.newTemplate {
+  margin: 4px 0 var(--gap);
+}

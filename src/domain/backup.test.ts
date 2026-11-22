@@ -26,6 +26,28 @@ const set = (over: Partial<SetRecord> = {}): SetRecord => ({
   ...over,
 })
 
+const customEx = {
+  id: 'custom-curl',
+  name: 'Doorframe Curl',
+  equipmentId: 'floor',
+  category: 'arms' as const,
+  movementPattern: 'elbow-flexion' as const,
+  primaryMuscles: ['biceps'],
+  measure: 'reps' as const,
+  unilateral: false,
+  cautions: [],
+  custom: true,
+}
+const userTpl = {
+  id: 'user-arms',
+  name: 'Arms',
+  goalTags: [],
+  estMinutes: 10,
+  requiredEquipmentIds: ['floor'],
+  format: 'straight-sets' as const,
+  items: [{ exerciseId: 'custom-curl' }, { pattern: 'elbow-extension' as const }],
+}
+
 const sample = () =>
   buildBackup(
     {
@@ -36,12 +58,14 @@ const sample = () =>
         { key: 'ownedEquipment', value: ['bowflex-xtreme-2-se', 'resistance-bands'] },
         { key: 'accessories', value: ['door-anchor'] },
       ],
+      customExercises: [structuredClone(customEx)], // fresh copies: tests mutate them
+      userTemplates: [structuredClone(userTpl)],
     },
     'abc1234',
     new Date('2026-11-21T12:00:00Z'),
   )
 
-const empty = { sessions: [], sets: [], bands: [], settings: [] }
+const empty = { sessions: [], sets: [], bands: [], settings: [], customExercises: [], userTemplates: [] }
 
 describe('parseBackup', () => {
   it('round-trips a backup it built', () => {
@@ -74,10 +98,35 @@ describe('parseBackup', () => {
     const result = parseBackup(JSON.stringify(v1))
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.backup.formatVersion).toBe(2)
+    expect(result.backup.formatVersion).toBe(3)
     expect(result.backup.data.bands).toEqual([])
     expect(result.backup.data.settings).toEqual([])
+    expect(result.backup.data.userTemplates).toEqual([])
     expect(result.backup.data.sets).toEqual([set()])
+  })
+
+  it('upgrades a version 2 file (made before custom content existed)', () => {
+    const v2 = { ...sample(), formatVersion: 2 } as Record<string, unknown> & { data: Record<string, unknown> }
+    delete v2.data.customExercises
+    delete v2.data.userTemplates
+    const result = parseBackup(JSON.stringify(v2))
+    expect(result.ok && result.backup.formatVersion).toBe(3)
+    expect(result.ok && result.backup.data.customExercises).toEqual([])
+  })
+
+  it('rejects a user template that points at a missing exercise', () => {
+    const bad = sample()
+    bad.data.userTemplates[0].items[0] = { exerciseId: 'custom-gone' }
+    const result = parseBackup(JSON.stringify(bad))
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error).toContain('unknown exerciseId "custom-gone"')
+  })
+
+  it('rejects custom content that claims a built-in ID', () => {
+    const bad = sample()
+    bad.data.customExercises[0].id = 'bowflex-bench-press'
+    bad.data.userTemplates[0].items[0] = { exerciseId: 'bowflex-bench-press' }
+    expect(parseBackup(JSON.stringify(bad))).toEqual({ ok: false, error: 'The backup file is damaged: a custom exercise or template has a built-in ID.' })
   })
 
   it('counts a per-side pair as one set in the summary', () => {

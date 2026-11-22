@@ -11,7 +11,7 @@ import { SwapPanel } from '../../components/SwapPanel.tsx'
 import { WorkFields } from '../../components/WorkFields.tsx'
 import { useBandLabeler } from '../../db/inventory.ts'
 import { discardSession, finishSession, logSets, swapPlanItem, useLastPerformance } from '../../db/sessions.ts'
-import { builtinCatalog } from '../../domain/builtins.ts'
+import { useCatalog } from '../../db/useCatalog.ts'
 import { formatDose, resolveTemplateItem, type ResolvedItem } from '../../domain/catalog.ts'
 import { circuitOrder, circuitPosition, circuitTarget, nextCircuitStep, type CircuitPos } from '../../domain/circuit.ts'
 import { formatDayLong } from '../../domain/dates.ts'
@@ -40,10 +40,11 @@ interface Props {
  * after iOS kills the app lands on the right round and exercise.
  */
 export function CircuitRunner({ session, sets, template, inventory }: Props) {
+  const catalog = useCatalog()
   const [, navigate] = useLocation()
   useWakeLock(true)
 
-  const plan = session.plan ?? planTemplate(builtinCatalog, inventory, template)
+  const plan = session.plan ?? planTemplate(catalog, inventory, template)
   const items = template.items.map((item) => resolveTemplateItem(item, DEFAULT_TEMPLATE_SETTINGS))
   const order = circuitOrder(plan)
   const rounds = template.rounds ?? 1
@@ -119,7 +120,7 @@ export function CircuitRunner({ session, sets, template, inventory }: Props) {
     )
   }
 
-  const exerciseFor = (i: number) => builtinCatalog.exercises.get(plan[i]!)!
+  const exerciseFor = (i: number) => catalog.exercises.get(plan[i]!)!
   const doneThisRound = (i: number) => sets.some((s) => s.itemIndex === i && s.setNumber === pos.round)
   const current = exerciseFor(pos.itemIndex)
 
@@ -145,7 +146,7 @@ export function CircuitRunner({ session, sets, template, inventory }: Props) {
         >
           <p className={styles.nextName}>{current.name}</p>
           <p className="muted">{formatDose(items[pos.itemIndex], current, 'circuit')}</p>
-          <SetupCard exercise={current} equipment={builtinCatalog.equipment.get(current.equipmentId)} generic={!ownsExactEquipment(inventory, current)} />
+          <SetupCard exercise={current} equipment={catalog.equipment.get(current.equipmentId)} generic={!ownsExactEquipment(inventory, current)} />
         </CountdownPanel>
       ) : (
         <CircuitWork
@@ -158,7 +159,7 @@ export function CircuitRunner({ session, sets, template, inventory }: Props) {
           original={template.items[pos.itemIndex].exerciseId}
           inventory={inventory}
           sets={sets.filter((s) => s.itemIndex === pos.itemIndex)}
-          swapChoices={swapOptions(builtinCatalog, inventory, template.items[pos.itemIndex])}
+          swapChoices={swapOptions(catalog, inventory, template.items[pos.itemIndex])}
           onSwap={(id) => swapPlanItem(session.id, plan, pos.itemIndex, id)}
           onLogged={() => advance(pos)}
           onSkip={() => advance(pos)}
@@ -210,8 +211,9 @@ function CircuitWorkForm({
   lastTime,
   lastDate,
 }: WorkProps & { lastTime: SetRecord[]; lastDate?: string }) {
+  const catalog = useCatalog()
   const bandLabel = useBandLabeler()
-  const equipment = builtinCatalog.equipment.get(exercise.equipmentId)
+  const equipment = catalog.equipment.get(exercise.equipmentId)
   const weighted = equipment?.resistanceUnit === 'lb' || equipment?.resistanceUnit === 'kg'
   const unit: 'lb' | 'kg' = equipment?.resistanceUnit === 'kg' ? 'kg' : 'lb'
   const banded = equipment?.resistanceUnit === 'band'
@@ -220,7 +222,7 @@ function CircuitWorkForm({
   const perSide = exercise.unilateral
   const logical = toLogicalSets(sets)
   const lastLogical = toLogicalSets(lastTime)
-  const originalEx = original && original !== exercise.id ? builtinCatalog.exercises.get(original) : undefined
+  const originalEx = original && original !== exercise.id ? catalog.exercises.get(original) : undefined
 
   // Earlier rounds today, else the same round last time, else the template target.
   const [initial] = useState(() => prefill(logical, lastLogical, circuitTarget(item, exercise)))

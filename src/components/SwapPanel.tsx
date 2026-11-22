@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { builtinCatalog } from '../domain/builtins.ts'
+import { useCatalog } from '../db/useCatalog.ts'
 import type { Exercise } from '../domain/types.ts'
 import styles from './SwapPanel.module.css'
 
 /** "Swap" button and the list of alternatives for this movement, best first. */
 export function SwapPanel({ current, choices, onSwap }: { current: Exercise; choices: Exercise[]; onSwap: (id: string) => void }) {
+  const catalog = useCatalog()
   const [open, setOpen] = useState(false)
   if (choices.length < 2) return null
   if (!open) {
@@ -30,7 +31,7 @@ export function SwapPanel({ current, choices, onSwap }: { current: Exercise; cho
             >
               <span className={styles.swapName}>{ex.name}</span>
               <span className={styles.swapMeta}>
-                {builtinCatalog.equipment.get(ex.equipmentId)?.name}
+                {catalog.equipment.get(ex.equipmentId)?.name}
                 {ex.unilateral && ' · per side'}
                 {ex.measure === 'time' && ' · timed'}
                 {ex.id === current.id && ' · current'}

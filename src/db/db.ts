@@ -7,12 +7,15 @@
 // db.version(2).stores({...}).upgrade(tx => ...) below it. Dexie runs each upgrade once per device.
 import Dexie, { type EntityTable } from 'dexie'
 import type { BandRecord, SessionRecord, SetRecord, SettingRecord } from '../domain/records.ts'
+import type { Exercise, Template } from '../domain/types.ts'
 
 export const db = new Dexie('home-gym-tracker') as Dexie & {
   sessions: EntityTable<SessionRecord, 'id'>
   sets: EntityTable<SetRecord, 'id'>
   bands: EntityTable<BandRecord, 'id'>
   settings: EntityTable<SettingRecord, 'key'>
+  customExercises: EntityTable<Exercise, 'id'>
+  userTemplates: EntityTable<Template, 'id'>
 }
 
 db.version(1).stores({
@@ -32,6 +35,12 @@ db.version(2).stores({
 db.version(3).stores({
   bands: 'id',
   settings: 'key',
+})
+
+// v4 (M11): user-created content. Built-ins stay in the bundle; these are merged in at read time.
+db.version(4).stores({
+  customExercises: 'id',
+  userTemplates: 'id',
 })
 
 /**
