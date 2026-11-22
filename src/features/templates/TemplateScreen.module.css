@@ -54,6 +54,17 @@
   font-size: 0.85rem;
 }
 
+.instead {
+  margin: 4px 0 0 44px;
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.skippedCard {
+  opacity: 0.55;
+}
+
 .note {
   margin: 6px 0 0 44px;
   color: var(--warn);

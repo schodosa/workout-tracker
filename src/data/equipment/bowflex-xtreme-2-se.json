@@ -6,6 +6,7 @@
   "resistanceUnit": "lb",
   "maxUserWeight": 300,
   "manualRef": { "file": "Bowflex Xtreme 2 SE Workout Guide" },
+  "genericType": "cable-gym",
   "setupOptions": {
     "positions": {
       "seated-facing-out": "Seated, facing out",

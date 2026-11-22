@@ -93,6 +93,14 @@ export function validateCatalog(source: CatalogSource): string[] {
     }
     ex.requiresAccessories?.forEach((a) => checkEnum(where, 'accessory', a, ACCESSORIES))
     if (ex.keepLight && ex.cautions.length === 0) problems.push(`${where}: keepLight needs a caution to show`)
+    for (const altId of ex.alternatives ?? []) {
+      const alt = catalog.exercises.get(altId)
+      if (!alt) problems.push(`${where}: alternative "${altId}" does not exist`)
+      else if (altId === ex.id) problems.push(`${where}: lists itself as an alternative`)
+      else if (alt.movementPattern !== ex.movementPattern) {
+        problems.push(`${where}: alternative "${altId}" is ${alt.movementPattern}, not ${ex.movementPattern}`)
+      }
+    }
     for (const ref of ['progressesTo', 'regressesTo'] as const) {
       const target = ex[ref]
       if (target && !catalog.exercises.has(target)) problems.push(`${where}: ${ref} "${target}" does not exist`)
@@ -137,7 +145,14 @@ export function validateCatalog(source: CatalogSource): string[] {
           if (ex.measure === 'reps' && item.duration) problems.push(`${at}: "${ex.id}" is rep-based, so use reps, not duration`)
         }
       }
-      if (item.pattern !== undefined) checkEnum(at, 'pattern', item.pattern, MOVEMENT_PATTERNS)
+      if (item.pattern !== undefined) {
+        checkEnum(at, 'pattern', item.pattern, MOVEMENT_PATTERNS)
+        for (const id of item.prefer ?? []) {
+          const p = catalog.exercises.get(id)
+          if (!p) problems.push(`${at}: preferred exercise "${id}" does not exist`)
+          else if (p.movementPattern !== item.pattern) problems.push(`${at}: preferred "${id}" is ${p.movementPattern}, not ${item.pattern}`)
+        }
+      }
       if (item.reps && item.reps.min > item.reps.max) problems.push(`${at}: reps min is greater than max`)
       if (item.duration && item.duration.min > item.duration.max) problems.push(`${at}: duration min is greater than max`)
     })
@@ -176,12 +191,20 @@ export function formatDose(item: ResolvedItem, exercise: Exercise | undefined): 
 }
 
 /**
- * Exercises that can be done on a piece of equipment: its own, plus those written for its
- * generic type (the Master GS can do every "stationary bike" exercise).
+ * Equipment whose exercises can be done on `equipmentId`. A product and its generic type share
+ * exercises both ways: the Master GS can do every "stationary bike" exercise, and a generic cable
+ * gym can do the Bowflex exercises (without the Bowflex-specific setup details).
  */
+export function equivalentEquipment(catalog: Catalog, equipmentId: string): Set<string> {
+  const ids = new Set([equipmentId])
+  const generic = catalog.equipment.get(equipmentId)?.genericType
+  if (generic) ids.add(generic)
+  for (const eq of catalog.equipment.values()) if (eq.genericType === equipmentId) ids.add(eq.id)
+  return ids
+}
+
 export function exercisesForEquipment(catalog: Catalog, equipmentId: string): Exercise[] {
-  const eq = catalog.equipment.get(equipmentId)
-  const ids = new Set([equipmentId, ...(eq?.genericType ? [eq.genericType] : [])])
+  const ids = equivalentEquipment(catalog, equipmentId)
   return [...catalog.exercises.values()].filter((ex) => ids.has(ex.equipmentId))
 }
 

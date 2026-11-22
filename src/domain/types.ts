@@ -137,6 +137,11 @@ export interface Exercise {
   impact?: boolean
   progressesTo?: string
   regressesTo?: string
+  /**
+   * Explicit substitutes, best first, for people who can't do this exercise
+   * (e.g. Bench Press → Push-up). Must share the movement pattern.
+   */
+  alternatives?: string[]
 }
 
 export interface RepRange {
@@ -159,8 +164,13 @@ interface TemplateItemCommon {
 /** A template item names a specific exercise OR a movement pattern, never both. */
 export type TemplateItem = TemplateItemCommon &
   (
-    | { exerciseId: string; pattern?: never }
-    | { pattern: MovementPattern; exerciseId?: never }
+    | { exerciseId: string; pattern?: never; prefer?: never }
+    | {
+        pattern: MovementPattern
+        exerciseId?: never
+        /** Exercises to try first for this pattern, best first (e.g. Squat before Leg Extension). */
+        prefer?: string[]
+      }
   )
 
 export interface Template {

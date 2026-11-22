@@ -26,6 +26,8 @@ const sessionSchema = z.object({
   templateIds: z.array(z.string().min(1)).min(1),
   status: z.enum(['in-progress', 'done']),
   notes: z.string().optional(),
+  // Added in M8 as an optional field: older v2 files simply don't have it, so no format bump.
+  plan: z.array(z.string().min(1).nullable()).optional(),
 })
 
 const setSchema = z.object({

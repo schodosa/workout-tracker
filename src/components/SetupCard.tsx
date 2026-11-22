@@ -7,12 +7,19 @@ import styles from './SetupCard.module.css'
  * How to set up for one exercise: machine position/pulleys/accessory/removals, or band type and
  * anchor, plus the form cue, guide page, and any cautions.
  */
-export function SetupCard({ exercise, equipment }: { exercise: Exercise; equipment?: Equipment }) {
-  const setup = describeSetup(exercise, equipment)
+export function SetupCard({ exercise, equipment, generic = false }: { exercise: Exercise; equipment?: Equipment; generic?: boolean }) {
+  // `generic`: the user has a generic machine, not this exact product, so its specific pulley
+  // names and guide pages wouldn't match. Show a plain instruction instead.
+  const setup = generic ? undefined : describeSetup(exercise, equipment)
   const band = exercise.bandSetup
 
   return (
     <div className={styles.setup}>
+      {generic && exercise.setup && (
+        <p className={styles.cue}>
+          Set up your cable machine for this move. ({equipment?.name} pulley details are hidden because you don't have that machine.)
+        </p>
+      )}
       {setup && (
         <dl className={styles.rows}>
           <dt>Position</dt>
@@ -53,7 +60,7 @@ export function SetupCard({ exercise, equipment }: { exercise: Exercise; equipme
 
       {exercise.cue && <p className={styles.cue}>{exercise.cue}</p>}
 
-      {exercise.guidePage !== undefined && (
+      {exercise.guidePage !== undefined && !generic && (
         <p className={styles.guide}>
           Form: see p. {exercise.guidePage}
           {equipment?.manualRef && ` of the ${equipment.manualRef.file}`}

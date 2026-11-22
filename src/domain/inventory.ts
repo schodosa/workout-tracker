@@ -1,5 +1,5 @@
 // What the user owns, and what that lets them do. Pure functions; the database side is db/inventory.ts.
-import type { Catalog } from './catalog.ts'
+import { equivalentEquipment, type Catalog } from './catalog.ts'
 import { ACCESSORY_LABELS, BAND_TYPE_LABELS } from './labels.ts'
 import { BAND_LEVELS, type BandLevel, type BandRecord } from './records.ts'
 import type { Accessory, Exercise, Template } from './types.ts'
@@ -46,16 +46,22 @@ export function sortBands(bands: BandRecord[]): BandRecord[] {
 }
 
 /**
- * Equipment the user can use: what they picked, plus the generic type of each built-in product
- * (owning the Master GS means owning "a stationary bike").
+ * Equipment the user can use: what they picked, plus equivalents. Owning the Master GS means
+ * owning "a stationary bike"; owning a generic cable gym means the Bowflex exercises work too.
  */
 export function usableEquipment(catalog: Catalog, inv: Inventory): Set<string> {
-  const ids = new Set(inv.equipmentIds)
-  for (const id of inv.equipmentIds) {
-    const generic = catalog.equipment.get(id)?.genericType
-    if (generic) ids.add(generic)
-  }
+  const ids = new Set<string>()
+  for (const id of inv.equipmentIds) for (const eq of equivalentEquipment(catalog, id)) ids.add(eq)
   return ids
+}
+
+/**
+ * True when the user owns the exact product an exercise was written for, so its machine-specific
+ * setup (Bowflex pulleys, guide page) applies. False for a generic-cable-gym owner doing a
+ * Bowflex exercise. Before setup, assume yes.
+ */
+export function ownsExactEquipment(inv: Inventory, ex: Exercise): boolean {
+  return !inv.configured || inv.equipmentIds.includes(ex.equipmentId)
 }
 
 /** Active bands of a type this exercise can use, lightest first. */

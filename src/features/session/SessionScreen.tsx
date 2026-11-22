@@ -3,14 +3,24 @@ import { Link, Redirect, useLocation, useParams } from 'wouter'
 import { BackLink } from '../../components/BackLink.tsx'
 import { BandPicker } from '../../components/BandPicker.tsx'
 import { useBandLabeler, useInventory } from '../../db/inventory.ts'
-import { compatibleBands, type Inventory } from '../../domain/inventory.ts'
-import { BAND_TYPE_LABELS } from '../../domain/labels.ts'
+import { compatibleBands, ownsExactEquipment, type Inventory } from '../../domain/inventory.ts'
+import { BAND_TYPE_LABELS, PATTERN_LABELS } from '../../domain/labels.ts'
+import { planTemplate, swapOptions } from '../../domain/substitution.ts'
 import { RestBar } from '../../components/RestBar.tsx'
 import { SetRow } from '../../components/SetRow.tsx'
 import { SetupCard } from '../../components/SetupCard.tsx'
 import { Stepper } from '../../components/Stepper.tsx'
 import { WorkFields } from '../../components/WorkFields.tsx'
-import { discardSession, finishSession, logSets, useLastPerformance, useSession, useSessionSets, type LastPerformance } from '../../db/sessions.ts'
+import {
+  discardSession,
+  finishSession,
+  logSets,
+  swapPlanItem,
+  useLastPerformance,
+  useSession,
+  useSessionSets,
+  type LastPerformance,
+} from '../../db/sessions.ts'
 import { builtinCatalog } from '../../domain/builtins.ts'
 import { formatDose, resolveTemplateItem, type ResolvedItem } from '../../domain/catalog.ts'
 import { formatDayLong } from '../../domain/dates.ts'
@@ -35,8 +45,9 @@ export function SessionScreen() {
   const { id } = useParams<{ id: string }>()
   const session = useSession(id)
   const sets = useSessionSets(id)
+  const inventory = useInventory()
 
-  if (session === undefined || sets === undefined) return null // first read; takes milliseconds
+  if (session === undefined || sets === undefined || inventory === undefined) return null // first read; takes milliseconds
   if (session === null) {
     return (
       <>
@@ -58,14 +69,22 @@ export function SessionScreen() {
     )
   }
 
-  return <SessionLogger session={session} sets={sets} template={template} />
+  return <SessionLogger session={session} sets={sets} template={template} inventory={inventory} />
 }
 
-function SessionLogger({ session, sets, template }: { session: SessionRecord; sets: SetRecord[]; template: Template }) {
+function SessionLogger({ session, sets, template, inventory }: { session: SessionRecord; sets: SetRecord[]; template: Template; inventory: Inventory }) {
   const [, navigate] = useLocation()
   useWakeLock(true) // keep the screen on for the whole session
 
-  const items = template.items.map((item) => resolveTemplateItem(item, DEFAULT_TEMPLATE_SETTINGS))
+  // The exercise for each item, fixed when the session started. Sessions from before M8 have no
+  // saved plan, so work one out from the current equipment.
+  const plan = session.plan ?? planTemplate(builtinCatalog, inventory, template)
+  // A skipped item (no exercise with your equipment) has a target of 0 sets, so it never blocks
+  // "next exercise" or "finish".
+  const items = template.items.map((item, i) => {
+    const resolved = resolveTemplateItem(item, DEFAULT_TEMPLATE_SETTINGS)
+    return plan[i] === null ? { ...resolved, sets: 0 } : resolved
+  })
   const counts = countByItem(sets, items.length)
   const targets = items.map((i) => i.sets)
 
@@ -107,8 +126,9 @@ function SessionLogger({ session, sets, template }: { session: SessionRecord; se
   // Name of the other exercise(s) in this item's superset, for the "Superset with…" hint.
   const partners = item.supersetGroup
     ? items
-        .filter((it, i) => i !== index && it.supersetGroup === item.supersetGroup)
-        .map((it) => (it.exerciseId ? builtinCatalog.exercises.get(it.exerciseId)?.name : it.pattern))
+        .map((it, i) => ({ it, i }))
+        .filter(({ it, i }) => i !== index && it.supersetGroup === item.supersetGroup && plan[i])
+        .map(({ i }) => builtinCatalog.exercises.get(plan[i]!)?.name)
     : []
 
   return (
@@ -126,20 +146,23 @@ function SessionLogger({ session, sets, template }: { session: SessionRecord; se
 
       <nav className={styles.dots} aria-label="Exercises">
         {items.map((it, i) => {
-          const done = counts[i] >= it.sets
-          const cls = [styles.dot, done && styles.dotDone, i === index && styles.dotCurrent].filter(Boolean).join(' ')
-          return (
-            <button key={i} type="button" className={cls} onClick={() => setIndex(i)} aria-label={`Exercise ${i + 1}${done ? ', done' : ''}`} aria-current={i === index ? 'step' : undefined} />
-          )
+          const skipped = plan[i] === null
+          const done = !skipped && counts[i] >= it.sets
+          const cls = [styles.dot, done && styles.dotDone, skipped && styles.dotSkipped, i === index && styles.dotCurrent].filter(Boolean).join(' ')
+          const state = skipped ? ', skipped' : done ? ', done' : ''
+          return <button key={i} type="button" className={cls} onClick={() => setIndex(i)} aria-label={`Exercise ${i + 1}${state}`} aria-current={i === index ? 'step' : undefined} />
         })}
       </nav>
 
-      {/* key={index}: a fresh form (fresh inputs and prefill) for each exercise. */}
+      {/* Keyed on item AND exercise: moving on, or swapping, gives a fresh form and prefill. */}
       <ExerciseLogger
-        key={index}
+        key={`${index}:${plan[index]}`}
         sessionId={session.id}
         item={item}
         itemIndex={index}
+        exerciseId={plan[index]}
+        swapChoices={swapOptions(builtinCatalog, inventory, template.items[index])}
+        onSwap={(exerciseId) => swapPlanItem(session.id, plan, index, exerciseId)}
         sets={sets.filter((s) => s.itemIndex === index)}
         partners={partners.filter((p): p is string => Boolean(p))}
         onLogged={onLogged}
@@ -182,6 +205,10 @@ interface ExerciseLoggerProps {
   sessionId: string
   item: ResolvedItem
   itemIndex: number
+  /** The exercise chosen for this item (null = skipped: nothing for it with your equipment). */
+  exerciseId: string | null
+  swapChoices: Exercise[]
+  onSwap: (exerciseId: string) => void
   sets: SetRecord[]
   partners: string[]
   onLogged: (itemIndex: number, loggedAt: number) => void
@@ -189,14 +216,19 @@ interface ExerciseLoggerProps {
 
 /** Waits for "last time" data so the inputs can start pre-filled, then shows the form. */
 function ExerciseLogger(props: ExerciseLoggerProps) {
-  const exercise = props.item.exerciseId ? builtinCatalog.exercises.get(props.item.exerciseId) : undefined
+  const exercise = props.exerciseId ? builtinCatalog.exercises.get(props.exerciseId) : undefined
   const lastTime = useLastPerformance(exercise?.id, props.sessionId)
   const inventory = useInventory()
 
   if (!exercise) {
+    const original = props.item.exerciseId ? builtinCatalog.exercises.get(props.item.exerciseId) : undefined
+    const pattern = original?.movementPattern ?? props.item.pattern
     return (
       <div className="card">
-        <p>This item ({props.item.pattern}) can't be logged yet. Exercise substitution arrives in a later milestone.</p>
+        <h1 className={styles.name}>{original?.name ?? `${pattern ? PATTERN_LABELS[pattern] : 'Exercise'}`}</h1>
+        <p className={styles.skipped}>
+          Skipped: nothing for {pattern ? PATTERN_LABELS[pattern].toLowerCase() : 'this movement'} with your equipment.
+        </p>
       </div>
     )
   }
@@ -212,10 +244,55 @@ function ExerciseLogger(props: ExerciseLoggerProps) {
   return <ExerciseForm {...props} exercise={exercise} lastTime={lastTime} inventory={inventory} />
 }
 
+/** "Swap" button and the list of alternatives for this movement, best first. */
+function SwapPanel({ current, choices, onSwap }: { current: Exercise; choices: Exercise[]; onSwap: (id: string) => void }) {
+  const [open, setOpen] = useState(false)
+  if (choices.length < 2) return null
+  if (!open) {
+    return (
+      <button type="button" className={styles.swapButton} onClick={() => setOpen(true)}>
+        ⇄ Swap exercise
+      </button>
+    )
+  }
+  return (
+    <div className={`card ${styles.swapPanel}`}>
+      <p className={styles.swapTitle}>Swap {current.name} for…</p>
+      <ul className={styles.swapList}>
+        {choices.map((ex) => (
+          <li key={ex.id}>
+            <button
+              type="button"
+              className={ex.id === current.id ? `${styles.swapChoice} ${styles.swapCurrent}` : styles.swapChoice}
+              onClick={() => {
+                setOpen(false)
+                if (ex.id !== current.id) onSwap(ex.id)
+              }}
+            >
+              <span className={styles.swapName}>{ex.name}</span>
+              <span className={styles.swapMeta}>
+                {builtinCatalog.equipment.get(ex.equipmentId)?.name}
+                {ex.unilateral && ' · per side'}
+                {ex.measure === 'time' && ' · timed'}
+                {ex.id === current.id && ' · current'}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <button type="button" className="btn" onClick={() => setOpen(false)}>
+        Cancel
+      </button>
+    </div>
+  )
+}
+
 function ExerciseForm({
   sessionId,
   item,
   itemIndex,
+  swapChoices,
+  onSwap,
   sets,
   partners,
   onLogged,
@@ -224,6 +301,8 @@ function ExerciseForm({
   inventory,
 }: ExerciseLoggerProps & { exercise: Exercise; lastTime: LastPerformance | null; inventory: Inventory }) {
   const equipment = builtinCatalog.equipment.get(exercise.equipmentId)
+  // The exercise the template named, when this one stands in for it.
+  const original = item.exerciseId && item.exerciseId !== exercise.id ? builtinCatalog.exercises.get(item.exerciseId) : undefined
   const bandLabel = useBandLabeler()
   // Weight field only for equipment measured in lb/kg (not floor, bands, or bikes).
   const weighted = equipment?.resistanceUnit === 'lb' || equipment?.resistanceUnit === 'kg'
@@ -282,10 +361,12 @@ function ExerciseForm({
     <article>
       <header className={styles.header}>
         <h1 className={styles.name}>{exercise.name}</h1>
+        {original && <p className={styles.insteadOf}>Instead of {original.name}</p>}
         <p className={styles.target}>
           Target {formatDose(item, exercise)} · rest {item.restSec} s
         </p>
-        {item.note && <p className={styles.note}>{item.note}</p>}
+        {/* A template note describes the exercise it named, so hide it on a substitute. */}
+        {item.note && !original && <p className={styles.note}>{item.note}</p>}
         {partners.length > 0 && <p className={styles.superset}>Superset with {partners.join(', ')}</p>}
         {lastLogical.length > 0 && (
           <p className={styles.lastTime}>
@@ -294,9 +375,11 @@ function ExerciseForm({
         )}
       </header>
 
+      <SwapPanel current={exercise} choices={swapChoices} onSwap={onSwap} />
+
       <details className={styles.setupDetails} open={logical.length === 0}>
-        <summary>{exercise.setup ? 'Machine setup' : 'How to do it'}</summary>
-        <SetupCard exercise={exercise} equipment={equipment} />
+        <summary>{exercise.setup && ownsExactEquipment(inventory, exercise) ? 'Machine setup' : 'How to do it'}</summary>
+        <SetupCard exercise={exercise} equipment={equipment} generic={!ownsExactEquipment(inventory, exercise)} />
       </details>
 
       {logical.length > 0 && (

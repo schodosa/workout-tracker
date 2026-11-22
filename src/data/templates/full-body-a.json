@@ -1,0 +1,16 @@
+{
+  "id": "full-body-a",
+  "name": "Full Body A",
+  "goalTags": ["build-strength", "build-muscle", "lose-fat"],
+  "estMinutes": 40,
+  "requiredEquipmentIds": ["floor"],
+  "format": "straight-sets",
+  "items": [
+    { "pattern": "squat", "prefer": ["bowflex-squat", "band-squat", "floor-bodyweight-squat", "floor-wall-sit"] },
+    { "pattern": "horizontal-push", "prefer": ["bowflex-bench-press", "floor-push-up", "floor-incline-push-up"] },
+    { "pattern": "hinge", "prefer": ["bowflex-dead-lift", "floor-single-leg-rdl"] },
+    { "pattern": "horizontal-pull", "prefer": ["bowflex-bent-over-row", "band-row"] },
+    { "pattern": "anti-rotation", "prefer": ["band-pallof-press", "floor-dead-bug", "floor-bird-dog"] },
+    { "exerciseId": "floor-plank" }
+  ]
+}

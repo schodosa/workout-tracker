@@ -17,6 +17,12 @@ export interface SessionRecord {
   templateIds: string[]
   status: SessionStatus
   notes?: string
+  /**
+   * The exercise chosen for each template item when the session started (null = skipped, no
+   * substitute with your equipment). Swaps update it. Saved so that changing equipment later
+   * doesn't reshuffle a session in progress. Sessions from before M8 don't have it.
+   */
+  plan?: (string | null)[]
 }
 
 export type Side = 'L' | 'R' | 'both'

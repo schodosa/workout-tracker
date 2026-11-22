@@ -111,6 +111,76 @@
   font-size: 0.9rem;
 }
 
+.insteadOf {
+  margin: 2px 0 0;
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.skipped {
+  color: var(--text-muted);
+}
+
+.dotSkipped::after {
+  background: repeating-linear-gradient(45deg, var(--surface-2) 0 3px, transparent 3px 6px);
+}
+
+.swapButton {
+  min-height: 44px;
+  margin: -4px 0 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.swapPanel {
+  border-color: var(--accent);
+}
+
+.swapTitle {
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+
+.swapList {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.swapChoice {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: none;
+  color: inherit;
+  text-align: left;
+}
+
+.swapList li:first-child .swapChoice {
+  border-top: 0;
+}
+
+.swapCurrent .swapName {
+  color: var(--accent);
+}
+
+.swapName {
+  font-weight: 700;
+}
+
+.swapMeta {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
 .noBands {
   margin: 0 0 12px;
   color: var(--text-muted);

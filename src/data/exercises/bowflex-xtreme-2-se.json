@@ -25,7 +25,11 @@
       ]
     },
     "guidePage": 22,
-    "cautions": []
+    "cautions": [],
+    "alternatives": [
+      "floor-push-up",
+      "floor-incline-push-up"
+    ]
   },
   {
     "id": "bowflex-chest-fly",
@@ -108,7 +112,11 @@
       ]
     },
     "guidePage": 23,
-    "cautions": []
+    "cautions": [],
+    "alternatives": [
+      "floor-push-up",
+      "floor-incline-push-up"
+    ]
   },
   {
     "id": "bowflex-decline-chest-fly",
@@ -245,7 +253,11 @@
       ]
     },
     "guidePage": 26,
-    "cautions": []
+    "cautions": [],
+    "alternatives": [
+      "band-face-pull",
+      "band-pull-apart"
+    ]
   },
   {
     "id": "bowflex-crossover-high-rear-deltoid-row",
@@ -748,7 +760,10 @@
       ]
     },
     "guidePage": 35,
-    "cautions": []
+    "cautions": [],
+    "alternatives": [
+      "band-row"
+    ]
   },
   {
     "id": "bowflex-crossover-bent-over-row",
@@ -1020,7 +1035,10 @@
       ]
     },
     "guidePage": 40,
-    "cautions": []
+    "cautions": [],
+    "alternatives": [
+      "band-overhead-triceps-extension"
+    ]
   },
   {
     "id": "bowflex-triceps-hammer-pushdown",
@@ -1315,7 +1333,10 @@
       ]
     },
     "guidePage": 45,
-    "cautions": []
+    "cautions": [],
+    "alternatives": [
+      "band-biceps-curl"
+    ]
   },
   {
     "id": "bowflex-standing-biceps-curl",
@@ -1678,7 +1699,10 @@
     "cautions": [
       "Lowest-weight rods only."
     ],
-    "keepLight": true
+    "keepLight": true,
+    "alternatives": [
+      "band-wood-chop"
+    ]
   },
   {
     "id": "bowflex-seated-oblique-crunch",
@@ -1731,7 +1755,11 @@
       ]
     },
     "guidePage": 53,
-    "cautions": []
+    "cautions": [],
+    "alternatives": [
+      "floor-hollow-hold",
+      "floor-tuck-hollow-hold"
+    ]
   },
   {
     "id": "bowflex-leg-extension",
@@ -1757,7 +1785,12 @@
       ]
     },
     "guidePage": 54,
-    "cautions": []
+    "cautions": [],
+    "alternatives": [
+      "band-squat",
+      "floor-wall-sit",
+      "floor-bodyweight-squat"
+    ]
   },
   {
     "id": "bowflex-squat",
@@ -1788,6 +1821,10 @@
     "guidePage": 54,
     "cautions": [
       "Never step off the platform while under resistance."
+    ],
+    "alternatives": [
+      "band-squat",
+      "floor-bodyweight-squat"
     ]
   },
   {
@@ -1815,7 +1852,11 @@
       ]
     },
     "guidePage": 55,
-    "cautions": []
+    "cautions": [],
+    "alternatives": [
+      "band-glute-bridge",
+      "floor-glute-bridge"
+    ]
   },
   {
     "id": "bowflex-standing-hip-extension-knee-extended",
@@ -1928,7 +1969,10 @@
       ]
     },
     "guidePage": 57,
-    "cautions": []
+    "cautions": [],
+    "alternatives": [
+      "floor-single-leg-rdl"
+    ]
   },
   {
     "id": "bowflex-stiff-leg-dead-lift",
@@ -1960,7 +2004,10 @@
     "cautions": [
       "Light resistance only."
     ],
-    "keepLight": true
+    "keepLight": true,
+    "alternatives": [
+      "floor-single-leg-rdl"
+    ]
   },
   {
     "id": "bowflex-standing-hip-adduction",
@@ -2015,6 +2062,10 @@
       ]
     },
     "guidePage": 58,
-    "cautions": []
+    "cautions": [],
+    "alternatives": [
+      "band-clamshell",
+      "band-lateral-walk"
+    ]
   }
 ]

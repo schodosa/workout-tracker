@@ -6,8 +6,9 @@ import { useBackupDue } from '../../db/backupReminder.ts'
 import { useInventory } from '../../db/inventory.ts'
 import { useInProgressSession } from '../../db/sessions.ts'
 import { builtinCatalog } from '../../domain/builtins.ts'
-import { missingForTemplate } from '../../domain/inventory.ts'
+import { fitTemplate, type TemplateFit } from '../../domain/substitution.ts'
 import type { Template } from '../../domain/types.ts'
+import { equipmentLine } from '../templates/equipmentLine.ts'
 import styles from './TodayScreen.module.css'
 
 // Main workouts first, warm-ups after; alphabetical within each.
@@ -24,8 +25,10 @@ export function TodayScreen() {
   if (!inv) return null
 
   // Until the plan editor exists (M12), Today lists the templates you can do with what you own.
-  const available = templates.filter((t) => missingForTemplate(builtinCatalog, inv, t).length === 0)
-  const unavailable = templates.filter((t) => missingForTemplate(builtinCatalog, inv, t).length > 0)
+  // A template counts as available when every exercise can be done, as written or swapped.
+  const fits = new Map(templates.map((t) => [t.id, fitTemplate(builtinCatalog, inv, t)]))
+  const available = templates.filter((t) => fits.get(t.id)!.doable === t.items.length)
+  const unavailable = templates.filter((t) => fits.get(t.id)!.doable < t.items.length)
 
   return (
     <>
@@ -43,7 +46,7 @@ export function TodayScreen() {
       <h2 className={styles.section}>Templates</h2>
       {available.length === 0 && <p className="muted">None of the built-in templates match your equipment yet.</p>}
       {available.map((t) => (
-        <TemplateCard key={t.id} template={t} />
+        <TemplateCard key={t.id} template={t} fit={fits.get(t.id)!} />
       ))}
 
       {unavailable.length > 0 && (
@@ -52,7 +55,7 @@ export function TodayScreen() {
             {unavailable.length} template{unavailable.length === 1 ? '' : 's'} need equipment you don't have
           </summary>
           {unavailable.map((t) => (
-            <TemplateCard key={t.id} template={t} missing={missingForTemplate(builtinCatalog, inv, t)} />
+            <TemplateCard key={t.id} template={t} fit={fits.get(t.id)!} />
           ))}
         </details>
       )}
@@ -60,15 +63,18 @@ export function TodayScreen() {
   )
 }
 
-function TemplateCard({ template: t, missing = [] }: { template: Template; missing?: string[] }) {
-  const equipment = t.requiredEquipmentIds.map((id) => builtinCatalog.equipment.get(id)?.name ?? id)
+function TemplateCard({ template: t, fit }: { template: Template; fit: TemplateFit }) {
+  const partial = fit.doable < fit.total
+  let detail = equipmentLine(t)
+  if (partial) detail = `${fit.doable} of ${fit.total} exercises possible with your equipment`
+  else if (fit.swapped > 0) detail = `${fit.swapped} exercise${fit.swapped === 1 ? '' : 's'} swapped for your equipment`
   return (
-    <Link href={`/templates/${t.id}`} className={`card ${styles.templateCard} ${missing.length ? styles.dim : ''}`}>
+    <Link href={`/templates/${t.id}`} className={`card ${styles.templateCard} ${partial ? styles.dim : ''}`}>
       <span className={styles.name}>{t.name}</span>
       <span className="muted">
         ~{t.estMinutes} min · {t.items.length} exercises{t.warmup && ' · warm-up'}
       </span>
-      <span className={styles.equipment}>{missing.length ? `Missing: ${missing.join(', ')}` : `Needs: ${equipment.join(', ')}`}</span>
+      <span className={styles.equipment}>{detail}</span>
       <span className={styles.chevron} aria-hidden="true">
         ›
       </span>

@@ -1,0 +1,7 @@
+{
+  "id": "cable-gym",
+  "name": "Cable / home gym",
+  "kind": "generic",
+  "type": "strength",
+  "resistanceUnit": "lb"
+}

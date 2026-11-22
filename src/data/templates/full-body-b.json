@@ -1,0 +1,16 @@
+{
+  "id": "full-body-b",
+  "name": "Full Body B",
+  "goalTags": ["build-strength", "build-muscle", "lose-fat"],
+  "estMinutes": 40,
+  "requiredEquipmentIds": ["floor"],
+  "format": "straight-sets",
+  "items": [
+    { "pattern": "lunge", "prefer": ["floor-split-squat", "floor-reverse-lunge"] },
+    { "pattern": "vertical-pull", "prefer": ["bowflex-seated-lat-pulldown", "bowflex-narrow-pulldown-grips"] },
+    { "pattern": "hip-extension", "prefer": ["band-glute-bridge", "floor-glute-bridge", "bowflex-standing-hip-extension-knee-bent"] },
+    { "pattern": "vertical-push", "prefer": ["bowflex-seated-shoulder-press"] },
+    { "pattern": "trunk-flexion", "prefer": ["bowflex-seated-abdominal-crunch", "floor-hollow-hold", "floor-tuck-hollow-hold"] },
+    { "exerciseId": "floor-side-plank" }
+  ]
+}

@@ -33,6 +33,10 @@ A local-first, installable PWA workout tracker for home gyms. The full product s
 - Inventory (`src/domain/inventory.ts`, `src/db/inventory.ts`): owned equipment and accessories live in the key/value `settings` table, and bands in `bands`. Until `ownedEquipment` is saved once (`configured: false`), hide nothing. Use `missingForExercise` / `missingForTemplate` / `canDoExercise` rather than checking ownership by hand.
 - Band sets store `bandIds` (max 2 = stacked), never pounds. Retired bands (`active: false`) leave the picker but keep their name in history. Pass `useBandLabeler()` into `formatLogicalSet` / `summarizeLastTime`.
 - Backup format is v2 (adds bands and settings). `upgradeBackup()` converts v1 files, so keep every old version importable.
+- Substitution (`src/domain/substitution.ts`) resolves each template item in this order: as written if doable, then the template's `prefer` list or the exercise's `alternatives` (hand-picked data, same movement pattern, enforced by validation), then a scored same-pattern search. Impact moves are never auto-picked until the M15 unlock week. Items with no option are skipped (`null`) with a target of 0 sets.
+- A session saves its `plan` (exercise per item) at start, and Swap edits it. Never re-resolve a session that has a plan. Sessions from before M8 fall back to `planTemplate()`.
+- A product and its generic type share exercises both ways (`equivalentEquipment()`). Show machine-specific setup only when `ownsExactEquipment()`. Otherwise pass `generic` to `SetupCard`.
+- Circuit, checklist and ride templates ship with the milestone that can run them (M9, M10), not before.
 - Save each logged set immediately (write-through) so a locked phone or killed tab loses nothing.
 - Screens never touch `db` directly. They use the functions and `use*` hooks in `src/db/*.ts`.
 - Never edit a shipped `db.version(n)`. Schema changes go in a new `version(n+1)` with an `.upgrade()`.

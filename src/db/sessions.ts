@@ -10,7 +10,8 @@ import { newId } from '../domain/ids.ts'
 import type { SessionRecord, SetRecord } from '../domain/records.ts'
 import { db, requestPersistentStorage } from './db.ts'
 
-export async function startSession(templateId: string): Promise<string> {
+/** Starts a session with its exercise plan fixed (see SessionRecord.plan). */
+export async function startSession(templateId: string, plan: (string | null)[]): Promise<string> {
   const existing = await db.sessions.where('status').equals('in-progress').first()
   if (existing) return existing.id // only one session at a time
 
@@ -21,6 +22,7 @@ export async function startSession(templateId: string): Promise<string> {
     startedAt: Date.now(),
     templateIds: [templateId],
     status: 'in-progress',
+    plan,
   })
   // Fire and forget; the first real data is a good moment to ask.
   void requestPersistentStorage()
@@ -47,6 +49,13 @@ export async function updateSets(changes: { id: string; changes: Partial<Pick<Se
 
 export async function updateSessionNotes(id: string, notes: string): Promise<void> {
   await db.sessions.update(id, { notes: notes.trim() || undefined })
+}
+
+/** Swaps the exercise for one item. `plan` is the session's current full plan. */
+export async function swapPlanItem(sessionId: string, plan: (string | null)[], itemIndex: number, exerciseId: string): Promise<void> {
+  const next = [...plan]
+  next[itemIndex] = exerciseId
+  await db.sessions.update(sessionId, { plan: next })
 }
 
 export async function finishSession(id: string): Promise<void> {
