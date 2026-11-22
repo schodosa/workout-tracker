@@ -1,9 +1,15 @@
+import { lazy, Suspense } from 'react'
 import { Redirect, Route, Switch } from 'wouter'
 import { TabBar } from './components/TabBar.tsx'
 import { HistoryScreen } from './features/history/HistoryScreen.tsx'
 import { SessionDetailScreen } from './features/history/SessionDetailScreen.tsx'
 import { SessionScreen } from './features/session/SessionScreen.tsx'
 import { SettingsScreen } from './features/settings/SettingsScreen.tsx'
+
+// Loaded on demand: the backup screen pulls in Zod (~60 KB gzipped), which nothing else needs.
+// Vite turns the dynamic import() into a separate file; the service worker still pre-caches it,
+// so it opens offline too.
+const BackupScreen = lazy(() => import('./features/settings/BackupScreen.tsx').then((m) => ({ default: m.BackupScreen })))
 import { TemplateScreen } from './features/templates/TemplateScreen.tsx'
 import { TodayScreen } from './features/today/TodayScreen.tsx'
 
@@ -18,6 +24,11 @@ export default function App() {
           <Route path="/history" component={HistoryScreen} />
           <Route path="/history/:id" component={SessionDetailScreen} />
           <Route path="/settings" component={SettingsScreen} />
+          <Route path="/settings/backup">
+            <Suspense fallback={null}>
+              <BackupScreen />
+            </Suspense>
+          </Route>
           {/* Any unknown URL goes back to Today. */}
           <Route>
             <Redirect to="/" />

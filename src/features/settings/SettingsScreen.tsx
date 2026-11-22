@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'wouter'
+import { getLastBackupAt } from '../../db/backupReminder.ts'
+import styles from './SettingsScreen.module.css'
 
 // Shows build info and how the app is running. Useful while testing installs and updates.
 function isInstalled() {
@@ -16,9 +19,22 @@ export function SettingsScreen() {
     navigator.storage?.persisted?.().then(setPersisted, () => setPersisted(false))
   }, [])
 
+  const lastBackupAt = getLastBackupAt()
+
   return (
     <>
       <h1>Settings</h1>
+      <Link href="/settings/backup" className={`card ${styles.link}`}>
+        <span className={styles.linkTitle}>Backup &amp; restore</span>
+        <span className="muted">
+          Last backup: {lastBackupAt ? new Date(lastBackupAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'never'}
+        </span>
+        <span className={styles.chevron} aria-hidden="true">
+          ›
+        </span>
+      </Link>
+
+      <h2 className={styles.section}>About</h2>
       <div className="card">
         <p>
           <strong>Version</strong> {__APP_VERSION__}

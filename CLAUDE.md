@@ -32,6 +32,8 @@ A local-first, installable PWA workout tracker for home gyms. The full product s
 - Never edit a shipped `db.version(n)`. Schema changes go in a new `version(n+1)` with an `.upgrade()`.
 - Don't persist UI position (e.g. the current exercise). Derive it from the data so resuming after iOS kills the app just works.
 - Use `newId()` from `src/domain/ids.ts`, not `crypto.randomUUID()`. The latter is missing on plain-HTTP LAN testing.
+- Backup files (`src/domain/backup.ts`) have their own `formatVersion`, separate from the DB version. Old backups must keep importing. When adding a field to a record type, update the Zod schema too (a compile-time check enforces this). For a breaking format change, bump `BACKUP_FORMAT_VERSION` and convert old files in `upgradeBackup()`.
+- Zod is only for untrusted input (imported files). Keep it out of the main bundle: only lazily loaded screens may import `src/domain/backup.ts` or `src/db/backup.ts`.
 - Store calendar dates as local `YYYY-MM-DD` strings, not UTC timestamps.
 
 ## Target device: iPhone (iOS Safari / home-screen PWA)

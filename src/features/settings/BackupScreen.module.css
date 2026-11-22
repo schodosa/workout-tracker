@@ -1,0 +1,44 @@
+.heading {
+  margin: 0 0 8px;
+  font-size: 1.2rem;
+}
+
+/* Visually hidden but still usable; the surrounding <label> is the visible button. */
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ok {
+  margin: 12px 0 0;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.ok a {
+  color: var(--accent);
+}
+
+.error {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--warn-bg);
+  color: var(--warn);
+  font-weight: 600;
+}
+
+.preview {
+  margin-top: var(--gap);
+  padding-top: var(--gap);
+  border-top: 1px solid var(--border);
+}
+
+.hint {
+  margin: 6px 0 14px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
