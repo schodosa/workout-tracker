@@ -1,0 +1,23 @@
+{
+  "id": "bike-intervals",
+  "name": "Bike Intervals",
+  "description": "Warm up, then short hard efforts with easy recovery.",
+  "goalTags": ["lose-fat", "endurance", "sport-performance"],
+  "estMinutes": 22,
+  "requiredEquipmentIds": ["stationary-bike"],
+  "format": "ride",
+  "ride": {
+    "warmupSec": 300,
+    "cooldownSec": 300,
+    "warmupCue": "Easy spin, light tension.",
+    "intervals": {
+      "rounds": 6,
+      "hardSec": 30,
+      "easySec": 90,
+      "hardCue": "RPE 8–9 · high tension · 90–110 RPM",
+      "easyCue": "RPE 3–4 · light tension",
+      "hardRpm": { "min": 90, "max": 110 }
+    }
+  },
+  "items": [{ "exerciseId": "bike-intervals" }]
+}

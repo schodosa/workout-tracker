@@ -1,0 +1,161 @@
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.discardLink {
+  min-height: var(--tap);
+  margin: calc(var(--gap) * -0.5) -8px 0 0;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* Phase colors. Hard = amber, easy = green, warm-up/cool-down = blue, steady = green. */
+.warmup,
+.cooldown {
+  --phase: #60a5fa;
+  --phase-text: #0b1b33;
+}
+
+.hard {
+  --phase: #fbbf24;
+  --phase-text: #2a1a00;
+}
+
+.easy,
+.steady {
+  --phase: var(--accent);
+  --phase-text: var(--accent-text);
+}
+
+/* The live panel fills most of the screen: big enough to read from a bike handlebar. */
+.phase {
+  margin: 4px 0 12px;
+  padding: 20px 16px;
+  border-radius: var(--radius);
+  background: var(--phase);
+  color: var(--phase-text);
+  text-align: center;
+}
+
+.paused {
+  filter: saturate(0.2) brightness(0.8);
+}
+
+.phaseLabel {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bigClock {
+  margin: 4px 0;
+  font-size: 6rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.cue {
+  margin: 6px 0 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.meta {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.flash {
+  position: fixed;
+  inset: 0;
+  background: var(--phase);
+  pointer-events: none;
+  z-index: 20;
+  animation: flash 0.45s ease-out 3;
+  opacity: 0;
+}
+
+@keyframes flash {
+  0% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flash {
+    animation: none;
+  }
+}
+
+.hardText {
+  color: #fbbf24;
+}
+
+.easyText {
+  color: var(--accent);
+}
+
+.consoleAlert {
+  padding: 12px;
+  border-radius: var(--radius);
+  background: var(--warn);
+  color: #2a1a00;
+  font-size: 1.05rem;
+}
+
+.consoleGone {
+  padding: 12px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
+
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 10px;
+}
+
+.field {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.field > span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.field input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.more {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+}

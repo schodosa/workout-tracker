@@ -70,3 +70,19 @@
 .checkTodo {
   color: var(--text-muted);
 }
+
+.rideStats {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 14px;
+  margin: 0;
+}
+
+.rideStats dt {
+  color: var(--text-muted);
+}
+
+.rideStats dd {
+  margin: 0;
+  font-weight: 700;
+}

@@ -8,6 +8,7 @@ import { builtinCatalog } from '../../domain/builtins.ts'
 import { formatDose, groupSupersets, resolveTemplateItem, type ResolvedItem } from '../../domain/catalog.ts'
 import { ownsExactEquipment, type Inventory } from '../../domain/inventory.ts'
 import { PATTERN_LABELS } from '../../domain/labels.ts'
+import { describeRide } from '../../domain/ride.ts'
 import { fitTemplate, planTemplate, type Resolution } from '../../domain/substitution.ts'
 import { DEFAULT_TEMPLATE_SETTINGS, type TemplateFormat } from '../../domain/types.ts'
 import { equipmentLine } from './equipmentLine.ts'
@@ -52,6 +53,20 @@ export function TemplateScreen() {
         {equipmentLine(template)}
       </p>
       {template.description && <p className={styles.description}>{template.description}</p>}
+      {template.ride && (
+        <div className="card">
+          <p>
+            <strong>{describeRide(template.ride)}</strong>
+          </p>
+          {template.ride.intervals && (
+            <>
+              <p className="muted">Hard: {template.ride.intervals.hardCue}</p>
+              <p className="muted">Easy: {template.ride.intervals.easyCue}</p>
+            </>
+          )}
+          {template.ride.steady && <p className="muted">{template.ride.steady.cue}</p>}
+        </div>
+      )}
       {template.format === 'circuit' && (
         <p className={styles.description}>
           {template.rounds} round{template.rounds === 1 ? '' : 's'} · {template.transitionSec ?? 15} s between exercises · {template.roundRestSec ?? 60} s between rounds

@@ -30,6 +30,33 @@ const sessionSchema = z.object({
   plan: z.array(z.string().min(1).nullable()).optional(),
   // Added in M9 (checklists), also optional.
   checkedItems: z.array(z.number().int().nonnegative()).optional(),
+  // Added in M10 (rides), also optional.
+  rideClock: z
+    .object({
+      startedAt: timestamp,
+      pausedMs: z.number().nonnegative(),
+      pausedAt: timestamp.optional(),
+      endedAt: timestamp.optional(),
+    })
+    .optional(),
+  ride: z
+    .object({
+      exerciseId: z.string().min(1),
+      durationSec: z.number().nonnegative(),
+      distance: z.number().nonnegative().optional(),
+      distanceUnit: z.enum(['mi', 'km']).optional(),
+      avgRpm: z.number().nonnegative().optional(),
+      peakRpm: z.number().nonnegative().optional(),
+      calories: z.number().nonnegative().optional(),
+      avgHr: z.number().nonnegative().optional(),
+      maxHr: z.number().nonnegative().optional(),
+      rpe: z.number().min(1).max(10).optional(),
+      hardRpe: z.number().min(1).max(10).optional(),
+      easyRpe: z.number().min(1).max(10).optional(),
+      knobNote: z.string().optional(),
+      roundsCompleted: z.number().int().nonnegative().optional(),
+    })
+    .optional(),
 })
 
 const setSchema = z.object({

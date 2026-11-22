@@ -7,7 +7,7 @@ import Dexie from 'dexie'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { localDate } from '../domain/dates.ts'
 import { newId } from '../domain/ids.ts'
-import type { SessionRecord, SetRecord } from '../domain/records.ts'
+import type { RideClock, RideLog, SessionRecord, SetRecord } from '../domain/records.ts'
 import { db, requestPersistentStorage } from './db.ts'
 
 /** Starts a session with its exercise plan fixed (see SessionRecord.plan). */
@@ -56,6 +56,28 @@ export async function swapPlanItem(sessionId: string, plan: (string | null)[], i
   const next = [...plan]
   next[itemIndex] = exerciseId
   await db.sessions.update(sessionId, { plan: next })
+}
+
+/** Ride sessions: saves the ride clock (start, pauses, end) so a reload or app kill doesn't lose it. */
+export async function setRideClock(sessionId: string, clock: RideClock): Promise<void> {
+  await db.sessions.update(sessionId, { rideClock: clock })
+}
+
+/** Ride sessions: saves the logged numbers and finishes the session in one write. */
+export async function saveRideAndFinish(sessionId: string, ride: RideLog): Promise<void> {
+  await db.sessions.update(sessionId, { ride, status: 'done', finishedAt: Date.now() })
+}
+
+/** The most recent logged ride of this kind (for prefilling the knob note and showing "last time"). */
+export function useLastRide(exerciseId: string, excludeSessionId: string): (RideLog & { date: string }) | null | undefined {
+  return useLiveQuery(async () => {
+    const s = await db.sessions
+      .orderBy('startedAt')
+      .reverse()
+      .filter((x) => x.id !== excludeSessionId && x.ride?.exerciseId === exerciseId)
+      .first()
+    return s?.ride ? { ...s.ride, date: s.date } : null
+  }, [exerciseId, excludeSessionId])
 }
 
 /** Checklist sessions: saves which items are ticked off. */

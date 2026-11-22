@@ -25,6 +25,41 @@ export interface SessionRecord {
   plan?: (string | null)[]
   /** Checklist templates (Daily Mobility): indexes of the items ticked off. */
   checkedItems?: number[]
+  /** Ride templates: the running clock, saved so pause/reload/app-kill don't lose the ride. */
+  rideClock?: RideClock
+  /** Ride templates: the numbers logged at the end (spec: rideLog). */
+  ride?: RideLog
+}
+
+export interface RideClock {
+  startedAt: number
+  /** Total time spent paused so far. */
+  pausedMs: number
+  /** Set while paused. */
+  pausedAt?: number
+  /** Set when the ride ended (by the timeline finishing, or End ride). */
+  endedAt?: number
+}
+
+/** What the user logs after a ride: console numbers, effort, and the knob reference. */
+export interface RideLog {
+  exerciseId: string
+  durationSec: number
+  distance?: number
+  distanceUnit?: 'mi' | 'km'
+  avgRpm?: number
+  peakRpm?: number
+  calories?: number
+  avgHr?: number
+  maxHr?: number
+  /** Steady rides: overall effort, RPE 1–10. */
+  rpe?: number
+  /** Interval rides: effort in the hard and easy phases. */
+  hardRpe?: number
+  easyRpe?: number
+  /** Free text reference for a tension knob with no numbers, e.g. "½ turn past contact". */
+  knobNote?: string
+  roundsCompleted?: number
 }
 
 export type Side = 'L' | 'R' | 'both'

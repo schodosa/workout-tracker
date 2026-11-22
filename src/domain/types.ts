@@ -190,7 +190,38 @@ export interface Template {
   description?: string
   /** Warm-ups (e.g. Band Activation) are excluded from progression flags. */
   warmup?: boolean
+  /** Ride templates: the timeline and on-screen cues. */
+  ride?: RideStructure
   items: TemplateItem[]
+}
+
+export interface RpmRange {
+  min: number
+  max: number
+}
+
+/**
+ * The shape of a ride. Intervals: warm-up → (hard, easy) × rounds → cool-down. Steady: one
+ * open-ended segment with a target duration; you end it when you're done.
+ */
+export interface RideStructure {
+  warmupSec: number
+  cooldownSec: number
+  warmupCue?: string
+  intervals?: {
+    rounds: number
+    hardSec: number
+    easySec: number
+    hardCue: string
+    easyCue: string
+    /** Spec: interval cues never target more than ~120 RPM (the Master GS shows STOP above 140). */
+    hardRpm?: RpmRange
+  }
+  steady?: {
+    minMinutes: number
+    maxMinutes: number
+    cue: string
+  }
 }
 
 /** The subset of user settings that templates fall back on. Grows in later milestones. */

@@ -129,6 +129,20 @@ export function validateCatalog(source: CatalogSource): string[] {
     if (t.format !== 'circuit' && (t.rounds !== undefined || t.transitionSec !== undefined || t.roundRestSec !== undefined)) {
       problems.push(`${where}: rounds/transitionSec/roundRestSec only apply to circuits`)
     }
+    if (t.format === 'ride') {
+      const r = t.ride
+      if (!r) problems.push(`${where}: ride templates need a ride structure`)
+      else {
+        if (Boolean(r.intervals) === Boolean(r.steady)) problems.push(`${where}: a ride has either intervals or steady, not both or neither`)
+        if (r.intervals?.hardRpm && r.intervals.hardRpm.max > 120) {
+          problems.push(`${where}: hard RPM target ${r.intervals.hardRpm.max} is over 120 (the spec's ceiling; the Master GS shows STOP above 140)`)
+        }
+      }
+      const rideItems = t.items.filter((i) => i.exerciseId && catalog.exercises.get(i.exerciseId)?.measure === 'ride')
+      if (t.items.length !== 1 || rideItems.length !== 1) problems.push(`${where}: a ride template has exactly one ride exercise`)
+    } else if (t.ride) {
+      problems.push(`${where}: only ride templates can have a ride structure`)
+    }
     for (const eqId of t.requiredEquipmentIds) {
       if (!catalog.equipment.has(eqId)) problems.push(`${where}: unknown requiredEquipmentId "${eqId}"`)
     }

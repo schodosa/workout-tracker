@@ -6,7 +6,7 @@ import { builtinCatalog } from '../../domain/builtins.ts'
 import { formatDayLong, formatDuration } from '../../domain/dates.ts'
 import { groupByExercise, toLogicalSets } from '../../domain/session.ts'
 import styles from './History.module.css'
-import { checklistSummary, sessionTitle } from './sessionTitle.ts'
+import { checklistSummary, rideSummary, sessionTitle } from './sessionTitle.ts'
 
 export function SessionDetailScreen() {
   const { id } = useParams<{ id: string }>()
@@ -41,6 +41,56 @@ export function SessionDetailScreen() {
         {formatDayLong(session.date)} · started {started}
         {session.finishedAt && ` · ${formatDuration(session.finishedAt - session.startedAt)}`}
       </p>
+
+      {session.ride && (
+        <section className="card">
+          <h2 className={styles.exercise}>{rideSummary(session)}</h2>
+          <dl className={styles.rideStats}>
+            {session.ride.roundsCompleted !== undefined && (
+              <>
+                <dt>Rounds</dt>
+                <dd>{session.ride.roundsCompleted}</dd>
+              </>
+            )}
+            {session.ride.hardRpe !== undefined && (
+              <>
+                <dt>Hard / easy RPE</dt>
+                <dd>
+                  {session.ride.hardRpe} / {session.ride.easyRpe ?? '–'}
+                </dd>
+              </>
+            )}
+            {session.ride.rpe !== undefined && (
+              <>
+                <dt>RPE</dt>
+                <dd>{session.ride.rpe}</dd>
+              </>
+            )}
+            {session.ride.avgRpm !== undefined && (
+              <>
+                <dt>RPM avg / peak</dt>
+                <dd>
+                  {session.ride.avgRpm} / {session.ride.peakRpm ?? '–'}
+                </dd>
+              </>
+            )}
+            {session.ride.avgHr !== undefined && (
+              <>
+                <dt>Pulse avg / max</dt>
+                <dd>
+                  {session.ride.avgHr} / {session.ride.maxHr ?? '–'}
+                </dd>
+              </>
+            )}
+            {session.ride.knobNote && (
+              <>
+                <dt>Knob</dt>
+                <dd>{session.ride.knobNote}</dd>
+              </>
+            )}
+          </dl>
+        </section>
+      )}
 
       {template?.format === 'checklist' && (
         <section className="card">

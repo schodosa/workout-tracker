@@ -1,0 +1,15 @@
+{
+  "id": "bike-steady-ride",
+  "name": "Bike Steady Ride",
+  "description": "Continuous, conversational effort. End the ride when you're done.",
+  "goalTags": ["lose-fat", "endurance"],
+  "estMinutes": 30,
+  "requiredEquipmentIds": ["stationary-bike"],
+  "format": "ride",
+  "ride": {
+    "warmupSec": 0,
+    "cooldownSec": 0,
+    "steady": { "minMinutes": 20, "maxMinutes": 40, "cue": "RPE 5–6: you could hold a conversation." }
+  },
+  "items": [{ "exerciseId": "bike-steady-ride" }]
+}

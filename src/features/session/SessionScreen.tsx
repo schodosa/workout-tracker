@@ -41,6 +41,7 @@ import { unlockAudio } from '../../platform/cues.ts'
 import { useWakeLock } from '../../platform/wakeLock.ts'
 import { ChecklistRunner } from './ChecklistRunner.tsx'
 import { CircuitRunner } from './CircuitRunner.tsx'
+import { RideRunner } from './RideRunner.tsx'
 import styles from './SessionScreen.module.css'
 
 /** Loads the session from the database, then hands off to the logger once data is ready. */
@@ -75,6 +76,7 @@ export function SessionScreen() {
   // Each template format has its own screen.
   if (template.format === 'circuit') return <CircuitRunner session={session} sets={sets} template={template} inventory={inventory} />
   if (template.format === 'checklist') return <ChecklistRunner session={session} template={template} inventory={inventory} />
+  if (template.format === 'ride') return <RideRunner session={session} template={template} inventory={inventory} />
   return <SessionLogger session={session} sets={sets} template={template} inventory={inventory} />
 }
 
