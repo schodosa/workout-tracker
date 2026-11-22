@@ -27,16 +27,22 @@ export async function startSession(templateId: string): Promise<string> {
   return id
 }
 
-export async function logSet(input: Omit<SetRecord, 'id' | 'loggedAt'>): Promise<void> {
-  await db.sets.add({ ...input, id: newId(), loggedAt: Date.now() })
+/**
+ * Saves one logical set: a single record, or an L + R pair for a per-side move. bulkAdd writes
+ * them in one operation, so a pair is never half-saved. R gets loggedAt + 1 to keep L first.
+ */
+export async function logSets(inputs: Omit<SetRecord, 'id' | 'loggedAt'>[], loggedAt = Date.now()): Promise<void> {
+  await db.sets.bulkAdd(inputs.map((input, i) => ({ ...input, id: newId(), loggedAt: loggedAt + i })))
 }
 
-export async function deleteSet(id: string): Promise<void> {
-  await db.sets.delete(id)
+export async function deleteSets(ids: string[]): Promise<void> {
+  await db.sets.bulkDelete(ids)
 }
 
-export async function updateSet(id: string, changes: Pick<SetRecord, 'resistance' | 'resistanceUnit' | 'reps'>): Promise<void> {
-  await db.sets.update(id, changes)
+export async function updateSets(changes: { id: string; changes: Partial<Pick<SetRecord, 'resistance' | 'resistanceUnit' | 'reps' | 'seconds'>> }[]): Promise<void> {
+  await db.transaction('rw', db.sets, async () => {
+    for (const c of changes) await db.sets.update(c.id, c.changes)
+  })
 }
 
 export async function updateSessionNotes(id: string, notes: string): Promise<void> {
@@ -108,7 +114,9 @@ export function useFinishedSessions(): SessionSummary[] | undefined {
     return Promise.all(
       sessions.map(async (session) => {
         const sets = await db.sets.where('sessionId').equals(session.id).toArray()
-        return { session, setCount: sets.length, exerciseCount: new Set(sets.map((s) => s.exerciseId)).size }
+        // A per-side pair is two records but one set.
+        const setCount = new Set(sets.map((s) => `${s.itemIndex}:${s.setNumber}`)).size
+        return { session, setCount, exerciseCount: new Set(sets.map((s) => s.exerciseId)).size }
       }),
     )
   })

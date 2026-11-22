@@ -1,0 +1,18 @@
+{
+  "id": "lower-core",
+  "name": "Lower + Core",
+  "goalTags": ["build-strength", "sport-performance"],
+  "estMinutes": 45,
+  "requiredEquipmentIds": ["bowflex-xtreme-2-se", "floor"],
+  "format": "straight-sets",
+  "items": [
+    { "exerciseId": "floor-split-squat" },
+    { "exerciseId": "bowflex-leg-extension" },
+    { "exerciseId": "bowflex-stiff-leg-dead-lift", "note": "Light resistance: hamstrings and glutes." },
+    { "exerciseId": "bowflex-standing-hip-abduction" },
+    { "exerciseId": "bowflex-standing-hip-extension-knee-bent" },
+    { "exerciseId": "bowflex-trunk-rotation", "note": "Lowest-weight rods only." },
+    { "exerciseId": "bowflex-seated-abdominal-crunch" },
+    { "exerciseId": "floor-plank", "duration": { "min": 30, "max": 60 } }
+  ]
+}

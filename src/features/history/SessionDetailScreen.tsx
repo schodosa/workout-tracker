@@ -4,7 +4,7 @@ import { SetRow } from '../../components/SetRow.tsx'
 import { discardSession, updateSessionNotes, useSession, useSessionSets } from '../../db/sessions.ts'
 import { builtinCatalog } from '../../domain/builtins.ts'
 import { formatDayLong, formatDuration } from '../../domain/dates.ts'
-import { groupByExercise } from '../../domain/session.ts'
+import { groupByExercise, toLogicalSets } from '../../domain/session.ts'
 import styles from './History.module.css'
 import { sessionTitle } from './sessionTitle.ts'
 
@@ -45,8 +45,8 @@ export function SessionDetailScreen() {
         <section key={exerciseId} className="card">
           <h2 className={styles.exercise}>{builtinCatalog.exercises.get(exerciseId)?.name ?? exerciseId}</h2>
           <ol className={styles.sets}>
-            {sets.map((s, i) => (
-              <SetRow key={s.id} set={s} number={i + 1} />
+            {toLogicalSets(sets).map((s, i) => (
+              <SetRow key={s.key} set={s} number={i + 1} />
             ))}
           </ol>
         </section>

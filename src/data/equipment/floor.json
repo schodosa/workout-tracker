@@ -1,0 +1,7 @@
+{
+  "id": "floor",
+  "name": "Floor / bodyweight",
+  "kind": "generic",
+  "type": "bodyweight",
+  "resistanceUnit": "none"
+}

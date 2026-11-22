@@ -1,0 +1,7 @@
+{
+  "id": "resistance-bands",
+  "name": "Resistance bands",
+  "kind": "generic",
+  "type": "bands",
+  "resistanceUnit": "band"
+}

@@ -4,7 +4,7 @@ import { ResumeBanner } from '../../components/ResumeBanner.tsx'
 import { SetupCard } from '../../components/SetupCard.tsx'
 import { startSession, useInProgressSession } from '../../db/sessions.ts'
 import { builtinCatalog } from '../../domain/builtins.ts'
-import { formatRepRange, groupSupersets, resolveTemplateItem, type ResolvedItem } from '../../domain/catalog.ts'
+import { formatDose, groupSupersets, resolveTemplateItem, type ResolvedItem } from '../../domain/catalog.ts'
 import { DEFAULT_TEMPLATE_SETTINGS } from '../../domain/types.ts'
 import styles from './TemplateScreen.module.css'
 
@@ -86,12 +86,10 @@ function ItemCard({ item, number, showRest }: { item: ResolvedItem; number: numb
       <header className={styles.itemHeader}>
         <span className={styles.number}>{number}</span>
         <h3 className={styles.itemName}>{title}</h3>
-        <span className={styles.dose}>
-          {item.sets} × {formatRepRange(item.reps)}
-          {exercise?.unilateral && ' /side'}
-        </span>
+        <span className={styles.dose}>{formatDose(item, exercise)}</span>
       </header>
       {exercise && <p className={styles.muscles}>{exercise.primaryMuscles.join(' · ')}</p>}
+      {item.note && <p className={styles.note}>{item.note}</p>}
       {exercise && <SetupCard exercise={exercise} equipment={equipment} />}
       {showRest && <p className={styles.rest}>Rest {item.restSec} s</p>}
     </article>

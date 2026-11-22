@@ -1,0 +1,47 @@
+[
+  {
+    "id": "bike-intervals",
+    "name": "Bike Intervals",
+    "equipmentId": "stationary-bike",
+    "category": "cardio",
+    "movementPattern": "cardio",
+    "primaryMuscles": [
+      "legs",
+      "heart and lungs"
+    ],
+    "measure": "ride",
+    "unilateral": false,
+    "cue": "Structured hard/easy rounds. See the Bike Intervals template.",
+    "cautions": []
+  },
+  {
+    "id": "bike-steady-ride",
+    "name": "Bike Steady Ride",
+    "equipmentId": "stationary-bike",
+    "category": "cardio",
+    "movementPattern": "cardio",
+    "primaryMuscles": [
+      "legs",
+      "heart and lungs"
+    ],
+    "measure": "ride",
+    "unilateral": false,
+    "cue": "Continuous moderate effort (RPE 5–6). You should be able to talk.",
+    "cautions": []
+  },
+  {
+    "id": "bike-warmup-cooldown",
+    "name": "Bike Warm-up / Cool-down",
+    "equipmentId": "stationary-bike",
+    "category": "cardio",
+    "movementPattern": "cardio",
+    "primaryMuscles": [
+      "legs",
+      "heart and lungs"
+    ],
+    "measure": "ride",
+    "unilateral": false,
+    "cue": "3–5 minutes easy. Can be added to any strength session.",
+    "cautions": []
+  }
+]

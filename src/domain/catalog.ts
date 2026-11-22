@@ -1,6 +1,9 @@
 // Pure functions over built-in content: indexing, validation, and template helpers.
 // No React, no database, no file loading. That keeps everything here easy to unit-test.
 import {
+  ACCESSORIES,
+  BAND_ANCHORS,
+  BAND_TYPES,
   CATEGORIES,
   EQUIPMENT_TYPES,
   MEASURES,
@@ -67,6 +70,11 @@ export function validateCatalog(source: CatalogSource): string[] {
     checkEnum(where, 'kind', eq.kind, ['builtin', 'generic'])
     checkEnum(where, 'type', eq.type, EQUIPMENT_TYPES)
     checkEnum(where, 'resistanceUnit', eq.resistanceUnit, RESISTANCE_UNITS)
+    if (eq.genericType) {
+      const g = catalog.equipment.get(eq.genericType)
+      if (!g) problems.push(`${where}: unknown genericType "${eq.genericType}"`)
+      else if (g.kind !== 'generic') problems.push(`${where}: genericType "${g.id}" is not a generic type`)
+    }
   }
 
   for (const ex of source.exercises) {
@@ -76,6 +84,15 @@ export function validateCatalog(source: CatalogSource): string[] {
     checkEnum(where, 'category', ex.category, CATEGORIES)
     checkEnum(where, 'movementPattern', ex.movementPattern, MOVEMENT_PATTERNS)
     checkEnum(where, 'measure', ex.measure, MEASURES)
+    if (eq?.type === 'bands' && !ex.bandSetup) problems.push(`${where}: band exercises need bandSetup`)
+    if (ex.bandSetup) {
+      if (eq && eq.type !== 'bands') problems.push(`${where}: bandSetup on non-band equipment "${eq.id}"`)
+      if (ex.bandSetup.bandTypes.length === 0) problems.push(`${where}: bandSetup.bandTypes is empty`)
+      ex.bandSetup.bandTypes.forEach((t) => checkEnum(where, 'band type', t, BAND_TYPES))
+      checkEnum(where, 'anchor', ex.bandSetup.anchor, BAND_ANCHORS)
+    }
+    ex.requiresAccessories?.forEach((a) => checkEnum(where, 'accessory', a, ACCESSORIES))
+    if (ex.keepLight && ex.cautions.length === 0) problems.push(`${where}: keepLight needs a caution to show`)
     for (const ref of ['progressesTo', 'regressesTo'] as const) {
       const target = ex[ref]
       if (target && !catalog.exercises.has(target)) problems.push(`${where}: ${ref} "${target}" does not exist`)
@@ -112,12 +129,17 @@ export function validateCatalog(source: CatalogSource): string[] {
       if (item.exerciseId !== undefined) {
         const ex = catalog.exercises.get(item.exerciseId)
         if (!ex) problems.push(`${at}: unknown exerciseId "${item.exerciseId}"`)
-        else if (!t.requiredEquipmentIds.includes(ex.equipmentId)) {
-          problems.push(`${at}: "${ex.id}" uses "${ex.equipmentId}", which is not in requiredEquipmentIds`)
+        else {
+          if (!t.requiredEquipmentIds.includes(ex.equipmentId)) {
+            problems.push(`${at}: "${ex.id}" uses "${ex.equipmentId}", which is not in requiredEquipmentIds`)
+          }
+          if (ex.measure === 'time' && item.reps) problems.push(`${at}: "${ex.id}" is timed, so use duration, not reps`)
+          if (ex.measure === 'reps' && item.duration) problems.push(`${at}: "${ex.id}" is rep-based, so use reps, not duration`)
         }
       }
       if (item.pattern !== undefined) checkEnum(at, 'pattern', item.pattern, MOVEMENT_PATTERNS)
       if (item.reps && item.reps.min > item.reps.max) problems.push(`${at}: reps min is greater than max`)
+      if (item.duration && item.duration.min > item.duration.max) problems.push(`${at}: duration min is greater than max`)
     })
     // Superset members must sit next to each other, or the grouping makes no sense on screen.
     const groupsSeen = new Set<string>()
@@ -134,15 +156,33 @@ export function validateCatalog(source: CatalogSource): string[] {
 }
 
 /** A template item with every optional value filled in from the user's settings. */
-export type ResolvedItem = TemplateItem & { sets: number; reps: RepRange; restSec: number }
+export type ResolvedItem = TemplateItem & { sets: number; reps: RepRange; duration: RepRange; restSec: number }
 
 export function resolveTemplateItem(item: TemplateItem, defaults: TemplateDefaults): ResolvedItem {
   return {
     ...item,
     sets: item.sets ?? defaults.sets,
     reps: item.reps ?? defaults.reps,
+    duration: item.duration ?? defaults.duration,
     restSec: item.restSec ?? defaults.restSec,
   }
+}
+
+/** "3 × 10–15", "3 × 10–15 /side", "3 × 30–60 s", or "Ride" for bike exercises. */
+export function formatDose(item: ResolvedItem, exercise: Exercise | undefined): string {
+  if (exercise?.measure === 'ride') return 'Ride'
+  const amount = exercise?.measure === 'time' ? `${formatRepRange(item.duration)} s` : formatRepRange(item.reps)
+  return `${item.sets} × ${amount}${exercise?.unilateral ? ' /side' : ''}`
+}
+
+/**
+ * Exercises that can be done on a piece of equipment: its own, plus those written for its
+ * generic type (the Master GS can do every "stationary bike" exercise).
+ */
+export function exercisesForEquipment(catalog: Catalog, equipmentId: string): Exercise[] {
+  const eq = catalog.equipment.get(equipmentId)
+  const ids = new Set([equipmentId, ...(eq?.genericType ? [eq.genericType] : [])])
+  return [...catalog.exercises.values()].filter((ex) => ids.has(ex.equipmentId))
 }
 
 /**

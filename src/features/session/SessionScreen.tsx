@@ -5,12 +5,22 @@ import { RestBar } from '../../components/RestBar.tsx'
 import { SetRow } from '../../components/SetRow.tsx'
 import { SetupCard } from '../../components/SetupCard.tsx'
 import { Stepper } from '../../components/Stepper.tsx'
-import { discardSession, finishSession, logSet, useLastPerformance, useSession, useSessionSets, type LastPerformance } from '../../db/sessions.ts'
+import { WorkFields } from '../../components/WorkFields.tsx'
+import { discardSession, finishSession, logSets, useLastPerformance, useSession, useSessionSets, type LastPerformance } from '../../db/sessions.ts'
 import { builtinCatalog } from '../../domain/builtins.ts'
-import { formatRepRange, resolveTemplateItem, type ResolvedItem } from '../../domain/catalog.ts'
+import { formatDose, resolveTemplateItem, type ResolvedItem } from '../../domain/catalog.ts'
 import { formatDayLong } from '../../domain/dates.ts'
 import type { SessionRecord, SetRecord } from '../../domain/records.ts'
-import { afterLog, countByItem, nextItemIndex, prefill, resistanceStep, summarizeLastTime } from '../../domain/session.ts'
+import {
+  afterLog,
+  countByItem,
+  nextItemIndex,
+  prefill,
+  resistanceStep,
+  summarizeLastTime,
+  toLogicalSets,
+  workIsValid,
+} from '../../domain/session.ts'
 import { DEFAULT_TEMPLATE_SETTINGS, type Exercise, type Template } from '../../domain/types.ts'
 import { unlockAudio } from '../../platform/cues.ts'
 import { useWakeLock } from '../../platform/wakeLock.ts'
@@ -185,6 +195,14 @@ function ExerciseLogger(props: ExerciseLoggerProps) {
       </div>
     )
   }
+  if (exercise.measure === 'ride') {
+    return (
+      <div className="card">
+        <h1 className={styles.name}>{exercise.name}</h1>
+        <p className="muted">Ride logging arrives with Ride mode in a later milestone.</p>
+      </div>
+    )
+  }
   if (lastTime === undefined) return null
   return <ExerciseForm {...props} exercise={exercise} lastTime={lastTime} />
 }
@@ -200,34 +218,49 @@ function ExerciseForm({
   lastTime,
 }: ExerciseLoggerProps & { exercise: Exercise; lastTime: LastPerformance | null }) {
   const equipment = builtinCatalog.equipment.get(exercise.equipmentId)
-  const unit = equipment?.resistanceUnit === 'kg' ? 'kg' : 'lb'
+  // Weight field only for equipment measured in lb/kg (not floor, bands, or bikes).
+  const weighted = equipment?.resistanceUnit === 'lb' || equipment?.resistanceUnit === 'kg'
+  const unit: 'lb' | 'kg' = equipment?.resistanceUnit === 'kg' ? 'kg' : 'lb'
+  const timed = exercise.measure === 'time'
+  const perSide = exercise.unilateral
+  const logical = toLogicalSets(sets)
+  const lastLogical = toLogicalSets(lastTime?.sets ?? [])
 
-  const [initial] = useState(() => prefill(sets, lastTime?.sets ?? [], item.reps.min))
+  const [initial] = useState(() => prefill(logical, lastLogical, timed ? item.duration.min : item.reps.min))
   const [weight, setWeight] = useState(initial.weight)
-  const [reps, setReps] = useState(initial.reps)
+  const [work, setWork] = useState(initial.work)
+  const [workRight, setWorkRight] = useState(initial.workRight)
   const [saving, setSaving] = useState(false)
 
-  const repsNum = Number.parseInt(reps, 10)
-  const weightNum = Number.parseFloat(weight)
-  const hasWeight = Number.isFinite(weightNum)
-  const done = sets.length >= item.sets
+  const valid = workIsValid(perSide, work, workRight)
+  const done = logical.length >= item.sets
 
   async function onLog() {
-    if (!(repsNum > 0) || saving) return
+    if (!valid || saving) return
     unlockAudio() // must run inside the tap so iOS allows the rest-over beep later
     const tappedAt = Date.now()
     setSaving(true) // guards against a double tap logging two sets
-    // Saved immediately: nothing is held only in memory, so a locked phone loses nothing.
-    await logSet({
+
+    const weightNum = Number.parseFloat(weight)
+    const hasWeight = weighted && Number.isFinite(weightNum)
+    const base = {
       sessionId,
       exerciseId: exercise.id,
       itemIndex,
       setNumber: Math.max(0, ...sets.map((s) => s.setNumber)) + 1,
-      side: 'both',
       resistance: hasWeight ? weightNum : undefined,
       resistanceUnit: hasWeight ? unit : undefined,
-      reps: repsNum,
-    })
+    }
+    const amount = (v: string) => (timed ? { seconds: Number.parseInt(v, 10) } : { reps: Number.parseInt(v, 10) })
+    // A per-side set is two records (L, R) written together; otherwise one record.
+    const records = perSide
+      ? [
+          { ...base, side: 'L' as const, ...amount(work) },
+          { ...base, side: 'R' as const, ...amount(workRight) },
+        ]
+      : [{ ...base, side: 'both' as const, ...amount(work) }]
+    // Saved immediately: nothing is held only in memory, so a locked phone loses nothing.
+    await logSets(records, tappedAt)
     setSaving(false)
     onLogged(itemIndex, tappedAt)
   }
@@ -237,25 +270,26 @@ function ExerciseForm({
       <header className={styles.header}>
         <h1 className={styles.name}>{exercise.name}</h1>
         <p className={styles.target}>
-          Target {item.sets} × {formatRepRange(item.reps)} · rest {item.restSec} s
+          Target {formatDose(item, exercise)} · rest {item.restSec} s
         </p>
+        {item.note && <p className={styles.note}>{item.note}</p>}
         {partners.length > 0 && <p className={styles.superset}>Superset with {partners.join(', ')}</p>}
-        {lastTime && lastTime.sets.length > 0 && (
+        {lastLogical.length > 0 && (
           <p className={styles.lastTime}>
-            Last time{lastTime.date && ` (${formatDayLong(lastTime.date)})`}: <strong>{summarizeLastTime(lastTime.sets)}</strong>
+            Last time{lastTime?.date && ` (${formatDayLong(lastTime.date)})`}: <strong>{summarizeLastTime(lastLogical)}</strong>
           </p>
         )}
       </header>
 
-      <details className={styles.setupDetails} open={sets.length === 0}>
-        <summary>Machine setup</summary>
+      <details className={styles.setupDetails} open={logical.length === 0}>
+        <summary>{exercise.setup ? 'Machine setup' : 'How to do it'}</summary>
         <SetupCard exercise={exercise} equipment={equipment} />
       </details>
 
-      {sets.length > 0 && (
+      {logical.length > 0 && (
         <ol className={styles.logged}>
-          {sets.map((s, i) => (
-            <SetRow key={s.id} set={s} number={i + 1} />
+          {logical.map((s, i) => (
+            <SetRow key={s.key} set={s} number={i + 1} />
           ))}
         </ol>
       )}
@@ -263,10 +297,10 @@ function ExerciseForm({
       {done && <p className={styles.doneNote}>✓ All {item.sets} sets done</p>}
 
       <div className="card">
-        <Stepper label="Weight" unit={unit} value={weight} onChange={setWeight} step={resistanceStep(unit)} />
-        <Stepper label="Reps" value={reps} onChange={setReps} step={1} inputMode="numeric" />
-        <button type="button" className="btn btn-primary" onClick={onLog} disabled={!(repsNum > 0) || saving}>
-          {done ? 'Log extra set' : `Log set ${sets.length + 1}`}
+        {weighted && <Stepper label="Weight" unit={unit} value={weight} onChange={setWeight} step={resistanceStep(unit)} />}
+        <WorkFields timed={timed} perSide={perSide} work={work} workRight={workRight} onWork={setWork} onWorkRight={setWorkRight} stopwatch />
+        <button type="button" className="btn btn-primary" onClick={onLog} disabled={!valid || saving}>
+          {done ? 'Log extra set' : `Log set ${logical.length + 1}`}
         </button>
       </div>
     </article>

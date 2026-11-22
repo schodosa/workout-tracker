@@ -28,6 +28,15 @@
   color: var(--text-muted);
 }
 
+/* For floor and band moves the cue is the main instruction, so give it full contrast. */
+.cue {
+  color: var(--text);
+}
+
+.setup > :first-child {
+  margin-top: 0;
+}
+
 .caution {
   margin: 10px 0 0;
   padding: 8px 10px;

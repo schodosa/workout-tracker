@@ -6,12 +6,14 @@ import {
   afterLog,
   countByItem,
   formatCountdown,
-  formatSet,
+  formatLogicalSet,
   groupByExercise,
+  isPerSide,
   nextItemIndex,
   prefill,
   stepValue,
   summarizeLastTime,
+  toLogicalSets,
 } from './session.ts'
 
 const set = (over: Partial<SetRecord>): SetRecord => ({
@@ -79,30 +81,77 @@ describe('afterLog', () => {
   })
 })
 
-describe('prefill', () => {
-  const last = [
-    set({ resistance: 50, reps: 12, setNumber: 1 }),
-    set({ resistance: 55, reps: 10, setNumber: 2 }),
-  ]
-  it('uses last time\'s set 1 for the first set', () => {
-    expect(prefill([], last, 10)).toEqual({ weight: '50', reps: '12' })
+// A per-side set: two records (L and R) sharing a set number.
+const pair = (setNumber: number, l: number, r: number, over: Partial<SetRecord> = {}) => [
+  set({ setNumber, side: 'L', reps: l, loggedAt: setNumber * 10, ...over }),
+  set({ setNumber, side: 'R', reps: r, loggedAt: setNumber * 10 + 1, ...over }),
+]
+
+describe('toLogicalSets', () => {
+  it('joins a per-side pair into one set', () => {
+    const ls = toLogicalSets(pair(1, 10, 9))
+    expect(ls).toHaveLength(1)
+    expect(ls[0].work).toEqual({ L: 10, R: 9 })
+    expect(isPerSide(ls[0])).toBe(true)
   })
-  it('prefers what you just did in this session', () => {
-    expect(prefill([set({ resistance: 45, reps: 15 })], last, 10)).toEqual({ weight: '45', reps: '15' })
+  it('keeps two-sided sets separate and in logged order', () => {
+    const ls = toLogicalSets([set({ setNumber: 2, reps: 11, loggedAt: 20 }), set({ setNumber: 1, reps: 12, loggedAt: 10 })])
+    expect(ls.map((s) => s.work.both)).toEqual([12, 11])
+  })
+  it('detects timed sets', () => {
+    expect(toLogicalSets([set({ seconds: 40 })])[0].timed).toBe(true)
+  })
+})
+
+describe('prefill', () => {
+  const last = toLogicalSets([
+    set({ resistance: 50, reps: 12, setNumber: 1, loggedAt: 1 }),
+    set({ resistance: 55, reps: 10, setNumber: 2, loggedAt: 2 }),
+  ])
+  it("uses last time's set 1 for the first set", () => {
+    expect(prefill([], last, 10)).toEqual({ weight: '50', work: '12', workRight: '12' })
+  })
+  it('for set 2, prefers what you just did over last time', () => {
+    const now = toLogicalSets([set({ resistance: 55, reps: 9, setNumber: 1 })])
+    expect(prefill(now, last, 10)).toEqual({ weight: '55', work: '9', workRight: '9' })
+  })
+  it('prefills both sides of a per-side move', () => {
+    expect(prefill([], toLogicalSets(pair(1, 10, 8)), 12)).toEqual({ weight: '', work: '10', workRight: '8' })
   })
   it('falls back to defaults with no history', () => {
-    expect(prefill([], [], 10)).toEqual({ weight: '', reps: '10' })
+    expect(prefill([], [], 10)).toEqual({ weight: '', work: '10', workRight: '10' })
   })
 })
 
 describe('summarizeLastTime', () => {
   it('compacts constant weight', () => {
-    const sets = [12, 12, 11].map((reps) => set({ resistance: 50, resistanceUnit: 'lb', reps }))
+    const sets = toLogicalSets([12, 12, 11].map((reps, i) => set({ resistance: 50, resistanceUnit: 'lb', reps, setNumber: i + 1, loggedAt: i })))
     expect(summarizeLastTime(sets)).toBe('50 lb × 12, 12, 11')
   })
   it('lists each set when weight changes', () => {
-    const sets = [set({ resistance: 50, reps: 12 }), set({ resistance: 55, reps: 10 })]
+    const sets = toLogicalSets([set({ resistance: 50, reps: 12, setNumber: 1 }), set({ resistance: 55, reps: 10, setNumber: 2 })])
     expect(summarizeLastTime(sets)).toBe('50×12, 55×10')
+  })
+  it('shows per-side as L/R', () => {
+    expect(summarizeLastTime(toLogicalSets([...pair(1, 10, 10), ...pair(2, 10, 9)]))).toBe('× 10/10, 10/9')
+  })
+  it('shows timed sets in seconds', () => {
+    const sets = toLogicalSets([set({ seconds: 45, setNumber: 1 }), set({ seconds: 40, setNumber: 2 })])
+    expect(summarizeLastTime(sets)).toBe('45 s, 40 s')
+  })
+})
+
+describe('formatLogicalSet', () => {
+  it('formats weight and reps', () => {
+    expect(formatLogicalSet(toLogicalSets([set({ resistance: 50, resistanceUnit: 'lb', reps: 12 })])[0])).toBe('50 lb × 12')
+  })
+  it('formats a weighted per-side set', () => {
+    expect(formatLogicalSet(toLogicalSets(pair(1, 10, 9, { resistance: 45, resistanceUnit: 'lb' }))[0])).toBe('45 lb × 10 L / 9 R')
+  })
+  it('formats timed sets, both and per side', () => {
+    expect(formatLogicalSet(toLogicalSets([set({ seconds: 40 })])[0])).toBe('40 s')
+    const sides = [set({ side: 'L', seconds: 30 }), set({ side: 'R', seconds: 25, loggedAt: 1 })]
+    expect(formatLogicalSet(toLogicalSets(sides)[0])).toBe('30 s L / 25 s R')
   })
 })
 
@@ -117,8 +166,11 @@ describe('formatCountdown', () => {
 
 describe('countByItem', () => {
   it('counts sets per template item', () => {
-    const sets = [set({ itemIndex: 0 }), set({ itemIndex: 0 }), set({ itemIndex: 2 })]
+    const sets = [set({ itemIndex: 0, setNumber: 1 }), set({ itemIndex: 0, setNumber: 2 }), set({ itemIndex: 2 })]
     expect(countByItem(sets, 3)).toEqual([2, 0, 1])
+  })
+  it('counts a per-side pair as one set', () => {
+    expect(countByItem([...pair(1, 10, 10), ...pair(2, 9, 9)], 1)).toEqual([2])
   })
 })
 
@@ -147,15 +199,6 @@ describe('stepValue', () => {
   it('handles kg half steps without float noise', () => {
     expect(stepValue('20', 2.5)).toBe('22.5')
     expect(stepValue('0.1', 0.2)).toBe('0.3')
-  })
-})
-
-describe('formatSet', () => {
-  it('formats weight and reps', () => {
-    expect(formatSet({ resistance: 50, resistanceUnit: 'lb', reps: 12, side: 'both' })).toBe('50 lb × 12')
-  })
-  it('handles no weight and one side', () => {
-    expect(formatSet({ reps: 8, side: 'L' })).toBe('× 8 (L)')
   })
 })
 

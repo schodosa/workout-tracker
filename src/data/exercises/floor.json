@@ -1,0 +1,678 @@
+[
+  {
+    "id": "floor-plank",
+    "name": "Plank",
+    "equipmentId": "floor",
+    "category": "core",
+    "movementPattern": "anti-rotation",
+    "primaryMuscles": [
+      "abs",
+      "core"
+    ],
+    "measure": "time",
+    "unilateral": false,
+    "cue": "Forearms under shoulders, body straight from head to heels, glutes squeezed.",
+    "cautions": [],
+    "progressesTo": "floor-plank-shoulder-taps",
+    "regressesTo": "floor-knee-plank"
+  },
+  {
+    "id": "floor-knee-plank",
+    "name": "Knee Plank",
+    "equipmentId": "floor",
+    "category": "core",
+    "movementPattern": "anti-rotation",
+    "primaryMuscles": [
+      "abs",
+      "core"
+    ],
+    "measure": "time",
+    "unilateral": false,
+    "cue": "Like a plank with knees down; keep hips in line with your shoulders.",
+    "cautions": [],
+    "progressesTo": "floor-plank"
+  },
+  {
+    "id": "floor-plank-shoulder-taps",
+    "name": "Plank with Shoulder Taps",
+    "equipmentId": "floor",
+    "category": "core",
+    "movementPattern": "anti-rotation",
+    "primaryMuscles": [
+      "abs",
+      "core",
+      "shoulders"
+    ],
+    "measure": "time",
+    "unilateral": false,
+    "cue": "From a high plank, tap each shoulder in turn without letting your hips sway.",
+    "cautions": [],
+    "regressesTo": "floor-plank"
+  },
+  {
+    "id": "floor-side-plank",
+    "name": "Side Plank",
+    "equipmentId": "floor",
+    "category": "core",
+    "movementPattern": "anti-rotation",
+    "primaryMuscles": [
+      "obliques",
+      "core"
+    ],
+    "measure": "time",
+    "unilateral": true,
+    "cue": "Elbow under shoulder, hips lifted, body in one straight line.",
+    "cautions": [],
+    "progressesTo": "floor-side-plank-leg-lift",
+    "regressesTo": "floor-knee-side-plank"
+  },
+  {
+    "id": "floor-knee-side-plank",
+    "name": "Knee Side Plank",
+    "equipmentId": "floor",
+    "category": "core",
+    "movementPattern": "anti-rotation",
+    "primaryMuscles": [
+      "obliques",
+      "core"
+    ],
+    "measure": "time",
+    "unilateral": true,
+    "cue": "Bottom knee down, hips pushed forward in line with your shoulders.",
+    "cautions": [],
+    "progressesTo": "floor-side-plank"
+  },
+  {
+    "id": "floor-side-plank-leg-lift",
+    "name": "Side Plank with Leg Lift",
+    "equipmentId": "floor",
+    "category": "core",
+    "movementPattern": "anti-rotation",
+    "primaryMuscles": [
+      "obliques",
+      "outer hips"
+    ],
+    "measure": "time",
+    "unilateral": true,
+    "cue": "Hold a side plank and raise the top leg without dropping your hips.",
+    "cautions": [],
+    "regressesTo": "floor-side-plank"
+  },
+  {
+    "id": "floor-dead-bug",
+    "name": "Dead Bug",
+    "equipmentId": "floor",
+    "category": "core",
+    "movementPattern": "anti-rotation",
+    "primaryMuscles": [
+      "abs"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "cue": "Low back pressed to the floor; slowly extend the opposite arm and leg.",
+    "cautions": []
+  },
+  {
+    "id": "floor-bird-dog",
+    "name": "Bird Dog",
+    "equipmentId": "floor",
+    "category": "core",
+    "movementPattern": "anti-rotation",
+    "primaryMuscles": [
+      "lower back",
+      "glutes",
+      "abs"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "cue": "On hands and knees, reach the opposite arm and leg long; keep hips level.",
+    "cautions": []
+  },
+  {
+    "id": "floor-hollow-hold",
+    "name": "Hollow Hold",
+    "equipmentId": "floor",
+    "category": "core",
+    "movementPattern": "trunk-flexion",
+    "primaryMuscles": [
+      "abs"
+    ],
+    "measure": "time",
+    "unilateral": false,
+    "cue": "Low back down, arms and legs extended just off the floor.",
+    "cautions": [],
+    "regressesTo": "floor-tuck-hollow-hold"
+  },
+  {
+    "id": "floor-tuck-hollow-hold",
+    "name": "Tuck Hollow Hold",
+    "equipmentId": "floor",
+    "category": "core",
+    "movementPattern": "trunk-flexion",
+    "primaryMuscles": [
+      "abs"
+    ],
+    "measure": "time",
+    "unilateral": false,
+    "cue": "Knees pulled toward your chest, shoulders lifted, low back pressed down.",
+    "cautions": [],
+    "progressesTo": "floor-hollow-hold"
+  },
+  {
+    "id": "floor-mountain-climber",
+    "name": "Mountain Climber",
+    "equipmentId": "floor",
+    "category": "core",
+    "movementPattern": "trunk-flexion",
+    "primaryMuscles": [
+      "abs",
+      "hip flexors"
+    ],
+    "measure": "time",
+    "unilateral": false,
+    "cue": "From a high plank, drive knees toward your chest quickly; hips stay low.",
+    "cautions": [],
+    "regressesTo": "floor-slow-mountain-climber"
+  },
+  {
+    "id": "floor-slow-mountain-climber",
+    "name": "Slow Mountain Climber",
+    "equipmentId": "floor",
+    "category": "core",
+    "movementPattern": "trunk-flexion",
+    "primaryMuscles": [
+      "abs",
+      "hip flexors"
+    ],
+    "measure": "time",
+    "unilateral": false,
+    "cue": "Like a mountain climber, one slow, controlled knee drive at a time.",
+    "cautions": [],
+    "progressesTo": "floor-mountain-climber"
+  },
+  {
+    "id": "floor-split-squat",
+    "name": "Split Squat",
+    "equipmentId": "floor",
+    "category": "legs",
+    "movementPattern": "lunge",
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "cue": "Long stance; drop the back knee straight down, front heel stays planted.",
+    "cautions": [],
+    "progressesTo": "floor-rfe-split-squat"
+  },
+  {
+    "id": "floor-rfe-split-squat",
+    "name": "Rear-Foot-Elevated Split Squat",
+    "equipmentId": "floor",
+    "category": "legs",
+    "movementPattern": "lunge",
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "cue": "Back foot on a bench or step; lower straight down over the front foot.",
+    "cautions": [],
+    "regressesTo": "floor-split-squat"
+  },
+  {
+    "id": "floor-reverse-lunge",
+    "name": "Reverse Lunge",
+    "equipmentId": "floor",
+    "category": "legs",
+    "movementPattern": "lunge",
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "cue": "Step back until both knees are near 90°, then drive through the front heel.",
+    "cautions": [],
+    "regressesTo": "floor-split-squat"
+  },
+  {
+    "id": "floor-lateral-lunge",
+    "name": "Lateral Lunge",
+    "equipmentId": "floor",
+    "category": "legs",
+    "movementPattern": "lunge",
+    "primaryMuscles": [
+      "inner thighs",
+      "glutes",
+      "quads"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "cue": "Step wide and sit back into one hip, keeping the other leg straight.",
+    "cautions": [],
+    "progressesTo": "floor-cossack-squat"
+  },
+  {
+    "id": "floor-cossack-squat",
+    "name": "Cossack Squat",
+    "equipmentId": "floor",
+    "category": "legs",
+    "movementPattern": "lunge",
+    "primaryMuscles": [
+      "inner thighs",
+      "glutes",
+      "quads"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "cue": "Wide stance; shift deep into one side with the other leg straight, toes up.",
+    "cautions": [],
+    "regressesTo": "floor-lateral-lunge"
+  },
+  {
+    "id": "floor-glute-bridge",
+    "name": "Glute Bridge",
+    "equipmentId": "floor",
+    "category": "legs",
+    "movementPattern": "hip-extension",
+    "primaryMuscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "measure": "reps",
+    "unilateral": false,
+    "cue": "Feet flat; drive hips up by squeezing your glutes, ribs down.",
+    "cautions": [],
+    "progressesTo": "floor-single-leg-glute-bridge"
+  },
+  {
+    "id": "floor-single-leg-glute-bridge",
+    "name": "Single-Leg Glute Bridge",
+    "equipmentId": "floor",
+    "category": "legs",
+    "movementPattern": "hip-extension",
+    "primaryMuscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "cue": "One foot planted, the other leg up; lift your hips level.",
+    "cautions": [],
+    "regressesTo": "floor-glute-bridge"
+  },
+  {
+    "id": "floor-single-leg-rdl",
+    "name": "Single-Leg Romanian Deadlift",
+    "equipmentId": "floor",
+    "category": "legs",
+    "movementPattern": "hinge",
+    "primaryMuscles": [
+      "hamstrings",
+      "glutes"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "cue": "Hinge at the hip with the back leg reaching long; keep hips square to the floor.",
+    "cautions": []
+  },
+  {
+    "id": "floor-copenhagen-plank",
+    "name": "Copenhagen Plank",
+    "equipmentId": "floor",
+    "category": "legs",
+    "movementPattern": "hip-adduction",
+    "primaryMuscles": [
+      "inner thighs",
+      "obliques"
+    ],
+    "measure": "time",
+    "unilateral": true,
+    "cue": "Side plank with the top foot on a bench, bottom leg hovering; squeeze the inner thigh.",
+    "cautions": [],
+    "regressesTo": "floor-copenhagen-plank-short"
+  },
+  {
+    "id": "floor-copenhagen-plank-short",
+    "name": "Copenhagen Plank (short lever)",
+    "equipmentId": "floor",
+    "category": "legs",
+    "movementPattern": "hip-adduction",
+    "primaryMuscles": [
+      "inner thighs",
+      "obliques"
+    ],
+    "measure": "time",
+    "unilateral": true,
+    "cue": "Side plank with the top knee on a bench; lift your hips and hold.",
+    "cautions": [],
+    "progressesTo": "floor-copenhagen-plank"
+  },
+  {
+    "id": "floor-wall-sit",
+    "name": "Wall Sit",
+    "equipmentId": "floor",
+    "category": "legs",
+    "movementPattern": "squat",
+    "primaryMuscles": [
+      "quads"
+    ],
+    "measure": "time",
+    "unilateral": false,
+    "cue": "Back flat on the wall, thighs parallel to the floor, knees over ankles.",
+    "cautions": []
+  },
+  {
+    "id": "floor-push-up",
+    "name": "Push-up",
+    "equipmentId": "floor",
+    "category": "chest",
+    "movementPattern": "horizontal-push",
+    "primaryMuscles": [
+      "chest",
+      "triceps",
+      "front shoulders"
+    ],
+    "measure": "reps",
+    "unilateral": false,
+    "cue": "Hands under shoulders, body straight; lower your chest to just above the floor.",
+    "cautions": [],
+    "regressesTo": "floor-incline-push-up"
+  },
+  {
+    "id": "floor-incline-push-up",
+    "name": "Incline Push-up",
+    "equipmentId": "floor",
+    "category": "chest",
+    "movementPattern": "horizontal-push",
+    "primaryMuscles": [
+      "chest",
+      "triceps",
+      "front shoulders"
+    ],
+    "measure": "reps",
+    "unilateral": false,
+    "cue": "Hands on a bench or counter. The higher the surface, the easier.",
+    "cautions": [],
+    "progressesTo": "floor-push-up"
+  },
+  {
+    "id": "floor-skater-hop",
+    "name": "Skater Hop",
+    "equipmentId": "floor",
+    "category": "agility",
+    "movementPattern": "carry-agility",
+    "primaryMuscles": [
+      "glutes",
+      "quads",
+      "balance"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "cue": "Bound sideways onto one leg; land softly and stick it before the next hop.",
+    "cautions": [],
+    "impact": true,
+    "regressesTo": "floor-skater-step"
+  },
+  {
+    "id": "floor-skater-step",
+    "name": "Skater Step",
+    "equipmentId": "floor",
+    "category": "agility",
+    "movementPattern": "carry-agility",
+    "primaryMuscles": [
+      "glutes",
+      "quads",
+      "balance"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "cue": "Step wide sideways into a skater stance. No hop yet.",
+    "cautions": [],
+    "progressesTo": "floor-skater-hop"
+  },
+  {
+    "id": "floor-lateral-bound",
+    "name": "Lateral Bound",
+    "equipmentId": "floor",
+    "category": "agility",
+    "movementPattern": "carry-agility",
+    "primaryMuscles": [
+      "glutes",
+      "quads",
+      "balance"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "cue": "Explosive sideways jump for distance; land balanced on one leg.",
+    "cautions": [],
+    "impact": true,
+    "regressesTo": "floor-skater-hop"
+  },
+  {
+    "id": "floor-squat-jump",
+    "name": "Squat Jump",
+    "equipmentId": "floor",
+    "category": "agility",
+    "movementPattern": "carry-agility",
+    "primaryMuscles": [
+      "quads",
+      "glutes",
+      "calves"
+    ],
+    "measure": "reps",
+    "unilateral": false,
+    "cue": "Quarter-to-half squat, jump straight up, land softly into the next rep.",
+    "cautions": [],
+    "impact": true,
+    "regressesTo": "floor-bodyweight-squat"
+  },
+  {
+    "id": "floor-bodyweight-squat",
+    "name": "Bodyweight Squat",
+    "equipmentId": "floor",
+    "category": "legs",
+    "movementPattern": "squat",
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "measure": "reps",
+    "unilateral": false,
+    "cue": "Feet shoulder-width; sit hips back and down, chest up.",
+    "cautions": [],
+    "progressesTo": "floor-squat-jump"
+  },
+  {
+    "id": "floor-fast-feet",
+    "name": "Fast Feet / Quick Steps",
+    "equipmentId": "floor",
+    "category": "agility",
+    "movementPattern": "carry-agility",
+    "primaryMuscles": [
+      "calves",
+      "coordination"
+    ],
+    "measure": "time",
+    "unilateral": false,
+    "cue": "Light, quick steps in place on the balls of your feet.",
+    "cautions": [],
+    "impact": true
+  },
+  {
+    "id": "floor-90-90-hip-switch",
+    "name": "90/90 Hip Switch",
+    "equipmentId": "floor",
+    "category": "mobility",
+    "movementPattern": "mobility",
+    "primaryMuscles": [
+      "hips"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "cue": "Sit with both knees bent at 90°, then rotate both knees to the other side.",
+    "cautions": []
+  },
+  {
+    "id": "floor-hip-flexor-stretch",
+    "name": "Hip Flexor Stretch (half-kneeling)",
+    "equipmentId": "floor",
+    "category": "mobility",
+    "movementPattern": "mobility",
+    "primaryMuscles": [
+      "hip flexors"
+    ],
+    "measure": "time",
+    "unilateral": true,
+    "cue": "Half-kneeling; tuck your pelvis under and shift forward gently.",
+    "cautions": []
+  },
+  {
+    "id": "floor-worlds-greatest-stretch",
+    "name": "World's Greatest Stretch",
+    "equipmentId": "floor",
+    "category": "mobility",
+    "movementPattern": "mobility",
+    "primaryMuscles": [
+      "hips",
+      "upper back"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "cue": "Lunge, elbow to instep, then rotate and reach that arm to the ceiling.",
+    "cautions": []
+  },
+  {
+    "id": "floor-thoracic-rotation",
+    "name": "Thoracic Rotation (open book)",
+    "equipmentId": "floor",
+    "category": "mobility",
+    "movementPattern": "mobility",
+    "primaryMuscles": [
+      "upper back"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "cue": "Lie on your side, knees stacked; open the top arm across to the floor.",
+    "cautions": []
+  },
+  {
+    "id": "floor-head-rolls",
+    "name": "Head Rolls",
+    "equipmentId": "floor",
+    "category": "mobility",
+    "movementPattern": "mobility",
+    "primaryMuscles": [
+      "neck"
+    ],
+    "measure": "time",
+    "unilateral": false,
+    "cue": "Slow, gentle half-circles side to side, about 15 counts. Don't roll backward.",
+    "cautions": []
+  },
+  {
+    "id": "floor-shoulder-lifts",
+    "name": "Shoulder Lifts",
+    "equipmentId": "floor",
+    "category": "mobility",
+    "movementPattern": "mobility",
+    "primaryMuscles": [
+      "shoulders",
+      "upper traps"
+    ],
+    "measure": "time",
+    "unilateral": false,
+    "cue": "Lift shoulders toward your ears, then relax them down. About 15 counts.",
+    "cautions": []
+  },
+  {
+    "id": "floor-side-stretch",
+    "name": "Side Stretch",
+    "equipmentId": "floor",
+    "category": "mobility",
+    "movementPattern": "mobility",
+    "primaryMuscles": [
+      "obliques",
+      "lats"
+    ],
+    "measure": "time",
+    "unilateral": true,
+    "cue": "Reach one arm overhead and lean to the opposite side. Hold about 15 counts.",
+    "cautions": []
+  },
+  {
+    "id": "floor-quad-stretch",
+    "name": "Quad Stretch",
+    "equipmentId": "floor",
+    "category": "mobility",
+    "movementPattern": "mobility",
+    "primaryMuscles": [
+      "quads"
+    ],
+    "measure": "time",
+    "unilateral": true,
+    "cue": "Hold one ankle behind you, knees together, standing tall. Hold about 15 counts.",
+    "cautions": []
+  },
+  {
+    "id": "floor-inner-thigh-stretch",
+    "name": "Inner Thigh Stretch",
+    "equipmentId": "floor",
+    "category": "mobility",
+    "movementPattern": "mobility",
+    "primaryMuscles": [
+      "inner thighs"
+    ],
+    "measure": "time",
+    "unilateral": false,
+    "cue": "Sit with the soles of your feet together; press knees gently down. Hold about 15 counts.",
+    "cautions": []
+  },
+  {
+    "id": "floor-toe-touch",
+    "name": "Toe Touches",
+    "equipmentId": "floor",
+    "category": "mobility",
+    "movementPattern": "mobility",
+    "primaryMuscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "measure": "time",
+    "unilateral": false,
+    "cue": "Legs straight; reach toward your toes without bouncing. Hold about 15 counts.",
+    "cautions": []
+  },
+  {
+    "id": "floor-hamstring-stretch",
+    "name": "Hamstring Stretch",
+    "equipmentId": "floor",
+    "category": "mobility",
+    "movementPattern": "mobility",
+    "primaryMuscles": [
+      "hamstrings"
+    ],
+    "measure": "time",
+    "unilateral": true,
+    "cue": "One leg extended; reach toward the toes of that leg. Hold about 15 counts.",
+    "cautions": []
+  },
+  {
+    "id": "floor-calf-stretch",
+    "name": "Calf / Achilles Stretch",
+    "equipmentId": "floor",
+    "category": "mobility",
+    "movementPattern": "mobility",
+    "primaryMuscles": [
+      "calves",
+      "Achilles"
+    ],
+    "measure": "time",
+    "unilateral": true,
+    "cue": "Hands on a wall, back leg straight with the heel down, then bend the knee slightly. Hold about 15 counts.",
+    "cautions": []
+  }
+]

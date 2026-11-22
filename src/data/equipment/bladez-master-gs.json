@@ -1,0 +1,10 @@
+{
+  "id": "bladez-master-gs",
+  "name": "Bladez Master GS",
+  "kind": "builtin",
+  "type": "cardio",
+  "resistanceUnit": "rpe",
+  "maxUserWeight": 300,
+  "manualRef": { "file": "Bladez Master GS Owner's Manual" },
+  "genericType": "stationary-bike"
+}

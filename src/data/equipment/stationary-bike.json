@@ -1,0 +1,7 @@
+{
+  "id": "stationary-bike",
+  "name": "Stationary bike",
+  "kind": "generic",
+  "type": "cardio",
+  "resistanceUnit": "rpe"
+}

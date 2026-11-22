@@ -17,6 +17,7 @@
       "standing-beside-facing-away": "Standing beside machine, facing away"
     },
     "pulleys": {
+      "ccb": "Center Cross Bar",
       "ccb-wide": "Center Cross Bar (wide)",
       "ccb-standard": "Center Cross Bar (standard)",
       "ccb-narrow": "Center Cross Bar (narrow)",
@@ -43,7 +44,8 @@
       "remove-leg-extension": "Remove the Leg Extension",
       "remove-seat": "Remove the seat",
       "seat-height": "Set seat height",
-      "seat-lowest": "Seat in lowest position"
+      "seat-lowest": "Seat in lowest position",
+      "use-squat-straps": "Attach the hand grips with the squat straps"
     }
   }
 }

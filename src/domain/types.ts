@@ -26,7 +26,9 @@ export const MOVEMENT_PATTERNS = [
   'lunge',
   'hinge',
   'hip-abduction',
+  'hip-adduction', // not in the spec's list; added for Copenhagen Plank / Hip Adduction
   'hip-extension',
+  'hip-flexion', // not in the spec's list; added for Hip Flexion / Banded Hip Flexor March
   'anti-rotation',
   'trunk-flexion',
   'rotation',
@@ -51,6 +53,25 @@ export type ResistanceUnit = (typeof RESISTANCE_UNITS)[number]
 export const TEMPLATE_FORMATS = ['straight-sets', 'circuit', 'checklist', 'ride'] as const
 export type TemplateFormat = (typeof TEMPLATE_FORMATS)[number]
 
+export const BAND_TYPES = ['mini-loop', 'long-loop', 'tube'] as const
+export type BandType = (typeof BAND_TYPES)[number]
+
+export const BAND_ANCHORS = ['none', 'under-feet', 'door-low', 'door-mid', 'door-high', 'around-legs'] as const
+export type BandAnchor = (typeof BAND_ANCHORS)[number]
+
+/** Small accessories some exercises need (owned yes/no is set in M7's inventory). */
+export const ACCESSORIES = ['door-anchor', 'handles', 'ankle-straps'] as const
+export type Accessory = (typeof ACCESSORIES)[number]
+
+/** Setup for a resistance-band exercise (bands have no pulleys or seat positions). */
+export interface BandSetup {
+  /** Any of these band types works. */
+  bandTypes: BandType[]
+  anchor: BandAnchor
+  /** Where the band goes and how to stand, e.g. "Band above knees; quarter squat." */
+  stance: string
+}
+
 /** A dictionary of id → display label, e.g. { "ccb-wide": "Center Cross Bar (wide)" }. */
 export type LabelMap = Record<string, string>
 
@@ -74,6 +95,11 @@ export interface Equipment {
   maxUserWeight?: number
   manualRef?: { file: string; page?: number }
   setupOptions?: SetupOptions
+  /**
+   * For a built-in product: the generic type it is an instance of (e.g. the Master GS is a
+   * "stationary-bike"). Exercises written for the generic type also work on this product.
+   */
+  genericType?: string
 }
 
 /** How to set the machine up for one exercise. Every value is a key into the equipment's SetupOptions. */
@@ -97,8 +123,15 @@ export interface Exercise {
   measure: Measure
   unilateral: boolean
   setup?: ExerciseSetup
+  bandSetup?: BandSetup
+  requiresAccessories?: Accessory[]
   guidePage?: number
   cautions: string[]
+  /**
+   * Marked ⚠ in the spec: light resistance only, so progression never says "go up" (M15).
+   * Distinct from `cautions`, which can be plain safety notes (e.g. Squat's platform warning).
+   */
+  keepLight?: boolean
   /** One-line form cue, used for exercises with no guide page (floor, bands). */
   cue?: string
   impact?: boolean
@@ -113,7 +146,10 @@ export interface RepRange {
 
 interface TemplateItemCommon {
   sets?: number
+  /** For rep-based exercises. */
   reps?: RepRange
+  /** For timed exercises, in seconds (e.g. Plank 30–60 s). */
+  duration?: RepRange
   restSec?: number
   /** Items sharing a group letter are done back to back as a superset. */
   supersetGroup?: string
@@ -142,12 +178,14 @@ export interface Template {
 export interface TemplateDefaults {
   sets: number
   reps: RepRange
+  duration: RepRange
   restSec: number
 }
 
-/** Spec defaults: 3 sets × 10–15 reps, ~60 s rest. */
+/** Spec defaults: 3 sets × 10–15 reps, ~60 s rest. Timed default (30–45 s) is our choice. */
 export const DEFAULT_TEMPLATE_SETTINGS: TemplateDefaults = {
   sets: 3,
   reps: { min: 10, max: 15 },
+  duration: { min: 30, max: 45 },
   restSec: 60,
 }

@@ -3,6 +3,7 @@ import { builtinSource } from './builtins.ts'
 import {
   buildCatalog,
   describeSetup,
+  exercisesForEquipment,
   groupSupersets,
   resolveTemplateItem,
   validateCatalog,
@@ -112,6 +113,34 @@ describe('validateCatalog', () => {
     ])
   })
 
+  it('catches reps on a timed exercise', () => {
+    const src = fixture()
+    src.exercises[0].measure = 'time'
+    src.templates[0].items[0] = { exerciseId: 'press', reps: { min: 5, max: 8 } }
+    expect(validateCatalog(src)).toEqual(['Template "t" item 1: "press" is timed, so use duration, not reps'])
+  })
+
+  it('catches a band exercise without band setup, and an unknown anchor', () => {
+    const src = fixture()
+    src.equipment.push({ id: 'bands', name: 'Bands', kind: 'generic', type: 'bands', resistanceUnit: 'band' })
+    src.exercises.push({ ...src.exercises[0], id: 'row', equipmentId: 'bands', setup: undefined })
+    expect(validateCatalog(src)).toContain('Exercise "row": band exercises need bandSetup')
+    src.exercises[1].bandSetup = { bandTypes: ['tube'], anchor: 'ceiling' as never, stance: '' }
+    expect(validateCatalog(src)[0]).toMatch(/anchor "ceiling" is not one of/)
+  })
+
+  it('catches keepLight without a caution to explain it', () => {
+    const src = fixture()
+    src.exercises[0].keepLight = true
+    expect(validateCatalog(src)).toEqual(['Exercise "press": keepLight needs a caution to show'])
+  })
+
+  it('catches a genericType that is not generic', () => {
+    const src = fixture()
+    src.equipment.push({ id: 'bike', name: 'Bike', kind: 'builtin', type: 'cardio', resistanceUnit: 'rpe', genericType: 'machine' })
+    expect(validateCatalog(src)).toEqual(['Equipment "bike": genericType "machine" is not a generic type'])
+  })
+
   it('catches superset items that are not next to each other', () => {
     const src = fixture()
     src.templates[0].items = [
@@ -123,12 +152,39 @@ describe('validateCatalog', () => {
   })
 })
 
+describe('built-in content shape', () => {
+  it('has the full seed from the spec', () => {
+    const count = (eq: string) => builtinSource.exercises.filter((e) => e.equipmentId === eq).length
+    expect(count('bowflex-xtreme-2-se')).toBe(73)
+    expect(count('resistance-bands')).toBe(15)
+    expect(count('stationary-bike')).toBe(3)
+    expect(count('floor')).toBeGreaterThanOrEqual(42)
+  })
+
+  it('marks exactly the ⚠ exercises from the spec as keep-light', () => {
+    const keepLight = builtinSource.exercises.filter((e) => e.keepLight).map((e) => e.id).sort()
+    expect(keepLight).toEqual([
+      'bowflex-good-morning',
+      'bowflex-rotator-cuff-external-rotation',
+      'bowflex-rotator-cuff-internal-rotation',
+      'bowflex-stiff-leg-dead-lift',
+      'bowflex-trunk-rotation',
+    ])
+  })
+
+  it('lets the Master GS use the generic bike exercises', () => {
+    const ids = exercisesForEquipment(buildCatalog(builtinSource), 'bladez-master-gs').map((e) => e.id)
+    expect(ids).toEqual(['bike-intervals', 'bike-steady-ride', 'bike-warmup-cooldown'])
+  })
+})
+
 describe('resolveTemplateItem', () => {
   it('fills missing values from settings', () => {
     expect(resolveTemplateItem({ exerciseId: 'press' }, DEFAULT_TEMPLATE_SETTINGS)).toEqual({
       exerciseId: 'press',
       sets: 3,
       reps: { min: 10, max: 15 },
+      duration: { min: 30, max: 45 },
       restSec: 60,
     })
   })

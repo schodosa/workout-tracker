@@ -1,0 +1,358 @@
+[
+  {
+    "id": "band-lateral-walk",
+    "name": "Banded Lateral Walk",
+    "equipmentId": "resistance-bands",
+    "category": "legs",
+    "movementPattern": "hip-abduction",
+    "primaryMuscles": [
+      "glutes",
+      "outer hips"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "bandSetup": {
+      "bandTypes": [
+        "mini-loop"
+      ],
+      "anchor": "around-legs",
+      "stance": "Band above the knees or around the ankles; quarter squat, feet hip-width."
+    },
+    "cue": "Step sideways keeping tension on the band; don't let your knees cave in.",
+    "cautions": []
+  },
+  {
+    "id": "band-monster-walk",
+    "name": "Banded Monster Walk",
+    "equipmentId": "resistance-bands",
+    "category": "legs",
+    "movementPattern": "hip-abduction",
+    "primaryMuscles": [
+      "glutes",
+      "outer hips"
+    ],
+    "measure": "reps",
+    "unilateral": false,
+    "bandSetup": {
+      "bandTypes": [
+        "mini-loop"
+      ],
+      "anchor": "around-legs",
+      "stance": "Band above the knees; quarter squat."
+    },
+    "cue": "Walk forward on a wide diagonal, keeping the band tight.",
+    "cautions": []
+  },
+  {
+    "id": "band-glute-bridge",
+    "name": "Banded Glute Bridge",
+    "equipmentId": "resistance-bands",
+    "category": "legs",
+    "movementPattern": "hip-extension",
+    "primaryMuscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "measure": "reps",
+    "unilateral": false,
+    "bandSetup": {
+      "bandTypes": [
+        "mini-loop"
+      ],
+      "anchor": "around-legs",
+      "stance": "Band just above the knees; lie on your back, feet flat."
+    },
+    "cue": "Press your knees out against the band as you lift your hips.",
+    "cautions": []
+  },
+  {
+    "id": "band-clamshell",
+    "name": "Banded Clamshell",
+    "equipmentId": "resistance-bands",
+    "category": "legs",
+    "movementPattern": "hip-abduction",
+    "primaryMuscles": [
+      "glutes",
+      "outer hips"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "bandSetup": {
+      "bandTypes": [
+        "mini-loop"
+      ],
+      "anchor": "around-legs",
+      "stance": "Band above the knees; lie on your side with knees bent."
+    },
+    "cue": "Keep your feet together and open the top knee; don't roll back.",
+    "cautions": []
+  },
+  {
+    "id": "band-hip-flexor-march",
+    "name": "Banded Hip Flexor March",
+    "equipmentId": "resistance-bands",
+    "category": "legs",
+    "movementPattern": "hip-flexion",
+    "primaryMuscles": [
+      "hip flexors",
+      "abs"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "bandSetup": {
+      "bandTypes": [
+        "mini-loop"
+      ],
+      "anchor": "around-legs",
+      "stance": "Band around the feet; lie on your back or stand tall."
+    },
+    "cue": "Drive one knee up against the band; lower it slowly.",
+    "cautions": []
+  },
+  {
+    "id": "band-pallof-press",
+    "name": "Pallof Press",
+    "equipmentId": "resistance-bands",
+    "category": "core",
+    "movementPattern": "anti-rotation",
+    "primaryMuscles": [
+      "abs",
+      "obliques"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "bandSetup": {
+      "bandTypes": [
+        "long-loop",
+        "tube"
+      ],
+      "anchor": "door-mid",
+      "stance": "Stand side-on to the door, band at chest height, feet shoulder-width."
+    },
+    "cue": "Press the band straight out and hold; don't let it twist you.",
+    "cautions": [],
+    "requiresAccessories": [
+      "door-anchor"
+    ]
+  },
+  {
+    "id": "band-wood-chop",
+    "name": "Band Wood Chop",
+    "equipmentId": "resistance-bands",
+    "category": "core",
+    "movementPattern": "rotation",
+    "primaryMuscles": [
+      "obliques",
+      "abs"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "bandSetup": {
+      "bandTypes": [
+        "long-loop",
+        "tube"
+      ],
+      "anchor": "door-high",
+      "stance": "Stand side-on to the door with the band anchored high."
+    },
+    "cue": "Pull diagonally from high to low across your body, pivoting the back foot.",
+    "cautions": [],
+    "requiresAccessories": [
+      "door-anchor"
+    ]
+  },
+  {
+    "id": "band-reverse-wood-chop",
+    "name": "Band Reverse Wood Chop",
+    "equipmentId": "resistance-bands",
+    "category": "core",
+    "movementPattern": "rotation",
+    "primaryMuscles": [
+      "obliques",
+      "abs"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "bandSetup": {
+      "bandTypes": [
+        "long-loop",
+        "tube"
+      ],
+      "anchor": "door-low",
+      "stance": "Stand side-on to the door with the band anchored low."
+    },
+    "cue": "Pull diagonally from low to high across your body.",
+    "cautions": [],
+    "requiresAccessories": [
+      "door-anchor"
+    ]
+  },
+  {
+    "id": "band-pull-apart",
+    "name": "Band Pull-Apart",
+    "equipmentId": "resistance-bands",
+    "category": "shoulders",
+    "movementPattern": "shoulder-isolation",
+    "primaryMuscles": [
+      "rear shoulders",
+      "upper back"
+    ],
+    "measure": "reps",
+    "unilateral": false,
+    "bandSetup": {
+      "bandTypes": [
+        "long-loop",
+        "tube"
+      ],
+      "anchor": "none",
+      "stance": "Hold the band at shoulder height, arms straight in front."
+    },
+    "cue": "Pull the band apart to your chest, squeezing your shoulder blades.",
+    "cautions": []
+  },
+  {
+    "id": "band-face-pull",
+    "name": "Band Face Pull",
+    "equipmentId": "resistance-bands",
+    "category": "shoulders",
+    "movementPattern": "shoulder-isolation",
+    "primaryMuscles": [
+      "rear shoulders",
+      "upper back"
+    ],
+    "measure": "reps",
+    "unilateral": false,
+    "bandSetup": {
+      "bandTypes": [
+        "long-loop",
+        "tube"
+      ],
+      "anchor": "door-high",
+      "stance": "Face the door with the band anchored above head height."
+    },
+    "cue": "Pull toward your face with elbows high and wide.",
+    "cautions": [],
+    "requiresAccessories": [
+      "door-anchor"
+    ]
+  },
+  {
+    "id": "band-external-rotation",
+    "name": "Band External Rotation",
+    "equipmentId": "resistance-bands",
+    "category": "shoulders",
+    "movementPattern": "shoulder-isolation",
+    "primaryMuscles": [
+      "rotator cuff"
+    ],
+    "measure": "reps",
+    "unilateral": true,
+    "bandSetup": {
+      "bandTypes": [
+        "long-loop",
+        "tube"
+      ],
+      "anchor": "door-mid",
+      "stance": "Stand side-on, elbow tucked at your side and bent to 90°."
+    },
+    "cue": "Rotate your forearm outward; keep the elbow pinned.",
+    "cautions": [],
+    "requiresAccessories": [
+      "door-anchor"
+    ]
+  },
+  {
+    "id": "band-row",
+    "name": "Band Row",
+    "equipmentId": "resistance-bands",
+    "category": "back",
+    "movementPattern": "horizontal-pull",
+    "primaryMuscles": [
+      "upper back",
+      "lats",
+      "biceps"
+    ],
+    "measure": "reps",
+    "unilateral": false,
+    "bandSetup": {
+      "bandTypes": [
+        "long-loop",
+        "tube"
+      ],
+      "anchor": "door-mid",
+      "stance": "Face the door, band at chest height; step back for tension."
+    },
+    "cue": "Pull your elbows back past your ribs and squeeze your shoulder blades.",
+    "cautions": [],
+    "requiresAccessories": [
+      "door-anchor"
+    ]
+  },
+  {
+    "id": "band-biceps-curl",
+    "name": "Band Biceps Curl",
+    "equipmentId": "resistance-bands",
+    "category": "arms",
+    "movementPattern": "elbow-flexion",
+    "primaryMuscles": [
+      "biceps"
+    ],
+    "measure": "reps",
+    "unilateral": false,
+    "bandSetup": {
+      "bandTypes": [
+        "long-loop",
+        "tube"
+      ],
+      "anchor": "under-feet",
+      "stance": "Stand on the band, feet hip-width."
+    },
+    "cue": "Curl up with elbows at your sides; lower slowly.",
+    "cautions": []
+  },
+  {
+    "id": "band-overhead-triceps-extension",
+    "name": "Band Overhead Triceps Extension",
+    "equipmentId": "resistance-bands",
+    "category": "arms",
+    "movementPattern": "elbow-extension",
+    "primaryMuscles": [
+      "triceps"
+    ],
+    "measure": "reps",
+    "unilateral": false,
+    "bandSetup": {
+      "bandTypes": [
+        "long-loop",
+        "tube"
+      ],
+      "anchor": "under-feet",
+      "stance": "Stand on the band, hands behind your head."
+    },
+    "cue": "Extend your arms overhead, elbows pointing forward.",
+    "cautions": []
+  },
+  {
+    "id": "band-squat",
+    "name": "Band Squat",
+    "equipmentId": "resistance-bands",
+    "category": "legs",
+    "movementPattern": "squat",
+    "primaryMuscles": [
+      "quads",
+      "glutes"
+    ],
+    "measure": "reps",
+    "unilateral": false,
+    "bandSetup": {
+      "bandTypes": [
+        "long-loop",
+        "tube"
+      ],
+      "anchor": "under-feet",
+      "stance": "Stand on the band with the handles or loop at your shoulders."
+    },
+    "cue": "Squat down with your chest up, then stand against the band's tension.",
+    "cautions": []
+  }
+]

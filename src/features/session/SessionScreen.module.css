@@ -105,6 +105,12 @@
   padding: 0;
 }
 
+.note {
+  margin: 6px 0 0;
+  color: var(--warn);
+  font-size: 0.9rem;
+}
+
 .superset {
   margin: 6px 0 0;
   color: var(--accent);
