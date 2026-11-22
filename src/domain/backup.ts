@@ -19,7 +19,8 @@ import { ACCESSORIES, BAND_TYPES } from './types.ts'
 // v4 (M12): settings can hold the weekly plan and week overrides.
 // v5 (M13): adds activities, their recurring series, and occurrences.
 // v6 (M14): settings can hold conflict-rule switches and dismissed suggestions; plans carry updatedOn.
-export const BACKUP_FORMAT_VERSION = 6
+// v7 (M15): progression settings, and a program snapshot on sessions.
+export const BACKUP_FORMAT_VERSION = 7
 const APP_ID = 'home-gym-tracker'
 
 const localDateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be a YYYY-MM-DD date')
@@ -62,6 +63,16 @@ const sessionSchema = z.object({
       easyRpe: z.number().min(1).max(10).optional(),
       knobNote: z.string().optional(),
       roundsCompleted: z.number().int().nonnegative().optional(),
+    })
+    .optional(),
+  // Added in M15 (progression).
+  program: z
+    .object({
+      week: z.number().int().positive(),
+      rampUp: z.boolean(),
+      rampUpWeeks: z.number().int().nonnegative(),
+      impactIntro: z.boolean(),
+      intervalRounds: z.number().int().positive().optional(),
     })
     .optional(),
 })
@@ -132,6 +143,17 @@ const settingSchema = z.discriminatedUnion('key', [
     }),
   }),
   z.object({ key: z.literal('dismissedConflicts'), value: z.array(z.string()) }),
+  z.object({
+    key: z.literal('progression'),
+    value: z.object({
+      experience: z.enum(['new', 'returning', 'training']),
+      startDate: localDateString,
+      rampUpWeeks: z.number().int().min(0).max(12),
+      impactUnlockWeek: z.number().int().min(1).max(52),
+      intervalRoundsRampUp: z.number().int().min(1).max(20),
+      intervalRoundsAfter: z.number().int().min(1).max(20),
+    }),
+  }),
 ])
 
 const activitySchema = z.object({
@@ -273,6 +295,10 @@ function upgradeBackup(raw: unknown): unknown {
   if (file.formatVersion === 5) {
     // v5 → v6: only new kinds of settings and an optional plan field; existing data is unchanged.
     file = { ...file, formatVersion: 6 }
+  }
+  if (file.formatVersion === 6) {
+    // v6 → v7: only new optional fields and a new kind of setting.
+    file = { ...file, formatVersion: 7 }
   }
   return file
 }

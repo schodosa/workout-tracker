@@ -12,6 +12,7 @@ import { SessionScreen } from './features/session/SessionScreen.tsx'
 import { EquipmentScreen } from './features/settings/EquipmentScreen.tsx'
 import { PlanScreen } from './features/settings/PlanScreen.tsx'
 import { SuggestionsScreen } from './features/settings/SuggestionsScreen.tsx'
+import { ProgressionScreen } from './features/settings/ProgressionScreen.tsx'
 import { SettingsScreen } from './features/settings/SettingsScreen.tsx'
 
 // Loaded on demand: the backup screen pulls in Zod (~60 KB gzipped), which nothing else needs.
@@ -46,6 +47,7 @@ export default function App() {
             <Route path="/settings/plan" component={PlanScreen} />
             <Route path="/settings/activities" component={ActivitiesScreen} />
             <Route path="/settings/suggestions" component={SuggestionsScreen} />
+            <Route path="/settings/progression" component={ProgressionScreen} />
             <Route path="/settings/activities/:id" component={ActivityEditorScreen} />
             <Route path="/activities/log" component={LogPastActivityScreen} />
             <Route path="/settings/backup">

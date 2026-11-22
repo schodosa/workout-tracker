@@ -4,6 +4,7 @@ import { BackLink } from '../../components/BackLink.tsx'
 import { BandPicker } from '../../components/BandPicker.tsx'
 import { CountdownPanel } from '../../components/CountdownPanel.tsx'
 import { HoldTimer } from '../../components/HoldTimer.tsx'
+import { ExerciseFlags } from '../../components/ProgressFlags.tsx'
 import { SetRow } from '../../components/SetRow.tsx'
 import { SetupCard } from '../../components/SetupCard.tsx'
 import { Stepper } from '../../components/Stepper.tsx'
@@ -13,8 +14,9 @@ import { useBandLabeler } from '../../db/inventory.ts'
 import { discardSession, finishSession, logSets, swapPlanItem, useLastPerformance } from '../../db/sessions.ts'
 import { useCatalog } from '../../db/useCatalog.ts'
 import { formatDose, resolveTemplateItem, type ResolvedItem } from '../../domain/catalog.ts'
-import { circuitOrder, circuitPosition, circuitTarget, nextCircuitStep, type CircuitPos } from '../../domain/circuit.ts'
+import { circuitOrder, circuitPosition, circuitTarget, nextCircuitStep, roundOrder, type CircuitPos } from '../../domain/circuit.ts'
 import { formatDayLong } from '../../domain/dates.ts'
+import { circuitItemRounds, effortNote } from '../../domain/progression.ts'
 import { compatibleBands, ownsExactEquipment, type Inventory } from '../../domain/inventory.ts'
 import { BAND_TYPE_LABELS } from '../../domain/labels.ts'
 import type { SessionRecord, SetRecord } from '../../domain/records.ts'
@@ -48,13 +50,16 @@ export function CircuitRunner({ session, sets, template, inventory }: Props) {
   const items = template.items.map((item) => resolveTemplateItem(item, DEFAULT_TEMPLATE_SETTINGS))
   const order = circuitOrder(plan)
   const rounds = template.rounds ?? 1
+  // An impact move's first week: one round only (from the snapshot saved at start).
+  const itemRounds = circuitItemRounds(template, plan.map((id) => (id ? catalog.exercises.get(id) : undefined)), session.program)
+  const effort = effortNote(template, session.program)
 
-  const [pos, setPos] = useState<CircuitPos | null>(() => circuitPosition(sets, order, rounds))
+  const [pos, setPos] = useState<CircuitPos | null>(() => circuitPosition(sets, order, rounds, itemRounds))
   const [phase, setPhase] = useState<Phase>({ kind: 'work' })
 
   // After an exercise is logged or skipped: count down to the next one, rest between rounds, or finish.
   function advance(from: CircuitPos) {
-    const step = nextCircuitStep(order, rounds, from)
+    const step = nextCircuitStep(order, rounds, from, itemRounds)
     if (step.kind === 'complete') {
       setPos(null)
       setPhase({ kind: 'work' })
@@ -128,10 +133,11 @@ export function CircuitRunner({ session, sets, template, inventory }: Props) {
     <>
       {header}
       <p className={styles.context}>
-        {template.name} · round {pos.round} of {rounds} · exercise {order.indexOf(pos.itemIndex) + 1} of {order.length}
+        {template.name} · round {pos.round} of {rounds} · exercise {roundOrder(order, pos.round, itemRounds).indexOf(pos.itemIndex) + 1} of {roundOrder(order, pos.round, itemRounds).length}
       </p>
+      {effort && <p className={styles.effort}>{effort}</p>}
       <nav className={styles.dots} aria-label="Exercises this round">
-        {order.map((i) => {
+        {roundOrder(order, pos.round, itemRounds).map((i) => {
           const cls = [styles.dot, doneThisRound(i) && styles.dotDone, i === pos.itemIndex && styles.dotCurrent].filter(Boolean).join(' ')
           return <span key={i} className={cls} aria-label={`${exerciseFor(i).name}${doneThisRound(i) ? ', done' : ''}`} />
         })}
@@ -163,6 +169,8 @@ export function CircuitRunner({ session, sets, template, inventory }: Props) {
           onSwap={(id) => swapPlanItem(session.id, plan, pos.itemIndex, id)}
           onLogged={() => advance(pos)}
           onSkip={() => advance(pos)}
+          warmup={template.warmup ?? false}
+          itemRoundsNote={itemRounds && itemRounds[pos.itemIndex] < rounds ? 'First week of impact moves: one round only.' : undefined}
         />
       )}
 
@@ -186,6 +194,9 @@ interface WorkProps {
   onSwap: (id: string) => void
   onLogged: () => void
   onSkip: () => void
+  warmup: boolean
+  /** Shown under the target, e.g. "First week of impact moves: one round only." */
+  itemRoundsNote?: string
 }
 
 /** Loads "last time" for prefill, then shows the work form. */
@@ -208,6 +219,8 @@ function CircuitWorkForm({
   onSwap,
   onLogged,
   onSkip,
+  warmup,
+  itemRoundsNote,
   lastTime,
   lastDate,
 }: WorkProps & { lastTime: SetRecord[]; lastDate?: string }) {
@@ -267,6 +280,7 @@ function CircuitWorkForm({
         <h1 className={styles.name}>{exercise.name}</h1>
         {originalEx && <p className={styles.insteadOf}>Instead of {originalEx.name}</p>}
         <p className={styles.target}>Target {formatDose(item, exercise, 'circuit')}</p>
+        {itemRoundsNote && <p className={styles.note}>{itemRoundsNote}</p>}
         {item.note && !originalEx && <p className={styles.note}>{item.note}</p>}
         {lastLogical.length > 0 && (
           <p className={styles.lastTime}>
@@ -274,6 +288,8 @@ function CircuitWorkForm({
           </p>
         )}
       </header>
+
+      <ExerciseFlags sessionId={session.id} exercise={exercise} item={item} inventory={inventory} warmup={warmup} sessionSets={sets} swapChoices={swapChoices} onSwap={onSwap} />
 
       <SwapPanel current={exercise} choices={swapChoices} onSwap={onSwap} />
 

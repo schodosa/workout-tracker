@@ -6,6 +6,7 @@ import { useBandLabeler, useInventory } from '../../db/inventory.ts'
 import { compatibleBands, ownsExactEquipment, type Inventory } from '../../domain/inventory.ts'
 import { BAND_TYPE_LABELS, PATTERN_LABELS } from '../../domain/labels.ts'
 import { planTemplate, swapOptions } from '../../domain/substitution.ts'
+import { ExerciseFlags } from '../../components/ProgressFlags.tsx'
 import { RestBar } from '../../components/RestBar.tsx'
 import { SetRow } from '../../components/SetRow.tsx'
 import { SetupCard } from '../../components/SetupCard.tsx'
@@ -25,6 +26,7 @@ import {
 import { useCatalog } from '../../db/useCatalog.ts'
 import { formatDose, resolveTemplateItem, type ResolvedItem } from '../../domain/catalog.ts'
 import { formatDayLong } from '../../domain/dates.ts'
+import { adjustTargets, effortNote } from '../../domain/progression.ts'
 import type { SessionRecord, SetRecord } from '../../domain/records.ts'
 import {
   afterLog,
@@ -91,10 +93,17 @@ function SessionLogger({ session, sets, template, inventory }: { session: Sessio
   const plan = session.plan ?? planTemplate(catalog, inventory, template)
   // A skipped item (no exercise with your equipment) has a target of 0 sets, so it never blocks
   // "next exercise" or "finish".
-  const items = template.items.map((item, i) => {
-    const resolved = resolveTemplateItem(item, DEFAULT_TEMPLATE_SETTINGS)
-    return plan[i] === null ? { ...resolved, sets: 0 } : resolved
-  })
+  // Ramp-up (2 sets) and an impact move's first week (1 set) come from the snapshot saved at start.
+  const items = adjustTargets(
+    template,
+    template.items.map((item, i) => {
+      const resolved = resolveTemplateItem(item, DEFAULT_TEMPLATE_SETTINGS)
+      return plan[i] === null ? { ...resolved, sets: 0 } : resolved
+    }),
+    plan.map((id) => (id ? catalog.exercises.get(id) : undefined)),
+    session.program,
+  )
+  const effort = effortNote(template, session.program)
   const counts = countByItem(sets, items.length)
   const targets = items.map((i) => i.sets)
 
@@ -153,6 +162,7 @@ function SessionLogger({ session, sets, template, inventory }: { session: Sessio
       <p className={styles.context}>
         {template.name} · exercise {index + 1} of {items.length}
       </p>
+      {effort && <p className={styles.effort}>{effort}</p>}
 
       <nav className={styles.dots} aria-label="Exercises">
         {items.map((it, i) => {
@@ -176,6 +186,7 @@ function SessionLogger({ session, sets, template, inventory }: { session: Sessio
         sets={sets.filter((s) => s.itemIndex === index)}
         partners={partners.filter((p): p is string => Boolean(p))}
         onLogged={onLogged}
+        warmup={template.warmup ?? false}
       />
 
       <div className={`row ${styles.nav}`}>
@@ -222,6 +233,7 @@ interface ExerciseLoggerProps {
   sets: SetRecord[]
   partners: string[]
   onLogged: (itemIndex: number, loggedAt: number) => void
+  warmup: boolean
 }
 
 /** Waits for "last time" data so the inputs can start pre-filled, then shows the form. */
@@ -264,6 +276,7 @@ function ExerciseForm({
   sets,
   partners,
   onLogged,
+  warmup,
   exercise,
   lastTime,
   inventory,
@@ -343,6 +356,8 @@ function ExerciseForm({
           </p>
         )}
       </header>
+
+      <ExerciseFlags sessionId={sessionId} exercise={exercise} item={item} inventory={inventory} warmup={warmup} sessionSets={sets} swapChoices={swapChoices} onSwap={onSwap} />
 
       <SwapPanel current={exercise} choices={swapChoices} onSwap={onSwap} />
 

@@ -1,0 +1,30 @@
+.flag {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.title {
+  color: var(--accent);
+}
+
+.detail {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+/* Cautions and "back off" flags use the warning color instead. */
+.keep-light,
+.easier {
+  border-color: var(--warn);
+  background: var(--warn-bg);
+}
+
+.keep-light .title,
+.easier .title {
+  color: var(--warn);
+}

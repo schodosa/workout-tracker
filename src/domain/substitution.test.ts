@@ -80,9 +80,16 @@ describe('Full Body A/B (all patterns)', () => {
 })
 
 describe('ranking rules', () => {
-  it('never suggests impact moves (until the unlock week exists)', () => {
+  it('leaves impact moves out until the unlock week', () => {
     const ids = rankCandidates(builtinCatalog, floorOnly, 'carry-agility').map((e) => e.id)
     expect(ids).toEqual(['floor-skater-step'])
+    const unlocked = rankCandidates(builtinCatalog, { ...floorOnly, impactUnlocked: true }, 'carry-agility').map((e) => e.id)
+    expect(unlocked).toContain('floor-squat-jump')
+  })
+  it('a template naming an impact move gets a substitute until the unlock week', () => {
+    const item = { exerciseId: 'floor-skater-hop' }
+    expect(resolveItem(builtinCatalog, floorOnly, item)).toEqual({ kind: 'substitute', exerciseId: 'floor-skater-step', originalId: 'floor-skater-hop' })
+    expect(resolveItem(builtinCatalog, { ...floorOnly, impactUnlocked: true }, item).kind).toBe('as-written')
   })
   it('prefers the same category and measure without a hand-picked list', () => {
     const original = builtinCatalog.exercises.get('bowflex-seated-oblique-crunch')! // trunk-flexion, core, reps

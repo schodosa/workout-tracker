@@ -10,6 +10,8 @@ export interface Inventory {
   equipmentIds: string[]
   accessories: Accessory[]
   bands: BandRecord[]
+  /** Progression (M15): impact moves may be suggested. False until the unlock week, or with no program set. */
+  impactUnlocked?: boolean
 }
 
 export const EMPTY_INVENTORY: Inventory = { configured: false, equipmentIds: [], accessories: [], bands: [] }

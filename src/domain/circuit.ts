@@ -20,12 +20,17 @@ export function circuitOrder(plan: (string | null)[]): number[] {
  * Where to resume: the first (round, item), in circuit order, with nothing logged yet. Derived from
  * the data rather than saved, so a killed app reopens in the right place. null = circuit complete.
  */
-export function circuitPosition(sets: SetRecord[], order: number[], rounds: number): CircuitPos | null {
+export function circuitPosition(sets: SetRecord[], order: number[], rounds: number, itemRounds?: number[]): CircuitPos | null {
   const done = new Set(sets.map((s) => `${s.setNumber}:${s.itemIndex}`))
   for (let round = 1; round <= rounds; round++) {
-    for (const itemIndex of order) if (!done.has(`${round}:${itemIndex}`)) return { round, itemIndex }
+    for (const itemIndex of roundOrder(order, round, itemRounds)) if (!done.has(`${round}:${itemIndex}`)) return { round, itemIndex }
   }
   return null
+}
+
+/** The items in a given round. With `itemRounds`, an item drops out after its own round count (e.g. an impact move's first week). */
+export function roundOrder(order: number[], round: number, itemRounds?: number[]): number[] {
+  return itemRounds ? order.filter((i) => (itemRounds[i] ?? Infinity) >= round) : order
 }
 
 export type CircuitStep =
@@ -34,10 +39,14 @@ export type CircuitStep =
   | { kind: 'complete' }
 
 /** After finishing (or skipping) the exercise at `pos`: move to the next one, rest between rounds, or finish. */
-export function nextCircuitStep(order: number[], rounds: number, pos: CircuitPos): CircuitStep {
-  const i = order.indexOf(pos.itemIndex)
-  if (i >= 0 && i < order.length - 1) return { kind: 'transition', next: { round: pos.round, itemIndex: order[i + 1] } }
-  if (pos.round < rounds) return { kind: 'round-rest', next: { round: pos.round + 1, itemIndex: order[0] } }
+export function nextCircuitStep(order: number[], rounds: number, pos: CircuitPos, itemRounds?: number[]): CircuitStep {
+  const current = roundOrder(order, pos.round, itemRounds)
+  const i = current.indexOf(pos.itemIndex)
+  if (i >= 0 && i < current.length - 1) return { kind: 'transition', next: { round: pos.round, itemIndex: current[i + 1] } }
+  for (let round = pos.round + 1; round <= rounds; round++) {
+    const next = roundOrder(order, round, itemRounds)
+    if (next.length > 0) return { kind: 'round-rest', next: { round, itemIndex: next[0] } }
+  }
   return { kind: 'complete' }
 }
 

@@ -1,0 +1,139 @@
+.section {
+  margin: 24px 0 8px;
+  font-size: 1rem;
+}
+
+.choice {
+  margin-bottom: 8px;
+}
+
+.hint {
+  margin: 8px 0 12px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.status {
+  display: grid;
+  gap: 4px;
+  border-color: var(--accent);
+}
+
+.status strong {
+  color: var(--accent);
+  font-size: 1.2rem;
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.segmented button {
+  min-height: 56px;
+  padding: 4px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.segmented .segOn {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.dateRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.dateRow input {
+  min-height: 48px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 16px; /* iOS zooms into smaller inputs */
+}
+
+.numRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: var(--tap);
+  padding: 6px 0;
+}
+
+.numRow + .numRow,
+.roundsRow {
+  border-top: 1px solid var(--border);
+}
+
+.numLabel {
+  display: block;
+  font-weight: 700;
+}
+
+.steps {
+  display: flex;
+  gap: 8px;
+}
+
+.steps button {
+  width: 52px;
+  height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.steps button:disabled {
+  opacity: 0.4;
+}
+
+.roundsRow {
+  padding: 10px 0;
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.chip,
+.chipOn {
+  flex: 1;
+  min-height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.chipOn {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.off {
+  margin-top: 24px;
+}

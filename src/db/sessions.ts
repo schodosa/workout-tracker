@@ -7,11 +7,11 @@ import Dexie from 'dexie'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { localDate } from '../domain/dates.ts'
 import { newId } from '../domain/ids.ts'
-import type { RideClock, RideLog, SessionRecord, SetRecord } from '../domain/records.ts'
+import type { RideClock, RideLog, SessionProgram, SessionRecord, SetRecord } from '../domain/records.ts'
 import { db, requestPersistentStorage } from './db.ts'
 
-/** Starts a session with its exercise plan fixed (see SessionRecord.plan). */
-export async function startSession(templateId: string, plan: (string | null)[]): Promise<string> {
+/** Starts a session with its exercise plan and program snapshot fixed (see SessionRecord.plan / .program). */
+export async function startSession(templateId: string, plan: (string | null)[], program?: SessionProgram): Promise<string> {
   const existing = await db.sessions.where('status').equals('in-progress').first()
   if (existing) return existing.id // only one session at a time
 
@@ -23,6 +23,7 @@ export async function startSession(templateId: string, plan: (string | null)[]):
     templateIds: [templateId],
     status: 'in-progress',
     plan,
+    program,
   })
   // Fire and forget; the first real data is a good moment to ask.
   void requestPersistentStorage()

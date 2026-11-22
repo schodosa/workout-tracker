@@ -3,6 +3,7 @@ import { Link } from 'wouter'
 import { getLastBackupAt } from '../../db/backupReminder.ts'
 import { useInventory } from '../../db/inventory.ts'
 import { usePlanState } from '../../db/plan.ts'
+import { useProgression } from '../../db/progression.ts'
 import styles from './SettingsScreen.module.css'
 
 // Shows build info and how the app is running. Useful while testing installs and updates.
@@ -24,6 +25,7 @@ export function SettingsScreen() {
   const lastBackupAt = getLastBackupAt()
   const inv = useInventory()
   const planState = usePlanState()
+  const progression = useProgression()
 
   return (
     <>
@@ -38,6 +40,13 @@ export function SettingsScreen() {
       <Link href="/settings/activities" className={`card ${styles.link}`}>
         <span className={styles.linkTitle}>Activities</span>
         <span className="muted">Sports and classes outside the app</span>
+        <span className={styles.chevron} aria-hidden="true">
+          ›
+        </span>
+      </Link>
+      <Link href="/settings/progression" className={`card ${styles.link}`}>
+        <span className={styles.linkTitle}>Progression</span>
+        <span className="muted">{progression === undefined ? '…' : progression.state ? `Week ${progression.state.week}${progression.state.rampUp ? ' · ramp-up' : ''}` : 'No program set'}</span>
         <span className={styles.chevron} aria-hidden="true">
           ›
         </span>

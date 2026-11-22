@@ -4,6 +4,7 @@
 // tiny insert (saved the instant you tap), and lets later features ask "every set of exercise X"
 // through an index without loading whole sessions.
 import type { ConflictSettings } from './conflicts.ts'
+import type { ProgressionSettings } from './progression.ts'
 import type { Accessory, BandType } from './types.ts'
 
 export type SessionStatus = 'in-progress' | 'done'
@@ -30,6 +31,19 @@ export interface SessionRecord {
   rideClock?: RideClock
   /** Ride templates: the numbers logged at the end (spec: rideLog). */
   ride?: RideLog
+  /** Where the program stood when the session started (ramp-up, impact intro, interval rounds). */
+  program?: SessionProgram
+}
+
+/** A snapshot of the program, saved on a session at start so it never changes mid-session. */
+export interface SessionProgram {
+  week: number
+  rampUp: boolean
+  rampUpWeeks: number
+  /** The impact-unlock week: impact moves do one set / one round. */
+  impactIntro: boolean
+  /** Interval rides: hard/easy rounds for this ride. */
+  intervalRounds?: number
 }
 
 export interface RideClock {
@@ -114,6 +128,7 @@ export type SettingRecord =
   | { key: 'conflictRules'; value: ConflictSettings }
   /** Ids of conflict suggestions the user dismissed. */
   | { key: 'dismissedConflicts'; value: string[] }
+  | { key: 'progression'; value: ProgressionSettings }
 
 /**
  * The weekly plan. One object holds both kinds, so switching between fixed days and a rotation

@@ -15,8 +15,8 @@ export type Resolution =
  * 1. the template's own preference list (pattern items), then the original exercise's explicit
  *    alternatives (named items) — both are hand-picked data;
  * 2. then everything else with that pattern, scored by closeness to the original.
- * Impact (jumping) moves are left out: the spec keeps them out of suggestions until the
- * impact-unlock week, which arrives with progression (M15). Rides are never substitutes.
+ * Impact (jumping) moves are left out until the program's impact-unlock week
+ * (`inv.impactUnlocked`). Rides are never substitutes.
  */
 export function rankCandidates(
   catalog: Catalog,
@@ -26,7 +26,7 @@ export function rankCandidates(
 ): Exercise[] {
   const { original, prefer = [] } = opts
   const pool = [...catalog.exercises.values()].filter(
-    (ex) => ex.movementPattern === pattern && !ex.impact && ex.measure !== 'ride' && canDoExercise(catalog, inv, ex),
+    (ex) => ex.movementPattern === pattern && (!ex.impact || inv.impactUnlocked) && ex.measure !== 'ride' && canDoExercise(catalog, inv, ex),
   )
   const handPicked = [...prefer, ...(original?.alternatives ?? [])]
 
@@ -53,7 +53,8 @@ export function resolveItem(catalog: Catalog, inv: Inventory, item: TemplateItem
   if (item.exerciseId !== undefined) {
     const original = catalog.exercises.get(item.exerciseId)
     if (!original) return { kind: 'none', pattern: 'mobility', originalId: item.exerciseId }
-    if (canDoExercise(catalog, inv, original)) return { kind: 'as-written', exerciseId: original.id }
+    // A template that names an impact move gets a substitute until the unlock week.
+    if (canDoExercise(catalog, inv, original) && (!original.impact || inv.impactUnlocked)) return { kind: 'as-written', exerciseId: original.id }
     const best = rankCandidates(catalog, inv, original.movementPattern, { original }).filter((ex) => ex.id !== original.id)[0]
     return best
       ? { kind: 'substitute', exerciseId: best.id, originalId: original.id }

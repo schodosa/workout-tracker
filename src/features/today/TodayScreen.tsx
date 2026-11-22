@@ -11,6 +11,7 @@ import { useBackupDue } from '../../db/backupReminder.ts'
 import { useConflicts } from '../../db/conflicts.ts'
 import { useInventory } from '../../db/inventory.ts'
 import { useSchedule } from '../../db/plan.ts'
+import { useProgression } from '../../db/progression.ts'
 import { useInProgressSession } from '../../db/sessions.ts'
 import { useCatalog } from '../../db/useCatalog.ts'
 import { fitTemplate, type TemplateFit } from '../../domain/substitution.ts'
@@ -31,6 +32,7 @@ export function TodayScreen() {
   const activityDays = useActivityDays(7)
   const activityData = useActivityData()
   const conflicts = useConflicts()
+  const progression = useProgression()
   const [openItem, setOpenItem] = useState<string | null>(null)
   // Your templates first, then built-ins; main workouts before warm-ups; alphabetical within each.
   const templates = [...catalog.templates.values()].sort(
@@ -53,6 +55,13 @@ export function TodayScreen() {
     <>
       <h1>Today</h1>
       <p className="muted">{today}</p>
+      {progression?.state && (
+        <Link href="/settings/progression" className={styles.program}>
+          Program week {progression.state.week}
+          {progression.state.rampUp ? ` · ramp-up (${progression.state.week} of ${progression.state.rampUpWeeks})` : ''}
+          {progression.state.impactIntro ? ' · impact moves start this week' : ''}
+        </Link>
+      )}
       {inProgress && <ResumeBanner session={inProgress} />}
       {backupDue && !inProgress && (
         <Link href="/settings/backup" className={`card ${styles.backupNudge}`}>

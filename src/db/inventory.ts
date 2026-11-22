@@ -1,7 +1,9 @@
 // Reads and writes for owned equipment, accessories and bands.
 import { useLiveQuery } from 'dexie-react-hooks'
+import { localDate } from '../domain/dates.ts'
 import { newId } from '../domain/ids.ts'
 import type { Inventory } from '../domain/inventory.ts'
+import { programState, type ProgressionSettings } from '../domain/progression.ts'
 import type { BandRecord } from '../domain/records.ts'
 import type { Accessory } from '../domain/types.ts'
 import { db } from './db.ts'
@@ -9,8 +11,10 @@ import { db } from './db.ts'
 /** Everything the user owns. `configured` is false until equipment has been saved once. */
 export function useInventory(): Inventory | undefined {
   return useLiveQuery(async () => {
-    const [owned, accessories, bands] = await Promise.all([db.settings.get('ownedEquipment'), db.settings.get('accessories'), db.bands.toArray()])
+    const [owned, accessories, bands, progression] = await Promise.all([db.settings.get('ownedEquipment'), db.settings.get('accessories'), db.bands.toArray(), db.settings.get('progression')])
     return {
+      // What you can do includes when: impact moves wait for the program's unlock week.
+      impactUnlocked: programState(progression?.value as ProgressionSettings | undefined, localDate())?.impactUnlocked ?? false,
       configured: owned !== undefined,
       equipmentIds: (owned?.value as string[] | undefined) ?? [],
       accessories: (accessories?.value as Accessory[] | undefined) ?? [],

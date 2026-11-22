@@ -3,12 +3,14 @@ import { BackLink } from '../../components/BackLink.tsx'
 import { ResumeBanner } from '../../components/ResumeBanner.tsx'
 import { SetupCard } from '../../components/SetupCard.tsx'
 import { useInventory } from '../../db/inventory.ts'
+import { useProgression } from '../../db/progression.ts'
 import { startSession, useInProgressSession } from '../../db/sessions.ts'
 import { deleteUserTemplate, templateInUse } from '../../db/userContent.ts'
 import { useCatalog } from '../../db/useCatalog.ts'
 import { formatDose, groupSupersets, resolveTemplateItem, type ResolvedItem } from '../../domain/catalog.ts'
 import { ownsExactEquipment, type Inventory } from '../../domain/inventory.ts'
 import { PATTERN_LABELS } from '../../domain/labels.ts'
+import { adjustTargets, circuitItemRounds, effortNote, rideForSession, sessionProgram } from '../../domain/progression.ts'
 import { describeRide } from '../../domain/ride.ts'
 import { fitTemplate, planTemplate, type Resolution } from '../../domain/substitution.ts'
 import { DEFAULT_TEMPLATE_SETTINGS, type TemplateFormat } from '../../domain/types.ts'
@@ -21,6 +23,7 @@ export function TemplateScreen() {
   const [, navigate] = useLocation()
   const inProgress = useInProgressSession()
   const inv = useInventory()
+  const progression = useProgression()
   const template = catalog.templates.get(id)
 
   if (!template) {
@@ -32,18 +35,21 @@ export function TemplateScreen() {
       </>
     )
   }
-  if (!inv) return null
+  if (!inv || !progression) return null
 
   const fit = fitTemplate(catalog, inv, template)
   const skipped = fit.total - fit.doable
 
   // Settings will come from the database in a later milestone; until then, spec defaults.
   // Number items before grouping so the numbering runs straight through superset blocks.
-  const items = template.items.map((item, i) => ({
-    ...resolveTemplateItem(item, DEFAULT_TEMPLATE_SETTINGS),
-    number: i + 1,
-    resolution: fit.resolutions[i],
-  }))
+  // Where the program stands today (ramp-up sets, interval rounds). Saved with the session at start.
+  const program = sessionProgram(progression.state, template)
+  const exercises = fit.resolutions.map((r) => (r.kind === 'none' ? undefined : catalog.exercises.get(r.exerciseId)))
+  const adjusted = adjustTargets(template, template.items.map((item) => resolveTemplateItem(item, DEFAULT_TEMPLATE_SETTINGS)), exercises, program)
+  const oneRound = circuitItemRounds(template, exercises, program)
+  const items = adjusted.map((item, i) => ({ ...item, number: i + 1, resolution: fit.resolutions[i] }))
+  const ride = template.ride ? rideForSession(template.ride, program) : undefined
+  const effort = effortNote(template, program)
   const blocks = groupSupersets(items)
 
   return (
@@ -55,20 +61,23 @@ export function TemplateScreen() {
         {equipmentLine(catalog, template)}
       </p>
       {template.description && <p className={styles.description}>{template.description}</p>}
-      {template.ride && (
+      {ride && (
         <div className="card">
           <p>
-            <strong>{describeRide(template.ride)}</strong>
+            <strong>{describeRide(ride)}</strong>
           </p>
-          {template.ride.intervals && (
+          {ride.intervals && program?.intervalRounds && <p className={styles.effort}>{ride.intervals.rounds} rounds in program week {program.week}.</p>}
+          {ride.intervals && (
             <>
-              <p className="muted">Hard: {template.ride.intervals.hardCue}</p>
-              <p className="muted">Easy: {template.ride.intervals.easyCue}</p>
+              <p className="muted">Hard: {ride.intervals.hardCue}</p>
+              <p className="muted">Easy: {ride.intervals.easyCue}</p>
             </>
           )}
-          {template.ride.steady && <p className="muted">{template.ride.steady.cue}</p>}
+          {ride.steady && <p className="muted">{ride.steady.cue}</p>}
         </div>
       )}
+      {effort && <p className={styles.effort}>{effort}</p>}
+      {oneRound?.some((r) => r === 1) && <p className={styles.effort}>First week of impact moves: they do one round only.</p>}
       {template.format === 'circuit' && (
         <p className={styles.description}>
           {template.rounds} round{template.rounds === 1 ? '' : 's'} · {template.transitionSec ?? 15} s between exercises · {template.roundRestSec ?? 60} s between rounds
@@ -94,7 +103,7 @@ export function TemplateScreen() {
             className="btn btn-primary"
             disabled={fit.doable === 0}
             // The plan is worked out now and saved with the session.
-            onClick={async () => navigate(`/session/${await startSession(template.id, planTemplate(catalog, inv, template))}`)}
+            onClick={async () => navigate(`/session/${await startSession(template.id, planTemplate(catalog, inv, template), program)}`)}
           >
             Start session
           </button>

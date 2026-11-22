@@ -97,3 +97,11 @@
   min-height: 44px;
   cursor: pointer;
 }
+
+.program {
+  display: inline-block;
+  margin: -4px 0 8px;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
