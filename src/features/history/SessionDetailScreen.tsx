@@ -6,7 +6,7 @@ import { builtinCatalog } from '../../domain/builtins.ts'
 import { formatDayLong, formatDuration } from '../../domain/dates.ts'
 import { groupByExercise, toLogicalSets } from '../../domain/session.ts'
 import styles from './History.module.css'
-import { sessionTitle } from './sessionTitle.ts'
+import { checklistSummary, sessionTitle } from './sessionTitle.ts'
 
 export function SessionDetailScreen() {
   const { id } = useParams<{ id: string }>()
@@ -24,6 +24,7 @@ export function SessionDetailScreen() {
     )
   }
 
+  const template = builtinCatalog.templates.get(session.templateIds[0])
   const started = new Date(session.startedAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
 
   async function onDelete() {
@@ -40,6 +41,25 @@ export function SessionDetailScreen() {
         {formatDayLong(session.date)} · started {started}
         {session.finishedAt && ` · ${formatDuration(session.finishedAt - session.startedAt)}`}
       </p>
+
+      {template?.format === 'checklist' && (
+        <section className="card">
+          <h2 className={styles.exercise}>{checklistSummary(session)}</h2>
+          <ul className={styles.checks}>
+            {template.items.map((item, i) => {
+              const id = session.plan?.[i] ?? item.exerciseId
+              if (!id) return null
+              const done = session.checkedItems?.includes(i) ?? false
+              return (
+                <li key={i} className={done ? styles.checkDone : styles.checkTodo}>
+                  <span aria-hidden="true">{done ? '✓' : '○'}</span> {builtinCatalog.exercises.get(id)?.name ?? id}
+                  <span className="sr-only">{done ? ' (done)' : ' (not done)'}</span>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
 
       {groupByExercise(sets).map(({ exerciseId, sets }) => (
         <section key={exerciseId} className="card">

@@ -9,7 +9,7 @@ import { formatDose, groupSupersets, resolveTemplateItem, type ResolvedItem } fr
 import { ownsExactEquipment, type Inventory } from '../../domain/inventory.ts'
 import { PATTERN_LABELS } from '../../domain/labels.ts'
 import { fitTemplate, planTemplate, type Resolution } from '../../domain/substitution.ts'
-import { DEFAULT_TEMPLATE_SETTINGS } from '../../domain/types.ts'
+import { DEFAULT_TEMPLATE_SETTINGS, type TemplateFormat } from '../../domain/types.ts'
 import { equipmentLine } from './equipmentLine.ts'
 import styles from './TemplateScreen.module.css'
 
@@ -51,6 +51,12 @@ export function TemplateScreen() {
         ~{template.estMinutes} min · {template.items.length} exercises · {fit.swapped > 0 || skipped > 0 ? 'Written for ' : ''}
         {equipmentLine(template)}
       </p>
+      {template.description && <p className={styles.description}>{template.description}</p>}
+      {template.format === 'circuit' && (
+        <p className={styles.description}>
+          {template.rounds} round{template.rounds === 1 ? '' : 's'} · {template.transitionSec ?? 15} s between exercises · {template.roundRestSec ?? 60} s between rounds
+        </p>
+      )}
 
       {(fit.swapped > 0 || skipped > 0) && (
         <p className={styles.missing}>
@@ -82,7 +88,7 @@ export function TemplateScreen() {
       {blocks.map((block) => {
         // In a superset you rest after the whole pair, so only the last card shows rest.
         const cards = block.map((item, i) => (
-          <ItemCard key={item.number} item={item} resolution={item.resolution} number={item.number} showRest={i === block.length - 1} inv={inv} />
+          <ItemCard key={item.number} item={item} resolution={item.resolution} number={item.number} showRest={template.format === 'straight-sets' && i === block.length - 1} inv={inv} format={template.format} />
         ))
         return block.length > 1 ? (
           <section key={block[0].supersetGroup} className={styles.superset}>
@@ -103,9 +109,10 @@ interface ItemCardProps {
   number: number
   showRest: boolean
   inv: Inventory
+  format: TemplateFormat
 }
 
-function ItemCard({ item, resolution, number, showRest, inv }: ItemCardProps) {
+function ItemCard({ item, resolution, number, showRest, inv, format }: ItemCardProps) {
   if (resolution.kind === 'none') {
     const original = resolution.originalId ? builtinCatalog.exercises.get(resolution.originalId) : undefined
     return (
@@ -129,7 +136,7 @@ function ItemCard({ item, resolution, number, showRest, inv }: ItemCardProps) {
       <header className={styles.itemHeader}>
         <span className={styles.number}>{number}</span>
         <h3 className={styles.itemName}>{exercise.name}</h3>
-        <span className={styles.dose}>{formatDose(item, exercise)}</span>
+        <span className={styles.dose}>{formatDose(item, exercise, format)}</span>
       </header>
       {original && <p className={styles.instead}>Instead of {original.name}</p>}
       {resolution.kind === 'pattern' && <p className={styles.instead}>{PATTERN_LABELS[resolution.pattern]} pattern</p>}

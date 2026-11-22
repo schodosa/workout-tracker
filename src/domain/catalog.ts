@@ -16,6 +16,7 @@ import {
   type SetupOptions,
   type Template,
   type TemplateDefaults,
+  type TemplateFormat,
   type TemplateItem,
 } from './types.ts'
 
@@ -124,6 +125,10 @@ export function validateCatalog(source: CatalogSource): string[] {
   for (const t of source.templates) {
     const where = `Template "${t.id}"`
     checkEnum(where, 'format', t.format, TEMPLATE_FORMATS)
+    if (t.format === 'circuit' && !(Number.isInteger(t.rounds) && (t.rounds ?? 0) >= 1)) problems.push(`${where}: circuits need rounds (1 or more)`)
+    if (t.format !== 'circuit' && (t.rounds !== undefined || t.transitionSec !== undefined || t.roundRestSec !== undefined)) {
+      problems.push(`${where}: rounds/transitionSec/roundRestSec only apply to circuits`)
+    }
     for (const eqId of t.requiredEquipmentIds) {
       if (!catalog.equipment.has(eqId)) problems.push(`${where}: unknown requiredEquipmentId "${eqId}"`)
     }
@@ -183,11 +188,19 @@ export function resolveTemplateItem(item: TemplateItem, defaults: TemplateDefaul
   }
 }
 
-/** "3 × 10–15", "3 × 10–15 /side", "3 × 30–60 s", or "Ride" for bike exercises. */
-export function formatDose(item: ResolvedItem, exercise: Exercise | undefined): string {
+/**
+ * "3 × 10–15", "3 × 10–15 /side", "3 × 30–60 s", or "Ride" for bike exercises. Circuits and
+ * checklists do each move once per round, so they drop the sets: "12 reps", "8 /side", "20 s /side".
+ */
+export function formatDose(item: ResolvedItem, exercise: Exercise | undefined, format: TemplateFormat = 'straight-sets'): string {
   if (exercise?.measure === 'ride') return 'Ride'
-  const amount = exercise?.measure === 'time' ? `${formatRepRange(item.duration)} s` : formatRepRange(item.reps)
-  return `${item.sets} × ${amount}${exercise?.unilateral ? ' /side' : ''}`
+  const timed = exercise?.measure === 'time'
+  const side = exercise?.unilateral ? ' /side' : ''
+  if (format === 'circuit' || format === 'checklist') {
+    return timed ? `${formatRepRange(item.duration)} s${side}` : `${formatRepRange(item.reps)}${side || ' reps'}`
+  }
+  const amount = timed ? `${formatRepRange(item.duration)} s` : formatRepRange(item.reps)
+  return `${item.sets} × ${amount}${side}`
 }
 
 /**

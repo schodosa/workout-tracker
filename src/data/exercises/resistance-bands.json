@@ -63,7 +63,10 @@
       "stance": "Band just above the knees; lie on your back, feet flat."
     },
     "cue": "Press your knees out against the band as you lift your hips.",
-    "cautions": []
+    "cautions": [],
+    "alternatives": [
+      "floor-glute-bridge"
+    ]
   },
   {
     "id": "band-clamshell",
@@ -133,6 +136,10 @@
     "cautions": [],
     "requiresAccessories": [
       "door-anchor"
+    ],
+    "alternatives": [
+      "floor-dead-bug",
+      "floor-bird-dog"
     ]
   },
   {

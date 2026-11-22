@@ -1,0 +1,96 @@
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.finishLink {
+  min-height: var(--tap);
+  margin: calc(var(--gap) * -0.5) -8px 0 0;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.list {
+  list-style: none;
+  margin: 0 0 var(--gap);
+  padding: 0;
+}
+
+.row {
+  border-bottom: 1px solid var(--border);
+}
+
+.rowMain {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+}
+
+/* Big round checkbox: easy to hit with a thumb. */
+.circle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  background: none;
+  color: var(--accent-text);
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.done .circle {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.done .name {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.nameButton {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 56px;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+}
+
+.name {
+  font-weight: 700;
+}
+
+.dose {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.detail {
+  padding: 0 0 var(--gap) 56px;
+}
+
+.timer {
+  margin-top: 12px;
+}
+
+.skipped {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  opacity: 0.5;
+}

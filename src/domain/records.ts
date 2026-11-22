@@ -23,6 +23,8 @@ export interface SessionRecord {
    * doesn't reshuffle a session in progress. Sessions from before M8 don't have it.
    */
   plan?: (string | null)[]
+  /** Checklist templates (Daily Mobility): indexes of the items ticked off. */
+  checkedItems?: number[]
 }
 
 export type Side = 'L' | 'R' | 'both'

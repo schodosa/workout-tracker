@@ -2,7 +2,7 @@ import { Link } from 'wouter'
 import { useFinishedSessions } from '../../db/sessions.ts'
 import { formatDayLong, formatDuration } from '../../domain/dates.ts'
 import styles from './History.module.css'
-import { sessionTitle } from './sessionTitle.ts'
+import { checklistSummary, sessionTitle } from './sessionTitle.ts'
 
 export function HistoryScreen() {
   const summaries = useFinishedSessions()
@@ -22,7 +22,7 @@ export function HistoryScreen() {
           <span className="muted">{formatDayLong(session.date)}</span>
           <span className={styles.meta}>
             {session.finishedAt && `${formatDuration(session.finishedAt - session.startedAt)} · `}
-            {exerciseCount} exercise{exerciseCount === 1 ? '' : 's'} · {setCount} set{setCount === 1 ? '' : 's'}
+            {checklistSummary(session) ?? `${exerciseCount} exercise${exerciseCount === 1 ? '' : 's'} · ${setCount} set${setCount === 1 ? '' : 's'}`}
           </span>
         </Link>
       ))}

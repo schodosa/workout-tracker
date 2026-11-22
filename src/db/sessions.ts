@@ -58,6 +58,11 @@ export async function swapPlanItem(sessionId: string, plan: (string | null)[], i
   await db.sessions.update(sessionId, { plan: next })
 }
 
+/** Checklist sessions: saves which items are ticked off. */
+export async function setCheckedItems(sessionId: string, items: number[]): Promise<void> {
+  await db.sessions.update(sessionId, { checkedItems: [...new Set(items)].sort((a, b) => a - b) })
+}
+
 export async function finishSession(id: string): Promise<void> {
   await db.sessions.update(id, { status: 'done', finishedAt: Date.now() })
 }

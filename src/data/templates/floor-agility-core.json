@@ -1,0 +1,21 @@
+{
+  "id": "floor-agility-core",
+  "name": "Floor Agility & Core",
+  "description": "Good for skating and field sports.",
+  "goalTags": ["sport-performance", "mobility"],
+  "estMinutes": 15,
+  "requiredEquipmentIds": ["floor", "resistance-bands"],
+  "format": "circuit",
+  "rounds": 2,
+  "transitionSec": 30,
+  "roundRestSec": 90,
+  "items": [
+    { "exerciseId": "floor-lateral-lunge", "reps": { "min": 8, "max": 8 } },
+    { "exerciseId": "floor-single-leg-rdl", "reps": { "min": 8, "max": 8 } },
+    { "exerciseId": "floor-copenhagen-plank-short", "duration": { "min": 15, "max": 20 } },
+    { "exerciseId": "floor-dead-bug", "reps": { "min": 8, "max": 8 } },
+    { "exerciseId": "floor-side-plank", "duration": { "min": 20, "max": 30 } },
+    { "exerciseId": "band-glute-bridge", "reps": { "min": 12, "max": 15 } },
+    { "exerciseId": "band-pallof-press", "reps": { "min": 10, "max": 10 }, "note": "Hold each press for 2 seconds." }
+  ]
+}

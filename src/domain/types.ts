@@ -180,7 +180,14 @@ export interface Template {
   estMinutes: number
   requiredEquipmentIds: string[]
   format: TemplateFormat
+  /** Circuits: how many times through the list. */
   rounds?: number
+  /** Circuits: seconds to move between exercises. */
+  transitionSec?: number
+  /** Circuits: seconds of rest between rounds. */
+  roundRestSec?: number
+  /** One line shown under the title, e.g. "Optional add-on to any session." */
+  description?: string
   /** Warm-ups (e.g. Band Activation) are excluded from progression flags. */
   warmup?: boolean
   items: TemplateItem[]

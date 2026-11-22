@@ -93,3 +93,8 @@
   font-weight: 600;
   color: var(--accent);
 }
+
+.description {
+  margin: -8px 0 12px;
+  color: var(--text-muted);
+}

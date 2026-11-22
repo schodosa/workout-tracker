@@ -1,0 +1,21 @@
+{
+  "id": "bands-anywhere",
+  "name": "Bands Anywhere",
+  "description": "For travel or days away from the machines.",
+  "goalTags": ["build-strength", "lose-fat"],
+  "estMinutes": 25,
+  "requiredEquipmentIds": ["resistance-bands", "floor"],
+  "format": "circuit",
+  "rounds": 3,
+  "transitionSec": 20,
+  "roundRestSec": 60,
+  "items": [
+    { "exerciseId": "band-squat", "reps": { "min": 15, "max": 15 } },
+    { "exerciseId": "band-row", "reps": { "min": 12, "max": 12 } },
+    { "exerciseId": "floor-split-squat", "reps": { "min": 8, "max": 8 } },
+    { "exerciseId": "band-face-pull", "reps": { "min": 12, "max": 12 } },
+    { "exerciseId": "band-pallof-press", "reps": { "min": 10, "max": 10 } },
+    { "exerciseId": "band-wood-chop", "reps": { "min": 10, "max": 10 } },
+    { "exerciseId": "floor-plank", "duration": { "min": 30, "max": 45 } }
+  ]
+}

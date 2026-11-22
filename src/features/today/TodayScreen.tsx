@@ -72,7 +72,7 @@ function TemplateCard({ template: t, fit }: { template: Template; fit: TemplateF
     <Link href={`/templates/${t.id}`} className={`card ${styles.templateCard} ${partial ? styles.dim : ''}`}>
       <span className={styles.name}>{t.name}</span>
       <span className="muted">
-        ~{t.estMinutes} min · {t.items.length} exercises{t.warmup && ' · warm-up'}
+        ~{t.estMinutes} min · {t.items.length} {t.format === 'checklist' ? 'moves' : 'exercises'}{t.format === 'circuit' && ` · ${t.rounds} rounds`}{t.warmup && ' · warm-up'}
       </span>
       <span className={styles.equipment}>{detail}</span>
       <span className={styles.chevron} aria-hidden="true">

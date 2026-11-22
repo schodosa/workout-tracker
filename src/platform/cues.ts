@@ -36,3 +36,19 @@ export function playRestOverCue(): void {
     osc.stop(t + 0.2)
   }
 }
+
+/** One short, higher beep: "go" (a transition is over, or switch sides). */
+export function playGoCue(): void {
+  navigator.vibrate?.(150)
+  if (!ctx || ctx.state !== 'running') return
+  const t = ctx.currentTime
+  const osc = ctx.createOscillator()
+  const gain = ctx.createGain()
+  osc.frequency.value = 1320
+  gain.gain.setValueAtTime(0.0001, t)
+  gain.gain.exponentialRampToValueAtTime(0.4, t + 0.02)
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.25)
+  osc.connect(gain).connect(ctx.destination)
+  osc.start(t)
+  osc.stop(t + 0.3)
+}

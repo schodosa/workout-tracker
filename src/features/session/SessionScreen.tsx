@@ -9,6 +9,7 @@ import { planTemplate, swapOptions } from '../../domain/substitution.ts'
 import { RestBar } from '../../components/RestBar.tsx'
 import { SetRow } from '../../components/SetRow.tsx'
 import { SetupCard } from '../../components/SetupCard.tsx'
+import { SwapPanel } from '../../components/SwapPanel.tsx'
 import { Stepper } from '../../components/Stepper.tsx'
 import { WorkFields } from '../../components/WorkFields.tsx'
 import {
@@ -38,6 +39,8 @@ import {
 import { DEFAULT_TEMPLATE_SETTINGS, type Exercise, type Template } from '../../domain/types.ts'
 import { unlockAudio } from '../../platform/cues.ts'
 import { useWakeLock } from '../../platform/wakeLock.ts'
+import { ChecklistRunner } from './ChecklistRunner.tsx'
+import { CircuitRunner } from './CircuitRunner.tsx'
 import styles from './SessionScreen.module.css'
 
 /** Loads the session from the database, then hands off to the logger once data is ready. */
@@ -69,6 +72,9 @@ export function SessionScreen() {
     )
   }
 
+  // Each template format has its own screen.
+  if (template.format === 'circuit') return <CircuitRunner session={session} sets={sets} template={template} inventory={inventory} />
+  if (template.format === 'checklist') return <ChecklistRunner session={session} template={template} inventory={inventory} />
   return <SessionLogger session={session} sets={sets} template={template} inventory={inventory} />
 }
 
@@ -242,49 +248,6 @@ function ExerciseLogger(props: ExerciseLoggerProps) {
   }
   if (lastTime === undefined || inventory === undefined) return null
   return <ExerciseForm {...props} exercise={exercise} lastTime={lastTime} inventory={inventory} />
-}
-
-/** "Swap" button and the list of alternatives for this movement, best first. */
-function SwapPanel({ current, choices, onSwap }: { current: Exercise; choices: Exercise[]; onSwap: (id: string) => void }) {
-  const [open, setOpen] = useState(false)
-  if (choices.length < 2) return null
-  if (!open) {
-    return (
-      <button type="button" className={styles.swapButton} onClick={() => setOpen(true)}>
-        ⇄ Swap exercise
-      </button>
-    )
-  }
-  return (
-    <div className={`card ${styles.swapPanel}`}>
-      <p className={styles.swapTitle}>Swap {current.name} for…</p>
-      <ul className={styles.swapList}>
-        {choices.map((ex) => (
-          <li key={ex.id}>
-            <button
-              type="button"
-              className={ex.id === current.id ? `${styles.swapChoice} ${styles.swapCurrent}` : styles.swapChoice}
-              onClick={() => {
-                setOpen(false)
-                if (ex.id !== current.id) onSwap(ex.id)
-              }}
-            >
-              <span className={styles.swapName}>{ex.name}</span>
-              <span className={styles.swapMeta}>
-                {builtinCatalog.equipment.get(ex.equipmentId)?.name}
-                {ex.unilateral && ' · per side'}
-                {ex.measure === 'time' && ' · timed'}
-                {ex.id === current.id && ' · current'}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
-      <button type="button" className="btn" onClick={() => setOpen(false)}>
-        Cancel
-      </button>
-    </div>
-  )
 }
 
 function ExerciseForm({

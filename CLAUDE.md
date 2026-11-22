@@ -36,7 +36,11 @@ A local-first, installable PWA workout tracker for home gyms. The full product s
 - Substitution (`src/domain/substitution.ts`) resolves each template item in this order: as written if doable, then the template's `prefer` list or the exercise's `alternatives` (hand-picked data, same movement pattern, enforced by validation), then a scored same-pattern search. Impact moves are never auto-picked until the M15 unlock week. Items with no option are skipped (`null`) with a target of 0 sets.
 - A session saves its `plan` (exercise per item) at start, and Swap edits it. Never re-resolve a session that has a plan. Sessions from before M8 fall back to `planTemplate()`.
 - A product and its generic type share exercises both ways (`equivalentEquipment()`). Show machine-specific setup only when `ownsExactEquipment()`. Otherwise pass `generic` to `SetupCard`.
-- Circuit, checklist and ride templates ship with the milestone that can run them (M9, M10), not before.
+- Ride templates ship with Ride mode (M10), not before.
+- Each template `format` has its own runner, chosen in `SessionScreen`: `straight-sets` → `SessionLogger`, `circuit` → `CircuitRunner`, `checklist` → `ChecklistRunner`.
+- Circuits: a circuit set is a normal `SetRecord` with `setNumber` = round. Position comes from the data (`circuitPosition()`). Only the current countdown is in memory. Hold timers use `HoldTimer` (per-side runs L → 5 s switch → R automatically). Default targets: bottom of a time range, top of a rep range (`circuitTarget()`).
+- Checklists store ticks in `session.checkedItems` (item indexes), not as sets.
+- Writing TSX through `node -e "..."` in Bash breaks template literals (the shell expands `${}`). Use the Edit/Write tools for code containing backticks.
 - Save each logged set immediately (write-through) so a locked phone or killed tab loses nothing.
 - Screens never touch `db` directly. They use the functions and `use*` hooks in `src/db/*.ts`.
 - Never edit a shipped `db.version(n)`. Schema changes go in a new `version(n+1)` with an `.upgrade()`.

@@ -28,6 +28,8 @@ const sessionSchema = z.object({
   notes: z.string().optional(),
   // Added in M8 as an optional field: older v2 files simply don't have it, so no format bump.
   plan: z.array(z.string().min(1).nullable()).optional(),
+  // Added in M9 (checklists), also optional.
+  checkedItems: z.array(z.number().int().nonnegative()).optional(),
 })
 
 const setSchema = z.object({
